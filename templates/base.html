@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<!--
+ Created by zhouwang.
+-->
+<html lang="cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{% block title %}{% end %}</title>
+
+    <link rel="Shortcut Icon" href="{{ static_url('img/shortcut.png') }}">
+
+    <!-- Bootstrap Core CSS -->
+    <link href="{{ static_url('sb-admin-2/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="{{ static_url('sb-admin-2/vendor/metisMenu/metisMenu.min.css') }}" rel="stylesheet">
+
+    <!-- Social Buttons CSS -->
+    <link href="{{ static_url('sb-admin-2/vendor/bootstrap-social/bootstrap-social.css') }}" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="{{ static_url('sb-admin-2/vendor/datatables-plugins/dataTables.bootstrap.css') }}" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="{{ static_url('sb-admin-2/vendor/datatables-responsive/dataTables.responsive.css') }}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{{ static_url('sb-admin-2/dist/css/sb-admin-2.css') }}" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="{{ static_url('sb-admin-2/vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- bootstrap-select -->
+    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+
+    <style>
+        .error_text {color: #FFCC00}
+        {% if requser.get('role') == 3 %}
+            .role2 {display: none}
+        {% end%}
+    </style>
+    {% block style %}
+    {% end %}
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- jQuery -->
+    <script src="{{ static_url('sb-admin-2/vendor/jquery/jquery.min.js') }}"></script>
+
+    <script src="{{ static_url('js/base.js') }}"></script>
+    {% if requser.get('role') != 1 %}
+    <script>
+        $(function(){
+            $(".role1").remove()
+        })
+    </script>
+    {% end%}
+    {% block head_js %}
+
+    {% end %}
+</head>
+
+<body>
+
+    <div id="wrapper">
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; border-bottom:1px solid #ddd ; background-color:#303030   ">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html" style="color: #fff">Loggrove 2018</a>
+            </div>
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="background-color: #303030">
+                        <i class="fa fa-user fa-fw" style="color: #fff"></i> <i class="fa fa-caret-down" style="color: #fff"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="#" onclick="open_show_profile_modal()"><i class="fa fa-user fa-fw"></i> 用户信息</a>
+                        </li>
+                        <li><a href="#" data-toggle="modal" data-target="#changePasswordModal"><i class="fa fa-gear fa-fw"></i> 修改密码</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li><a href="#" onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> 退出登录</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    {% include "nav.html" %}
+
+                </div>
+            </div>
+        </nav>
+
+
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header" style="padding-bottom: 0px;margin-top: 20px; border-bottom: 1px solid #ddd">
+                        <div class="breadcrumb" style="background-color: #ffffff; margin-bottom: 0px; font-size: 16px">
+                            {% block breadcrumb %}{% end %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            {% block content %}{% end %}
+
+        </div>
+    </div>
+
+    <!-- qq二维码模态框（qq Modal） -->
+    <div class="modal fade" id="qqModal" tabindex="-1" role="dialog" aria-labelledby="qqModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="qqLabel">
+                        <i class="fa fa-qq fa-fw" style=""></i> 加入群聊
+                    </h4>
+                </div>
+                <div class="modal-body">
+                     <img src="/static/img/qq.png" style="width: 100%" alt=""/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户信息模态框（User Profile Modal） -->
+    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="profileLabel">
+                        <i class="fa fa-user fa-fw" style=""></i> 用户信息
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-12">
+                            <blockquote>
+                                <span>用户名</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>ID</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>姓名</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>邮箱</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>角色</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>加入时间</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>登录时间</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                                <span>过期时间</span>
+                                <small>
+                                    <cite></cite>
+                                </small>
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码模态框（Change password Modal） -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="changePasswordLabel">
+                        <i class="fa fa-pencil-square-o fa-fw" style=""></i> 修改密码
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-12">
+                            <div></div>
+                            <form role="form" id="change_password_form" class="form-horizontal">
+                                {% raw xsrf_form_html() %}
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label>旧密码 *</label>
+                                        <input class="form-control" type="password" name="old_password" placeholder="Old password">
+                                        <span class="error_text"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label>新密码 *</label>
+                                        <input class="form-control" type="password" name="new_password" placeholder="New password">
+                                        <span class="error_text"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <label>确认密码 *</label>
+                                        <input class="form-control" type="password" name="confirm_password" placeholder="Confirm password">
+                                        <span class="error_text"></span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="change_password()">
+                        提交
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{{ static_url('sb-admin-2/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="{{ static_url('sb-admin-2/vendor/metisMenu/metisMenu.min.js') }}"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="{{ static_url('sb-admin-2/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ static_url('sb-admin-2/vendor/datatables-plugins/dataTables.bootstrap.min.js') }}"></script>
+    <script src="{{ static_url('sb-admin-2/vendor/datatables-responsive/dataTables.responsive.js') }}"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="{{ static_url('sb-admin-2/dist/js/sb-admin-2.js') }}"></script>
+
+    <!-- bootstrap-select JavaScript -->
+    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+
+    <!-- bootstrap-treeview JavaScript -->
+    <script src="{{ static_url('bootstrap-treeview/js/bootstrap-treeview.js') }}"></script>
+    <script>
+        $(function(){
+            $("form input[type='password']").keyup(function(){
+                var form_obj = $(this).parents("form")
+                var password_obj1 = form_obj.find("input[type='password']").eq(0)
+                var password_obj2 = form_obj.find("input[type='password']").eq(1)
+                if(password_obj2.val() && password_obj1.val()){
+                    if(password_obj2.val() != password_obj1.val()){
+                        password_obj2.next().html('错误的验证密码').css('color', '#FFCC33');
+                    }else{
+                        password_obj2.next().empty()
+                    }
+                }else if (password_obj1.val() && !password_obj2.val()){
+                    password_obj2.next().empty()
+                }else if (!password_obj1.val() && password_obj2.val()){
+                    password_obj2.next().html('无效的验证密码').css('color', '#FFCC33');
+                }else if (!password_obj1.val() && !password_obj2.val()){
+                    password_obj2.next().empty()
+                }
+            });
+        })
+    </script>
+    {% block body_js %}
+    {% end %}
+</body>
+</html>

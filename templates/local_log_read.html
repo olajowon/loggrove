@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% block title %}
+日志阅读
+{% end %}
+{% block style %}
+<style>
+    #paging span {cursor:pointer}
+
+    .disabled {
+        pointer-events: none;
+        cursor: default;
+    }
+</style>
+{% end %}
+{% block head_js %}
+<script src="{{ static_url('js/local_log_read.js') }}"></script>
+<script>
+    $.ajax({
+        url:"/local_log/file/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#local_log_file_tabpane select[name='path']")
+            for(var i=0; i<data.length; i++){
+                select_obj.append("<option rowid='"+data[i]["id"]+"' value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
+            }
+        },
+        error:function (result) {}
+    })
+
+    local_log_dir_map = {}
+    $.ajax({
+        url:"/local_log/dir/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#local_log_dir_tabpane select[name='dir']")
+            for(var i=0; i<data.length; i++){
+                select_obj.append("<option value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
+                local_log_dir_map[data[i]["path"]] = data[i]["nodes"]
+            }
+        },
+        error:function (result) {}
+    })
+
+    monitor_item_arr = []
+    $.ajax({
+        url:"/local_log/monitor/item/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#local_log_dir_tabpane select[name='search_pattern']")
+            for(var i=0; i<data.length; i++){
+                if($.inArray(data[i]["search_pattern"], monitor_item_arr) < 0){
+                    select_obj.append("<option value='"+
+                            data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>");
+                    monitor_item_arr.push(data[i]["search_pattern"])
+                }
+            }
+        },
+        error:function (result) {}
+    })
+</script>
+{% end %}
+{% block breadcrumb %}
+<li><i class="fa fa-file-text fa-fw" ></i> 日志阅读</li>
+{% end %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-12 col-lg-10">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-10 col-lg-10">
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-pills">
+                            <li class="active"><a href="#local_log_file_tabpane" data-toggle="tab">日志文件</a>
+                            </li>
+                            <li><a href="#local_log_dir_tabpane" data-toggle="tab">日志目录</a>
+                            </li>
+
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="local_log_file_tabpane" style="padding-top: 15px">
+                                <form role="form">
+                                    <div class="form-group">
+                                        <label>文件路径 *</label>
+                                        <select class="form-control selectpicker" name="path" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                        <span name="path_error" class="error_text"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>匹配模式</label>
+                                        <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式 <正则表达式>">
+                                        <span class="error_text" name="search_pattern_error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-default" onclick="local_log_read(this)">查看</button>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="local_log_dir_tabpane" style="padding-top: 15px">
+                                <form role="form">
+                                    <div class="form-group">
+                                        <label>目录路径 *</label>
+                                        <select class="form-control selectpicker" name="dir" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>文件路径 *</label>
+                                        <select class="form-control selectpicker" name="path" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                        <span class="error_text" name="path_error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>匹配模式</label>
+                                        <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式，输入正确的正则表达式并优先匹配">
+                                        <span class="error_text" name="search_pattern_error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-default" onclick="local_log_read(this)">查看</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="log_stat_row" style="display: none">
+    <div class="col-sm-12 col-lg-10" style="clear: both; ">
+        <div class="row">
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-flask fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 25px" id="logfile_size">0</div>
+                                <div>文件大小 / KB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-green">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-file-o fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 25px" id="page_size">0</div>
+                                <div>本页大小 / KB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-yellow">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-list-ol fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 25px" id="page_line_count">0</div>
+                                <div>本页行数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-red">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-filter fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 25px" id="page_search_line_count">0</div>
+                                <div>本页匹配行数</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="row" id="log_content_row" style="display: none">
+    <div class="col-sm-12 col-lg-10" style="clear: both; ">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-12" style="max-height:500px;overflow:auto; clear: both;line-height: 20px;" id="log_content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12 col-lg-10" id="paging" style="clear: both; text-align:center; padding-bottom: 20px">
+    </div>
+</div>
+
+<div class="row">
+
+</div>
+
+
+{% end %}
+{% block body_js %}
+<script>
+$(function(){
+    $("#local_log_dir_tabpane select[name='dir']").change(function(){
+        var dir_path = $(this).val()
+        if(!dir_path){
+            $("#local_log_dir_tabpane select[name='path']").html('<option value=""> ---- </option>')
+        }else{
+            var paths = log_path(".", local_log_dir_map[dir_path])
+            var select_options = '<option value=""> ---- </option>'
+            for(var i=0;i<paths.length;i++){
+                var option_value = (dir_path.substr(dir_path.length-1,1)=="/" ? dir_path + paths[i] : dir_path + "/" +paths[i])
+                select_options += '<option value="'+ option_value +'"> '+ paths[i] +' </option>'
+            }
+            $("#local_log_dir_tabpane select[name='path']").html(select_options);
+        }
+        $("#local_log_dir_tabpane select[name='path']").selectpicker('refresh');
+        $("#local_log_dir_tabpane select[name='path']").selectpicker('render');
+    })
+
+    $("#local_log_file_tabpane select[name='path']").change(function(){
+        var id = $(this).find("option:selected").attr("rowid")
+        $("#local_log_file_tabpane select[name='search_pattern']").html("<option value=''> ---- </option>")
+        if(id){
+            $.ajax({
+                url:"/local_log/monitor/item/",
+                type:"GET",
+                data:{"local_log_file_id":id},
+                success:function (result) {
+                    var response_data = jQuery.parseJSON(result)
+                    var data = response_data['data']
+                    for(var i=0; i<data.length; i++){
+                        $("#local_log_file_tabpane select[name='search_pattern']").append("<option value='"+
+                            data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>")
+                    }
+                    $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('refresh');
+                    $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('render');
+                },
+                error:function (result) {}
+            })
+        }
+    })
+})
+</script>
+{% end %}

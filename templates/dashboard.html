@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% block title %}
+Dashboard
+{% end %}
+{% block style %}
+<style>
+    #myprofile small {margin-bottom: 5px}
+    #myprofile span {font-size: 14px}
+</style>
+{% end %}
+{% block head_js %}
+<script src="{{ static_url('js/user.js') }}"></script>
+<script>
+    $.ajax({
+        url:"/history/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+
+            for(var i=0; i<response_data["data"].length; i++){
+                var n = i+1
+                $("#myhistory tbody").append("<tr>"+
+                                                "<td>"+ n +"</td>" +
+                                                "<td>"+ response_data["data"][i]["record_time"] +"</td>" +
+                                                "<td>"+ response_data["data"][i]["uri"] +"</td>" +
+                                                "<td>"+ response_data["data"][i]["method"] +"</td>" +
+                                            "</tr>")
+            }
+
+        },
+        error:function (result) {}
+    })
+</script>
+{% end %}
+{% block breadcrumb %}
+<li><i class="fa fa-dashboard fa-fw"></i> Dashboard</li>
+{% end %}
+{% block content %}
+
+<div class="row">
+    <div class="col-sm-12 col-lg-10" style="clear: both">
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-users fa-4x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div class="huge" id="online_user_count">0</div>
+                                <div>在线/用户</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#">
+                        <div class="panel-footer">
+                            <span class="pull-left">View Details</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-green">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-file fa-4x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div class="huge" id="local_log_file_count">0</div>
+                                <div>日志文件</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#">
+                        <div class="panel-footer">
+                            <span class="pull-left">View Details</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-yellow">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-folder-open fa-4x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div class="huge" id="local_log_dir_count">0</div>
+                                <div>日志目录</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#">
+                        <div class="panel-footer">
+                            <span class="pull-left">View Details</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-red">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-cogs fa-4x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div class="huge" id="local_log_monitor_item_count">0</div>
+                                <div>监控项</div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#">
+                        <div class="panel-footer">
+                            <span class="pull-left">View Details</span>
+                            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                            <div class="clearfix"></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 col-lg-10" style="clear: both">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="panel panel-default" id="myprofile">
+                    <div class="panel-heading">
+                        <div class="panel-title"><i class="fa fa-user fa-fw"></i> 我的信息</div>
+                    </div>
+                    <div class="panel-body">
+                        <blockquote>
+                            <span>用户名</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>ID</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>姓名</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>邮箱</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>角色</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>加入时间</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>登录时间</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                            <span>过期时间</span>
+                            <small>
+                                <cite></cite>
+                            </small>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="panel panel-default" id="myhistory">
+                    <div class="panel-heading">
+                        <div class="panel-title"><i class="fa fa-calendar-check-o fa-fw"></i> 最近操作</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped ">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>时间</th>
+                                        <th>Uri</th>
+                                        <th>Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% end %}
+{% block body_js %}
+<script>
+    $.ajax({
+        url:"/dashboard/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            $("#online_user_count").text(response_data["data"][0]["online_user_count"] + "/" + response_data["data"][0]["user_count"])
+            $("#local_log_file_count").text(response_data["data"][0]["local_log_file_count"])
+            $("#local_log_dir_count").text(response_data["data"][0]["local_log_dir_count"])
+            $("#local_log_monitor_item_count").text(response_data["data"][0]["local_log_monitor_item_count"])
+        },
+        error:function (result) {}
+    })
+
+    $.ajax({
+        url:"/profile/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var cite_objs = $("#myprofile").find("cite")
+            cite_objs.eq(0).text(response_data["data"][0]["username"])
+            cite_objs.eq(1).text(response_data["data"][0]["id"])
+            cite_objs.eq(2).text(response_data["data"][0]["fullname"])
+            cite_objs.eq(3).text(response_data["data"][0]["email"])
+            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ? "超级管理员" : (response_data["data"][0]=="2" ? "管理员" : "普通用户")))
+            cite_objs.eq(5).text(response_data["data"][0]["join_time"])
+            cite_objs.eq(6).text(response_data["data"][0]["login_time"])
+            cite_objs.eq(7).text(response_data["data"][0]["expire_time"])
+        },
+        error:function (result) {}
+    })
+
+    $(function(){
+        myhistory_datatable = $('#myhistory table').DataTable({
+            aaSorting : [[1, "desc"]],
+            language:{
+                "emptyTable":     "表中没有可用数据",
+                "info": "当前 _START_ - _END_ 条，共 _TOTAL_ 条",
+                "infoFiltered":   "",
+                "infoPostFix":    "",
+                "thousands":      ",",
+                "infoEmpty": "_TOTAL_ 条",
+                "lengthMenu":     "每页 _MENU_ 条",
+                "loadingRecords": "加载中...",
+                "processing":     "处理中...",
+                "search": "搜索:",
+                "paginate": {
+                    "first":      "首页",
+                    "last":       "尾页",
+                    "next":       "下一页",
+                    "previous":   "上一页"
+                },
+            }
+        });
+    })
+</script>
+{% end %}
