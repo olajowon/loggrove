@@ -68,7 +68,6 @@ class Password():
                 ''' % (self.reqdata['password'], pk)
         try:
             self.mysqldb_cursor.execute(update_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Reset failed, %s' % str(e)}
@@ -89,7 +88,6 @@ class Password():
         ''' % (self.reqdata['password'], self.requser.get('id'))
         try:
             self.mysqldb_cursor.execute(update_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Change failed, %s' % str(e)}

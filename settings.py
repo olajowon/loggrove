@@ -18,7 +18,8 @@ MYSQL_DB = {
     'user': 'root',
     'passwd': '123456',
     'db': 'loggrove',
-    'charset': 'utf8'
+    'charset': 'utf8',
+    'autocommit': True,
 }
 
 

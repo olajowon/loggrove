@@ -1,5 +1,5 @@
 # Created by zhouwang on 2018/5/17.
-import tornado.web
+
 from .base import permission, BaseRequestHandler
 
 class Handler(BaseRequestHandler):

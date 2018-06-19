@@ -142,7 +142,6 @@ class LocalLogMonitorItem():
                self.reqdata['comment'])
         try:
             self.mysqldb_cursor.execute(insert_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg':'Add failed, %s' % str(e)}
@@ -175,7 +174,6 @@ class LocalLogMonitorItem():
                self.get_argument('comment'), pk)
         try:
             self.mysqldb_cursor.execute(update_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Update failed, %s' % str(e)}
@@ -209,7 +207,6 @@ class LocalLogMonitorItem():
         delete_sql = 'DELETE FROM local_log_monitor_item WHERE id="%d"' % pk
         try:
             self.mysqldb_cursor.execute(delete_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Delete failed, %s' % str(e)}

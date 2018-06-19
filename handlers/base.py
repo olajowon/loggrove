@@ -32,11 +32,6 @@ def permission(role=3):
     return __decorator
 
 
-class HtmlRequestHandler(tornado.web.RequestHandler):
-    def set_default_headers(self):
-        self.set_header('WWW-Authenticate', 'Basic realm="Login"')
-
-
 class BaseRequestHandler(tornado.web.RequestHandler):
     def initialize(self):
         self.mysqldb_conn = self.application.settings.get('mysqldb_conn')
@@ -80,7 +75,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             delete_sql = 'DELETE FROM session WHERE session_id="%s"' % self.session.get('session_id')
             try:
                 self.mysqldb_cursor.execute(delete_sql)
-                self.mysqldb_conn.commit()
             except Exception as e:
                 self.mysqldb_conn.rollback()
                 return {'code': 500, 'msg': 'Logout failed, %s' % str(e)}
@@ -111,7 +105,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(expire_time)))
         try:
             self.mysqldb_cursor.execute(insert_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             response_data = {'code': 500, 'msg': 'Login failed, %s' % str(e)}
@@ -166,7 +159,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         try:
             self.mysqldb_cursor.execute(insert_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
 
@@ -174,7 +166,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
     def _update_row(self, update_sql, pk=0):
         try:
             self.mysqldb_cursor.execute(update_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Failed, %s' % str(e)}
@@ -191,7 +182,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
     def _insert_row(self, insert_sql):
         try:
             self.mysqldb_cursor.execute(insert_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Failed, %s' % str(e)}
@@ -203,7 +193,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
     def _delete_row(self, delete_sql):
         try:
             self.mysqldb_cursor.execute(delete_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Failed, %s' % str(e)}

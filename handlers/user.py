@@ -134,7 +134,6 @@ class User():
                self.reqdata['role'])
         try:
             self.mysqldb_cursor.execute(insert_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Add failed, %s' % str(e)}
@@ -165,7 +164,6 @@ class User():
 
         try:
             self.mysqldb_cursor.execute(update_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Update failed, %s' % str(e)}
@@ -177,7 +175,6 @@ class User():
         delete_sql = 'DELETE FROM user WHERE id="%d"' % pk
         try:
             self.mysqldb_cursor.execute(delete_sql)
-            self.mysqldb_conn.commit()
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Delete failed, %s' % str(e)}
