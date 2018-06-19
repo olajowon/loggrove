@@ -19,7 +19,7 @@ from handlers import (
 
 
 
-handlers = [
+urlpatterns = [
     (r'/', html.Handler),
     (r'^/dashboard/$', dashboard.Handler),
     (r'^/login/html/$', html.LoginHander),

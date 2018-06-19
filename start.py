@@ -32,7 +32,7 @@ mysqldb_conn = pymysql.connect(**mysqldb)
 
 application = tornado.web.Application(
     mysqldb_conn = mysqldb_conn,
-    handlers = urls.handlers,
+    handlers = urls.urlpatterns,
     template_path = settings.TEMPLATE_PATH,
     static_path = settings.STATIC_PATH,
     cookie_secret = 'qsefthukoplijygrdwa',
