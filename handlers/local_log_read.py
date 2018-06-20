@@ -13,7 +13,7 @@ def get_valid(func):
         if not path:
             error['path'] = '文件路径是必填项'
         elif not os.path.isfile(path):
-            error['path'] = '文件路径不存在'
+            error['path'] = '文件路径[本地]不存在'
         elif not os.access(path, os.R_OK):
             error['path'] = '文件不可读'
 
@@ -34,12 +34,19 @@ class Handler(BaseRequestHandler):
     @permission()
     @get_valid
     def get(self):
-        page = self.get_argument('page', 0)
+        page = self.get_argument('page', '0') or '0'
         path = self.get_argument('path', '')
         search_pattern = self.get_argument('search_pattern', '')
         logfile_size = os.path.getsize(path)
         page_count = (logfile_size // 1048576) + (1 if logfile_size % 1048576 else 0) if logfile_size else 1
-        page = int(page) or page_count
+
+        if not page.isnumeric():
+            page = page_count
+        elif int(page) == 0 or int(page) > page_count:
+            page = page_count
+        else:
+            page = int(page)
+
         begin_position = (page - 1) * 1048576
         with open(path, 'r') as logfile:
             logfile.seek(begin_position)
