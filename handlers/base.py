@@ -8,6 +8,7 @@ import time
 import urllib
 import uuid
 import datetime
+import settings
 
 def permission(role=3):
     def __decorator(func):
@@ -27,14 +28,35 @@ def permission(role=3):
                 self.redirect('/login/html/?next=%s' % urllib.parse.quote(self.request.uri))
             else:
                 self._write({'code': 401, 'msg': 'Unauthorized'})
-
         return __wrapper
     return __decorator
 
 
-class BaseRequestHandler(tornado.web.RequestHandler):
-    def initialize(self):
+def mysqldb_conn_valid(func):
+    ''' 检查 mysql 连接 '''
+    def _wrapper(self):
         self.mysqldb_conn = self.application.settings.get('mysqldb_conn')
+        try:
+            self.mysqldb_conn.ping(True)
+        except:
+            try:
+                mysqldb = settings.MYSQL_DB
+                self.mysqldb_conn = pymysql.connect(**mysqldb)
+            except Exception as e:
+                if self.request.headers.get('Accept', '*/*').find('html') >= 0:
+                    self.write('HTTP 500: %s' % str(e))
+                else:
+                    self._write({'code':500, 'msg':'Connect MySQL failed, %s' % str(e)})
+                return
+            else:
+                self.application.settings['mysqldb_conn'] = self.mysqldb_conn
+        return func(self)
+    return _wrapper
+
+
+class BaseRequestHandler(tornado.web.RequestHandler):
+    @mysqldb_conn_valid
+    def initialize(self):
         self.mysqldb_cursor = self.mysqldb_conn.cursor(cursor=pymysql.cursors.DictCursor)
         self.reqdata = {}
         self.session = None
