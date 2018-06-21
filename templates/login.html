@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Loggrove</title>
-    <link rel="Shortcut Icon" href="{{ static_url('img/shortcut.png') }}">
+    <link rel="Shortcut Icon" href="{{ static_url('img/favicon.ico') }}">
     <!-- Bootstrap Core CSS -->
     <link href="{{ static_url('sb-admin-2/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 
@@ -68,17 +68,15 @@
     </script>
     </head>
 
-	<body class="login" style="background: url(/static/img/login_back.jpg) fixed;margin: 0;padding: 0;">
+	<body class="login" style="background-color: #F8F8F8;margin: 0;padding: 0;">
 
-        <div class="login-panel panel panel-default" style=" max-width:380px;margin:0 auto; margin-top: 50px">
+        <div class="login-panel panel panel-default" style=" max-width:380px;margin:0 auto; margin-top: 50px; border-color: #D0D0D0">
             <div class="panel-body">
                 <!-- BEGIN LOGO -->
-                <div class="logo" style="">
-                    <a href="/" style="text-align: center">
-                        <img src="/static/img/loggrove3.png" style="width:45%; margin-left: 10px;" alt=""/>
-                    </a>
-                    <!--<span style="font-size: 35px"> loggrove</span>-->
-                    <div style="margin-top:2%; border-bottom: 1px solid #D7D7D7;"></div>
+                <div class="logo" style="position: relative; padding-top: 10px">
+                    <img src="/static/img/logo.png" style="width:45px; margin-left: 15px; margin-right: 40px;" alt=""/>
+                    <span style="font-family:Verdana, Geneva, sans-serif;font-size: 32px;  position: absolute;  bottom:15px; color: #282828; text-shadow:#C8C8C8"> Loggrove</span>
+                    <div style="margin-top:15px; border-bottom: 1px solid #C8C8C8;"></div>
                 </div><!-- END LOGO -->
                 <!-- BEGIN LOGIN -->
                 <div class="content">
@@ -106,7 +104,7 @@
                         </div>
                         <div class="form-group" style="padding-top: 10px">
                             <div class="col-xs-12 col-sm-12">
-                                <button type="submit" id="loginbtn" class="btn btn-primary btn-block border_radius" onclick="login()">登 录</button>
+                                <button type="submit" id="loginbtn" class="btn btn-default btn-block border_radius" onclick="login()">登 录</button>
                             </div>
                         </div>
                     </form>

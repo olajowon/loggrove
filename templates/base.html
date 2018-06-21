@@ -12,7 +12,7 @@
 
     <title>{% block title %}{% end %}</title>
 
-    <link rel="Shortcut Icon" href="{{ static_url('img/shortcut.png') }}">
+    <link rel="Shortcut Icon" href="{{ static_url('img/favicon.ico') }}">
 
     <!-- Bootstrap Core CSS -->
     <link href="{{ static_url('sb-admin-2/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -36,7 +36,7 @@
     <link href="{{ static_url('sb-admin-2/vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
 
     <!-- bootstrap-select -->
-    <link href="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css" rel="stylesheet">
+    <link href="{{ static_url('bootstrap-select-1.13.1/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
 
     <style>
         .error_text {color: #FFCC00}
@@ -73,15 +73,20 @@
 <body>
 
     <div id="wrapper">
-        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; border-bottom:1px solid #ddd ; background-color:#303030   ">
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; border-bottom:1px solid #ddd ; background-color:#303030">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                     <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+                    <span class="icon-bar" style="background-color: #fff"></span>
+                    <span class="icon-bar" style="background-color: #fff"></span>
+                    <span class="icon-bar" style="background-color: #fff"></span>
                 </button>
-                <a class="navbar-brand" href="index.html" style="color: #fff">Loggrove 2018</a>
+
+                <a class="navbar-brand" href="index.html" style="color: #fff; padding-top: 8px">
+                    <img src="/static/img/logo.png" style="width:35px; float: left; margin-right: 12px; border: 1px solid #E8E8E8; border-radius:5px;" alt=""/>
+                    <span style="font-weight:300;letter-spacing:2px; font-size: 23px; float: left; margin-top: 8px; color: #FFFFFF">Loggrove</span>
+                </a>
+
             </div>
 
             <ul class="nav navbar-top-links navbar-right">
@@ -276,10 +281,10 @@
     <script src="{{ static_url('sb-admin-2/dist/js/sb-admin-2.js') }}"></script>
 
     <!-- bootstrap-select JavaScript -->
-    <script src="https://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script>
+    <script src="{{ static_url('bootstrap-select-1.13.1/dist/js/bootstrap-select.min.js') }}"></script>
 
     <!-- bootstrap-treeview JavaScript -->
-    <script src="{{ static_url('bootstrap-treeview/js/bootstrap-treeview.js') }}"></script>
+    <script src="{{ static_url('bootstrap-treeview/dist/bootstrap-treeview.min.js') }}"></script>
     <script>
         $(function(){
             $("form input[type='password']").keyup(function(){
