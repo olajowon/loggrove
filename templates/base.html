@@ -38,6 +38,9 @@
     <!-- bootstrap-select -->
     <link href="{{ static_url('bootstrap-select-1.13.1/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
 
+    <!-- bootstrap-datetimepicker -->
+    <link href="{{ static_url('bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+
     <style>
         .error_text {color: #FFCC00}
         {% if requser.get('role') == 3 %}
@@ -82,7 +85,7 @@
                     <span class="icon-bar" style="background-color: #fff"></span>
                 </button>
 
-                <a class="navbar-brand" href="index.html" style="color: #fff; padding-top: 8px">
+                <a class="navbar-brand" href="/" style="color: #fff; padding-top: 8px">
                     <img src="/static/img/logo.png" style="width:35px; float: left; margin-right: 12px; border: 1px solid #E8E8E8; border-radius:5px;" alt=""/>
                     <span style="font-weight:300;letter-spacing:2px; font-size: 23px; float: left; margin-top: 8px; color: #FFFFFF">Loggrove</span>
                 </a>
@@ -285,12 +288,26 @@
 
     <!-- bootstrap-treeview JavaScript -->
     <script src="{{ static_url('bootstrap-treeview/dist/bootstrap-treeview.min.js') }}"></script>
+
+    <!-- bootstrap-datetimepicker JavaScript -->
+    <script src="{{ static_url('bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js') }}"></script>
+    <script src="{{ static_url('bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js') }}"></script>
+
+    <!-- highcharts JavaScript -->
+    <script src="{{ static_url('highcharts-6.1.0/code/highcharts.js') }}"></script>
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+
     <script>
         $(function(){
             $("form input[type='password']").keyup(function(){
                 var form_obj = $(this).parents("form")
-                var password_obj1 = form_obj.find("input[type='password']").eq(0)
-                var password_obj2 = form_obj.find("input[type='password']").eq(1)
+                if (form_obj.attr("id") == "change_password_form"){
+                    var password_obj1 = form_obj.find("input[type='password']").eq(1)
+                    var password_obj2 = form_obj.find("input[type='password']").eq(2)
+                }else{
+                    var password_obj1 = form_obj.find("input[type='password']").eq(0)
+                    var password_obj2 = form_obj.find("input[type='password']").eq(1)
+                }
                 if(password_obj2.val() && password_obj1.val()){
                     if(password_obj2.val() != password_obj1.val()){
                         password_obj2.next().html('错误的验证密码').css('color', '#FFCC33');

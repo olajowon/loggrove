@@ -18,6 +18,8 @@ function write_new_row(id){
                                     "onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-warning perm' " +
                                     "onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+                                "<button class='btn btn-xs btn-info' " +
+                                    "onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-primary' " +
                                     "onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>",
                     ]).draw().nodes().to$().attr('id', 'tr'+data[i]["id"])

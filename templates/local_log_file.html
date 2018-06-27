@@ -4,33 +4,40 @@
 {% end %}
 {% block head_js %}
 <script src="{{ static_url('js/local_log_file.js') }}"></script>
+<script src="{{ static_url('js/local_log_chart.js') }}"></script>
+
 <script>
-        $.ajax({
-            url:"/local_log/file/",
-            type:"GET",
-            data:'',
-            success:function (result) {
-                $("#local_log_file_table tbody").empty()
-                var response_data = jQuery.parseJSON(result)
-                var data = response_data['data']
-                for(var i=0; i<data.length; i++){
-                    var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
-                            "<td>" + data[i]["path"] +  "</td>" +
-                            "<td>" + data[i]["comment"] +  "</td>" +
-                            "<td>" + data[i]["create_time"] +  "</td>" +
-                            "<td>" +
-                                "<button class='btn btn-xs btn-danger role2' " +
-                                    "onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-warning role2' " +
-                                    "onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-primary' " +
-                                    "onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>" +
-                            "</td></tr>"
-                    $("#local_log_file_table tbody").append(tr_html)
-                }
-            },
-            error:function (result) {}
-        })
+	chartobj = null
+    interval = null
+
+	$.ajax({
+		url:"/local_log/file/",
+		type:"GET",
+		data:'',
+		success:function (result) {
+			$("#local_log_file_table tbody").empty()
+			var response_data = jQuery.parseJSON(result)
+			var data = response_data['data']
+			for(var i=0; i<data.length; i++){
+				var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
+						"<td>" + data[i]["path"] +  "</td>" +
+						"<td>" + data[i]["comment"] +  "</td>" +
+						"<td>" + data[i]["create_time"] +  "</td>" +
+						"<td>" +
+							"<button class='btn btn-xs btn-danger role2' " +
+								"onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
+							"<button class='btn btn-xs btn-warning role2' " +
+								"onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+							"<button class='btn btn-xs btn-info' " +
+								"onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
+							"<button class='btn btn-xs btn-primary' " +
+								"onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>" +
+						"</td></tr>"
+				$("#local_log_file_table tbody").append(tr_html)
+			}
+		},
+		error:function (result) {}
+	})
 </script>
 {% end %}
 {% block breadcrumb %}
@@ -155,7 +162,7 @@
 </div>
 
 <!-- 监控项模态框（Update Modal） -->
-<div class="modal fade" id="monitorItemModal" tabindex="-1" role="dialog" aria-labelledby="onitorItemModalLabel" aria-hidden="true">
+<div class="modal fade" id="monitorItemModal" tabindex="-1" role="dialog" aria-labelledby="monitorItemModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -167,6 +174,30 @@
 				</h4>
 			</div>
 			<div class="modal-body">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- 图表模态框（chart Modal） -->
+<div class="modal fade" id="chartModal" tabindex="-1" role="dialog" aria-labelledby="chartModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="hchartLabel">
+					<i class="fa fa-line-chart fa-fw" style=""></i> 图表
+				</h4>
+			</div>
+			<div class="modal-body" id="chartBody">
+				<div id="log_chart">
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
@@ -203,6 +234,8 @@
             }
 
         });
+
+        Highcharts.setOptions({ global: { useUTC: false } })
     })
 
 </script>

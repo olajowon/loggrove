@@ -2,15 +2,14 @@
 
 import os
 
-PROJECT_DIRS = os.path.dirname(__file__)
+PROJECT_DIRS = os.path.dirname(os.path.abspath(__file__))
 
-STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
+STATIC_PATH = os.path.join(PROJECT_DIRS, 'static')
 
-TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'templates')
+TEMPLATE_PATH = os.path.join(PROJECT_DIRS, 'templates')
 
 LOGIN_URL = '/login/html/'
 
-UI_MODULES = {}
 
 MYSQL_DB = {
     'host': 'localhost',
