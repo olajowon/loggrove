@@ -4,10 +4,11 @@ import pymysql
 import threading
 import time
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import re
 import traceback
 from settings import MYSQL_DB
-
 
 def query_files(cursor):
     select_sql = 'SELECT id,path FROM local_log_file'
