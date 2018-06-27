@@ -60,11 +60,12 @@ CREATE TABLE IF NOT EXISTS `auditlog`(
    PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- CREATE TABLE IF NOT EXISTS `local_log_count`(
---    `id` INT UNSIGNED AUTO_INCREMENT,
---    `local_log_file_id`
---    `monitor_item_id` INT NOT NULL,
---    `count` INT NOT NULL,
---    `monitor_time` DATETIME,
---    PRIMARY KEY ( `id` )
--- )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `local_log_monitor_count`(
+   `id` INT UNSIGNED AUTO_INCREMENT,
+   `local_log_file_id` INT NOT NULL,
+   `monitor_item_id` INT NOT NULL,
+   `count` INT NOT NULL,
+   `count_time` DATETIME,
+   PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;

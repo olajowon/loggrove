@@ -5,12 +5,14 @@
 [![Tornado](https://img.shields.io/badge/tornado-5.0.2-brightgreen.svg)](http://www.tornadoweb.org/)
 
 ## Introduction
-Loggrove 是对**日志文件**进行 阅读、轮询、关键词匹配 的 Web服务。
+Loggrove 是对**日志文件**进行 阅读、轮询、关键词匹配、监控告警、图表展示 的 Web 服务。
 
 ### 超轻组件
-Python 3.6 + MySQL 5.7
+Python 3.6 
 
-Tornado 5.0.1
+Tornado 5.0.2
+
+MySQL 5.7
 
 JQuery 3.1.0
 
@@ -19,7 +21,7 @@ Bootstrap 3.3
 Sb-admin 2.0
 
 ### Web UI 界面
-简洁大方的 Web UI 界面，进行 日志目录、日志文件、日志阅读、日志轮询、日志关键词匹配、用户、审计 等统一管理，提供一系列简单、准确、美观的日志管理、查看、过滤 等服务。
+简洁大方的 Web UI 界面，进行 日志目录、日志文件、日志图表、日志阅读、日志轮询、日志关键词匹配、用户、审计 等统一管理，提供一系列简单、准确、美观的日志管理、查看、过滤 等服务。
 
 
 ## Requirements
@@ -41,8 +43,7 @@ Sb-admin 2.0
 	    'port': <port>,
 	    'user': '<user>',
 	    'passwd': '<passwd>',
-	    'db': 'loggrove',
-	    'charset': 'utf8'
+	    ...
 	}
 
 ### 构建 build.py
