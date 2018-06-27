@@ -57,7 +57,7 @@ def loggrove_admin():
             exit()
         NEW_SUPERADMIN = True
     else:
-        print('Existence of Superadmin, Skip.')
+        print('Existence of Superadmin, Skip.\n')
     print('Step5: End.\n')
 
 
@@ -68,15 +68,14 @@ def monitor_cron():
     print('-->', command)
     status = os.system(command)
     if status == 0:
-        print('Existence of Monitoring Task On Crontab, Skip.')
-    elif status == 1:
+        print('Existence of Monitoring Task On Crontab, Skip.\n')
+    else:
         command = 'echo -e "\\n* * * * * `which python3` %s >> /dev/null # loggrove_monitor\\n" >> /var/spool/cron/`whoami`' % (monitor_path)
         print('-->', command)
         status = os.system(command)
         if status != 0:
             exit()
-    else:
-        exit()
+
     print('Step4: End.\n')
 
 
