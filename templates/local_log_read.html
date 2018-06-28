@@ -26,6 +26,8 @@
             for(var i=0; i<data.length; i++){
                 select_obj.append("<option rowid='"+data[i]["id"]+"' value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
             }
+            $("#local_log_dir_tabpane select[name='path']").selectpicker('refresh');
+            $("#local_log_dir_tabpane select[name='path']").selectpicker('render');
         },
         error:function (result) {}
     })
@@ -43,6 +45,8 @@
                 select_obj.append("<option value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
                 local_log_dir_map[data[i]["path"]] = data[i]["nodes"]
             }
+            $("#local_log_dir_tabpane select[name='dir']").selectpicker('refresh');
+            $("#local_log_dir_tabpane select[name='dir']").selectpicker('render');
         },
         error:function (result) {}
     })

@@ -9,9 +9,9 @@ function write_new_panels(data){
                 '<div class="panel-heading">' +
                     '<i class="fa fa-folder fa-fw" style="cursor:pointer" data-toggle="collapse" data-parent="#panelgroup" href="#panelcollapse'+ data[i]["id"] +'"></i> <a style="color: black" data-toggle="collapse" data-parent="#panelgroup" href="#panelcollapse'+ data[i]["id"] +'">' + data[i]["path"] + '</a>'+
                     '<div class="pull-right">' +
-                        '<button class="btn btn-xs btn-warning perm"'  +
+                        '<button class="btn btn-xs btn-warning role2"'  +
                         'onclick="delete_dir(' + data[i]["id"] + ')">删除</button> ' +
-                        '<button class="btn btn-xs btn-primary perm"'  +
+                        '<button class="btn btn-xs btn-primary role2"'  +
                         'onclick="open_update_dir_modal(' + data[i]["id"] + ')">编辑</button>' +
 
                     '</div>' +

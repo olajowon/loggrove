@@ -20,19 +20,19 @@
 			var data = response_data['data']
 			for(var i=0; i<data.length; i++){
 				var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
-						"<td>" + data[i]["path"] +  "</td>" +
-						"<td>" + data[i]["comment"] +  "</td>" +
-						"<td>" + data[i]["create_time"] +  "</td>" +
-						"<td>" +
-							"<button class='btn btn-xs btn-danger role2' " +
-								"onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-							"<button class='btn btn-xs btn-warning role2' " +
-								"onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-							"<button class='btn btn-xs btn-info' " +
-								"onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
-							"<button class='btn btn-xs btn-primary' " +
-								"onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>" +
-						"</td></tr>"
+					"<td>" + data[i]["path"] +  "</td>" +
+					"<td>" + data[i]["comment"] +  "</td>" +
+					"<td>" + data[i]["create_time"] +  "</td>" +
+					"<td>" +
+						"<button class='btn btn-xs btn-danger role2' " +
+							"onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
+						"<button class='btn btn-xs btn-warning role2' " +
+							"onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+						"<button class='btn btn-xs btn-info' " +
+							"onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
+						"<button class='btn btn-xs btn-primary'" +
+							"onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>" +
+					"</td></tr>"
 				$("#local_log_file_table tbody").append(tr_html)
 			}
 		},
@@ -95,7 +95,7 @@
                             {% raw xsrf_form_html() %}
                             <div class="form-group">
                                 <label>文件路径 *</label>
-                                <input class="form-control" name="path" placeholder="Path>">
+                                <input class="form-control" name="path" placeholder="Path">
                                 <span class="error_text"></span>
                             </div>
                             <div class="form-group">
@@ -197,7 +197,7 @@
 				</h4>
 			</div>
 			<div class="modal-body" id="chartBody">
-				<div id="log_chart">
+				<div id="log_chart"></div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">关闭

@@ -30,6 +30,8 @@
                 select_obj.append("<option rowid='"+ data[i]["id"] +
                     "' value='"+ data[i]["id"] +"'>"+ data[i]["path"] +"</option>")
             }
+            $("#local_log_chart_form select[name='local_log_file_id']").selectpicker('refresh');
+            $("#local_log_chart_form select[name='local_log_file_id']").selectpicker('render');
         },
         error:function (result) {}
     })

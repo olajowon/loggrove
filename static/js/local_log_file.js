@@ -366,8 +366,8 @@ function new_monitor_item_form(local_log_file_id){
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +
-                            '<button type="button" class="btn btn-primary btn-sm perm" style="float: right; margin-left: 15px" onclick="save_monitor_item(this)">保存</button>' +
-                            '<button type="button" class="btn btn-danger btn-sm perm" style="float: right" onclick="del_monitor_item(this)">删除</button> ' +
+                            '<button type="button" class="btn btn-primary btn-sm role2" style="float: right; margin-left: 15px" onclick="save_monitor_item(this)">保存</button>' +
+                            '<button type="button" class="btn btn-danger btn-sm role2" style="float: right" onclick="del_monitor_item(this)">删除</button> ' +
                         '</form>' +
                     '</div>' +
                 '</div>' +

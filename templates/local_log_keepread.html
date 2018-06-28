@@ -26,6 +26,8 @@
                 select_obj.append("<option rowid='"+ data[i]["id"] +
                     "' value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
             }
+            $("#keepread_local_log_form select[name='path']").selectpicker('refresh');
+            $("#keepread_local_log_form select[name='path']").selectpicker('render');
         },
         error:function (result) {}
     })
@@ -295,9 +297,7 @@
                         $("#keepread_local_log_form select[name='search_pattern']").selectpicker('refresh');
                         $("#keepread_local_log_form select[name='search_pattern']").selectpicker('render');
                     },
-                    error:function (result) {
-
-                    }
+                    error:function (result) {}
                 })
             }
         })

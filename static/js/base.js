@@ -116,23 +116,5 @@ function change_password(){
 
 
 function open_show_profile_modal(){
-    $.ajax({
-        url:"/profile/",
-        type:"GET",
-        data:'',
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var cite_objs = $("#profileModal").find("cite")
-            cite_objs.eq(0).text(response_data["data"][0]["username"])
-            cite_objs.eq(1).text(response_data["data"][0]["id"])
-            cite_objs.eq(2).text(response_data["data"][0]["fullname"])
-            cite_objs.eq(3).text(response_data["data"][0]["email"])
-            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ? "超级管理员" : (response_data["data"][0]=="2" ? "管理员" : "普通用户")))
-            cite_objs.eq(5).text(response_data["data"][0]["join_time"])
-            cite_objs.eq(6).text(response_data["data"][0]["login_time"])
-            cite_objs.eq(7).text(response_data["data"][0]["expire_time"])
-            $("#profileModal").modal("show")
-        },
-        error:function (result) {}
-    })
+    $("#profileModal").modal("show")
 }
