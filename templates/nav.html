@@ -41,14 +41,16 @@
                         <li>
                             <a href="/local_log/keepread/html/"><i class="fa fa-heartbeat fa-fw"></i> 日志轮询</span></a>
                         </li>
+                        {% if requser.get('role') == 1 %}
                         <!-- 用户-->
-                        <li class="role1" style="display: none">
+                        <li class="role1">
                             <a href="/user/html/" class="role1"><i class="fa fa-users fa-fw"></i> 用户</span></a>
                         </li>
                         <!-- 审计-->
-                        <li class="role1" style="display: none">
+                        <li class="role1">
                             <a href="/auditlog/html/" class="role1"><i class="fa fa-calendar-check-o fa-fw"></i> 审计</span></a>
                         </li>
+                        {% end %}
                         <!--
                         <li>
                             <a href="#"><i class="fa fa-sitemap fa-fw"></i> Multi-Level Dropdown<span class="fa arrow"></span></a>

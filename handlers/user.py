@@ -183,7 +183,7 @@ class User():
 
 
 class Handler(BaseRequestHandler, User):
-    @permission()
+    @permission(role=1)
     def get(self, pk=0):
         ''' Query '''
         response_data = self._query(int(pk))

@@ -43,10 +43,20 @@
 
     <style>
         .error_text {color: #FFCC00}
-        .role2 {display: none}
-        .role1 {display: none}
         #profileModal small {margin-bottom: 5px}
         #profileModal span {font-size: 14px}
+
+        {% if requser.get('role') == 1 %}
+        .role1 {display: inline}
+        .role2 {display: inline}
+        {% elif requser.get('role') == 2 %}
+        .role1 {display: none}
+        .role2 {display: inline}
+        {% else %}
+        .role1 {display: none}
+        .role2 {display: none}
+        {% end %}
+
     </style>
     {% block style %}
     {% end %}
@@ -62,43 +72,11 @@
     <script src="{{ static_url('sb-admin-2/vendor/jquery/jquery.min.js') }}"></script>
 
     <script src="{{ static_url('js/base.js') }}"></script>
-
-    <script>
-        $.ajax({
-        url:"/profile/",
-        type:"GET",
-        data:'',
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var cite_objs = $("#profileModal").find("cite")
-
-            if(response_data["data"][0]["role"]=="1"){
-                $(".role1").show()
-                $(".role2").show()
-            }else if(response_data["data"][0]["role"]=="2"){
-                $(".role2").show()
-            }
-
-            cite_objs.eq(0).text(response_data["data"][0]["username"])
-            cite_objs.eq(1).text(response_data["data"][0]["id"])
-            cite_objs.eq(2).text(response_data["data"][0]["fullname"])
-            cite_objs.eq(3).text(response_data["data"][0]["email"])
-            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ? "超级管理员" : (response_data["data"][0]=="2" ? "管理员" : "普通用户")))
-            cite_objs.eq(5).text(response_data["data"][0]["join_time"])
-            cite_objs.eq(6).text(response_data["data"][0]["login_time"])
-            cite_objs.eq(7).text(response_data["data"][0]["expire_time"])
-
-        },
-        error:function (result) {}
-    })
-    </script>
-
     {% block head_js %}
     {% end %}
 </head>
 
 <body>
-
     <div id="wrapper">
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; border-bottom:1px solid #ddd ; background-color:#303030">
             <div class="navbar-header">
@@ -113,7 +91,6 @@
                     <img src="/static/img/logo.png" style="width:35px; float: left; margin-right: 12px; border: 1px solid #E8E8E8; border-radius:5px;" alt=""/>
                     <span style="font-weight:300;letter-spacing:2px; font-size: 23px; float: left; margin-top: 8px; color: #FFFFFF">Loggrove</span>
                 </a>
-
             </div>
 
             <ul class="nav navbar-top-links navbar-right">
