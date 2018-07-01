@@ -17,15 +17,17 @@ class Handler(BaseRequestHandler):
             error['password'] = '密码是必填项'
 
         if username and password:
-            select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s"' % username
+            select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s" and password="%s"' % \
+                         (username, hashlib.md5(password.encode('UTF-8')).hexdigest())
             count = self.mysqldb_cursor.execute(select_sql)
             user = self.mysqldb_cursor.fetchone()
+
             if not user:
-                error['username'] = '用户名不存在'
+                error['username'] = '用户名或密码错误'
+                error['password'] = '用户名或密码错误'
             elif user.get('status') != 1:
-                error['username'] = '用户名已禁用'
-            elif hashlib.md5(password.encode('UTF-8')).hexdigest() != user.get('password'):
-                error['password'] = '密码不正确'
+                error['username'] = '用户已禁用'
+
         if error:
             response_data = {'code':400, 'msg':'Bad POST data', 'error':error}
         else:
