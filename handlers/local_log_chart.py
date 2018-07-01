@@ -19,7 +19,7 @@ def get_valid(func):
                 self.end_time = now.strftime('%Y-%m-%d %H:%M')
                 self.begin_time = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M')
         elif self.mode == 'contrast':
-            self.dates = [date for date in self.get_arguments('total') if date] or [now.strftime('%Y-%m-%d')]
+            self.dates = [date for date in self.get_arguments('date') if date] or [now.strftime('%Y-%m-%d')]
 
         if not self.local_log_file_id:
             error['local_log_file_id'] = '日志文件是必填项'
