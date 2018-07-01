@@ -210,33 +210,31 @@
 {% end %}
 {% block body_js %}
 <script>
+$(function(){
+	local_log_file_datatable = $('#local_log_file_table').DataTable({
+		aaSorting : [[2, "desc"]],
+		language:{
+			"emptyTable":     "表中没有可用数据",
+			"info": "当前 _START_ - _END_ 条，共 _TOTAL_ 条",
+			"infoFiltered":   "",
+			"infoPostFix":    "",
+			"thousands":      ",",
+			"infoEmpty": "_TOTAL_ 条",
+			"lengthMenu":     "每页 _MENU_ 条",
+			"loadingRecords": "加载中...",
+			"processing":     "处理中...",
+			"search": "搜索:",
+			"paginate": {
+				"first":      "首页",
+				"last":       "尾页",
+				"next":       "下一页",
+				"previous":   "上一页"
+			},
+		}
 
-    $(function(){
-        local_log_file_datatable = $('#local_log_file_table').DataTable({
-            aaSorting : [[2, "desc"]],
-            language:{
-                "emptyTable":     "表中没有可用数据",
-                "info": "当前 _START_ - _END_ 条，共 _TOTAL_ 条",
-                "infoFiltered":   "",
-                "infoPostFix":    "",
-                "thousands":      ",",
-                "infoEmpty": "_TOTAL_ 条",
-                "lengthMenu":     "每页 _MENU_ 条",
-                "loadingRecords": "加载中...",
-                "processing":     "处理中...",
-                "search": "搜索:",
-                "paginate": {
-                    "first":      "首页",
-                    "last":       "尾页",
-                    "next":       "下一页",
-                    "previous":   "上一页"
-                },
-            }
+	});
 
-        });
-
-        Highcharts.setOptions({ global: { useUTC: false } })
-    })
-
+	Highcharts.setOptions({ global: { useUTC: false } })
+})
 </script>
 {% end %}
