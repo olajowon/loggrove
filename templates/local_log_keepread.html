@@ -197,7 +197,7 @@
 
         if(filter_search_line){
             host = "ws://" + location.hostname + ":" + location.port +
-            "/local_log/keepread/?path="+ path +"&search_pattern="+ search_pattern
+                "/local_log/keepread/?path="+ path +"&search_pattern="+ search_pattern
         }else{
             host = "ws://" + location.hostname + ":" + location.port + "/local_log/keepread/?path="+ path
         }
@@ -236,8 +236,8 @@
                 }
 
                 settimeout = setTimeout(function(){
-                                    websocket.send('')
-                                }, 5000);
+                    websocket.send('')
+                }, 5000);
             }else{
                 if(result['type']=="on_open"){
                     if(result['code']==400){

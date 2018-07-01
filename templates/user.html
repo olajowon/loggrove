@@ -9,35 +9,35 @@
 {% block head_js %}
 <script src="{{ static_url('js/user.js') }}"></script>
 <script>
-        $.ajax({
-            url:"/user/",
-            type:"GET",
-            data:'',
-            success:function (result) {
-                $("#user_table tbody").empty()
-                var response_data = jQuery.parseJSON(result)
-                var data = response_data['data']
-                for(var i=0; i<data.length; i++){
-                    var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
-                            "<td>" + data[i]["username"] +  "</td>" +
-                            "<td>" + data[i]["fullname"] +  "</td>" +
-                            "<td>" + data[i]["email"] +  "</td>" +
-                            "<td>" + data[i]["join_time"] +  "</td>" +
-                            "<td>" + (data[i]["status"]=="1"?"活动":"禁用") +  "</td>" +
-                            "<td>" + (data[i]["role"]=="1" ? "超级管理员" : (data[i]["role"]=="2" ? "管理员" : "普通用户")) +  "</td>" +
-                            "<td >" +
-                                "<button class='btn btn-xs btn-danger role1' " +
-                                    "onclick='delete_user(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-warning role1' " +
-                                    "onclick='open_update_user_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-primary role1' " +
-                                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>重置密码</button>&nbsp;" +
-                            "</td></tr>"
-                    $("#user_table tbody").append(tr_html)
-                }
-            },
-            error:function (result) {}
-        })
+    $.ajax({
+        url:"/user/",
+        type:"GET",
+        data:'',
+        success:function (result) {
+            $("#user_table tbody").empty()
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            for(var i=0; i<data.length; i++){
+                var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
+                    "<td>" + data[i]["username"] +  "</td>" +
+                    "<td>" + data[i]["fullname"] +  "</td>" +
+                    "<td>" + data[i]["email"] +  "</td>" +
+                    "<td>" + data[i]["join_time"] +  "</td>" +
+                    "<td>" + (data[i]["status"]=="1"?"活动":"禁用") +  "</td>" +
+                    "<td>" + (data[i]["role"]=="1" ? "超级管理员" : (data[i]["role"]=="2" ? "管理员" : "普通用户")) +  "</td>" +
+                    "<td >" +
+                    "<button class='btn btn-xs btn-danger role1' " +
+                    "onclick='delete_user(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
+                    "<button class='btn btn-xs btn-warning role1' " +
+                    "onclick='open_update_user_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+                    "<button class='btn btn-xs btn-primary role1' " +
+                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>重置密码</button>&nbsp;" +
+                    "</td></tr>"
+                $("#user_table tbody").append(tr_html)
+            }
+        },
+        error:function (result) {}
+    })
 </script>
 {% end %}
 {% block breadcrumb %}
@@ -58,15 +58,15 @@
                 <div class="table-responsive" style="border: 0">
                     <table width="100%" class="table table-striped table-bordered table-hover" id="user_table">
                         <thead>
-                            <tr>
-                                <th>用户名</th>
-                                <th>姓名</th>
-                                <th>邮箱</th>
-                                <th>加入时间</th>
-                                <th>状态</th>
-                                <th>角色</th>
-                                <th class="role1">选项</th>
-                            </tr>
+                        <tr>
+                            <th>用户名</th>
+                            <th>姓名</th>
+                            <th>邮箱</th>
+                            <th>加入时间</th>
+                            <th>状态</th>
+                            <th>角色</th>
+                            <th class="role1">选项</th>
+                        </tr>
                         </thead>
                         <tbody>
                         </tbody>
@@ -80,17 +80,17 @@
 
 <!-- 添加用户模态框（Add Modal） -->
 <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="addModalLabel">
-					<i class="fa fa-plus fa-fw" style=""></i> 添加用户
-				</h4>
-			</div>
-			<div class="modal-body">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="addModalLabel">
+                    <i class="fa fa-plus fa-fw" style=""></i> 添加用户
+                </h4>
+            </div>
+            <div class="modal-body">
                 <div class="row">
                     <div class="col-sm-12 col-lg-12">
                         <div></div>
@@ -155,31 +155,31 @@
                         </form>
                     </div>
                 </div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
-				</button>
-				<button type="button" class="btn btn-primary" onclick="add_user()">
-					提交
-				</button>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" onclick="add_user()">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- 更新用户模态框（Update Modal） -->
 <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="updateLabel">
-					<i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑用户
-				</h4>
-			</div>
-			<div class="modal-body">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="updateLabel">
+                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑用户
+                </h4>
+            </div>
+            <div class="modal-body">
                 <div class="row">
                     <div class="col-sm-12 col-lg-12">
                         <div></div>
@@ -230,32 +230,32 @@
                         </form>
                     </div>
                 </div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
-				</button>
-				<button type="button" class="btn btn-primary" onclick="update_user()">
-					提交
-				</button>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" onclick="update_user()">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 
 <!-- 重置密码模态框（Reset password Modal） -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="resetPasswordLabel">
-					<i class="fa fa-pencil-square-o fa-fw" style=""></i> 重置密码
-				</h4>
-			</div>
-			<div class="modal-body">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="resetPasswordLabel">
+                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> 重置密码
+                </h4>
+            </div>
+            <div class="modal-body">
                 <div class="row">
                     <div class="col-sm-12 col-lg-12">
                         <div></div>
@@ -278,16 +278,16 @@
                         </form>
                     </div>
                 </div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
-				</button>
-				<button type="button" class="btn btn-primary" onclick="reset_password()">
-					提交
-				</button>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" onclick="reset_password()">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% end %}

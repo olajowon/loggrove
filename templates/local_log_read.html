@@ -63,7 +63,7 @@
             for(var i=0; i<data.length; i++){
                 if($.inArray(data[i]["search_pattern"], monitor_item_arr) < 0){
                     select_obj.append("<option value='"+
-                            data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>");
+                        data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>");
                     monitor_item_arr.push(data[i]["search_pattern"])
                 }
             }
@@ -254,46 +254,46 @@
 {% end %}
 {% block body_js %}
 <script>
-$(function(){
-    $("#local_log_dir_tabpane select[name='dir']").change(function(){
-        var dir_path = $(this).val()
-        if(!dir_path){
-            $("#local_log_dir_tabpane select[name='path']").html('<option value=""> ---- </option>')
-        }else{
-            var paths = log_path(".", local_log_dir_map[dir_path])
-            var select_options = '<option value=""> ---- </option>'
-            for(var i=0;i<paths.length;i++){
-                var option_value = (dir_path.substr(dir_path.length-1,1)=="/" ? dir_path + paths[i] : dir_path + "/" +paths[i])
-                select_options += '<option value="'+ option_value +'"> '+ paths[i] +' </option>'
+    $(function(){
+        $("#local_log_dir_tabpane select[name='dir']").change(function(){
+            var dir_path = $(this).val()
+            if(!dir_path){
+                $("#local_log_dir_tabpane select[name='path']").html('<option value=""> ---- </option>')
+            }else{
+                var paths = log_path(".", local_log_dir_map[dir_path])
+                var select_options = '<option value=""> ---- </option>'
+                for(var i=0;i<paths.length;i++){
+                    var option_value = (dir_path.substr(dir_path.length-1,1)=="/" ? dir_path + paths[i] : dir_path + "/" +paths[i])
+                    select_options += '<option value="'+ option_value +'"> '+ paths[i] +' </option>'
+                }
+                $("#local_log_dir_tabpane select[name='path']").html(select_options);
             }
-            $("#local_log_dir_tabpane select[name='path']").html(select_options);
-        }
-        $("#local_log_dir_tabpane select[name='path']").selectpicker('refresh');
-        $("#local_log_dir_tabpane select[name='path']").selectpicker('render');
-    })
+            $("#local_log_dir_tabpane select[name='path']").selectpicker('refresh');
+            $("#local_log_dir_tabpane select[name='path']").selectpicker('render');
+        })
 
-    $("#local_log_file_tabpane select[name='path']").change(function(){
-        var id = $(this).find("option:selected").attr("rowid")
-        $("#local_log_file_tabpane select[name='search_pattern']").html("<option value=''> ---- </option>")
-        if(id){
-            $.ajax({
-                url:"/local_log/monitor/item/",
-                type:"GET",
-                data:{"local_log_file_id":id},
-                success:function (result) {
-                    var response_data = jQuery.parseJSON(result)
-                    var data = response_data['data']
-                    for(var i=0; i<data.length; i++){
-                        $("#local_log_file_tabpane select[name='search_pattern']").append("<option value='"+
-                            data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>")
-                    }
-                    $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('refresh');
-                    $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('render');
-                },
-                error:function (result) {}
-            })
-        }
+        $("#local_log_file_tabpane select[name='path']").change(function(){
+            var id = $(this).find("option:selected").attr("rowid")
+            $("#local_log_file_tabpane select[name='search_pattern']").html("<option value=''> ---- </option>")
+            if(id){
+                $.ajax({
+                    url:"/local_log/monitor/item/",
+                    type:"GET",
+                    data:{"local_log_file_id":id},
+                    success:function (result) {
+                        var response_data = jQuery.parseJSON(result)
+                        var data = response_data['data']
+                        for(var i=0; i<data.length; i++){
+                            $("#local_log_file_tabpane select[name='search_pattern']").append("<option value='"+
+                                data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>")
+                        }
+                        $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('refresh');
+                        $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('render');
+                    },
+                    error:function (result) {}
+                })
+            }
+        })
     })
-})
 </script>
 {% end %}

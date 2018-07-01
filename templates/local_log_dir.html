@@ -6,23 +6,23 @@
 <script src="{{ static_url('js/local_log_dir.js') }}"></script>
 
 <script>
-    function get_node_path(treeview_obj, id){
+    function get_node_path(treeview_obj, id) {
         var paths = []
         var node = treeview_obj.treeview('getNode', id)
         paths.push(node.text)
-        if(node.parentId){
+        if (node.parentId) {
             paths = paths.concat(get_node_path(treeview_obj, node.parentId))
         }
         return paths
     }
 
     treeview_map = {}
-    $(function(){
+    $(function () {
         $.ajax({
-            url:"/local_log/dir/",
-            type:"GET",
-            data:'',
-            success:function (result) {
+            url: "/local_log/dir/",
+            type: "GET",
+            data: '',
+            success: function (result) {
                 $("#local_log_file_table tbody").empty()
                 var response_data = jQuery.parseJSON(result)
                 var data = response_data["data"]
@@ -33,24 +33,29 @@
                 //console.log(treeview_map['treeview'+8].treeview('getNode', 1))
                 //console.log(get_node_path(treeview_map['treeview'+8], 16).reverse())
             },
-            error:function (result) {}
+            error: function (result) {
+            }
         })
     })
 
 
-    function expand_treeview(id){
-        var treeview_obj = treeview_map['treeview'+id]
-        treeview_obj.treeview('expandAll', { levels: 99, silent: $('#chk-expand-silent').is(':checked') })
+    function expand_treeview(id) {
+        var treeview_obj = treeview_map['treeview' + id]
+        treeview_obj.treeview('expandAll', {levels: 99, silent: $('#chk-expand-silent').is(':checked')})
     }
 
-    function collapse_treeview(id){
-        var treeview_obj = treeview_map['treeview'+id]
-        treeview_obj.treeview('collapseAll', { levels: 99, silent: $('#chk-expand-silent').is(':checked') })
+    function collapse_treeview(id) {
+        var treeview_obj = treeview_map['treeview' + id]
+        treeview_obj.treeview('collapseAll', {levels: 99, silent: $('#chk-expand-silent').is(':checked')})
     }
 
-    function search_treeview_node(id, search_val){
-        var treeview_obj = treeview_map['treeview'+id]
-        var expandible_nodes = treeview_obj.treeview('search', [ search_val, { levels: 2, ignoreCase: false, exactMatch: false } ]);
+    function search_treeview_node(id, search_val) {
+        var treeview_obj = treeview_map['treeview' + id]
+        var expandible_nodes = treeview_obj.treeview('search', [search_val, {
+            levels: 2,
+            ignoreCase: false,
+            exactMatch: false
+        }]);
         $('.expand-node').prop('disabled', !(expandible_nodes.length >= 1));
     }
 </script>
@@ -65,7 +70,9 @@
             <div class="panel-heading">
                 <i class="fa fa-folder-open fa-fw"></i> 日志目录
                 <div class="pull-right">
-                    <button class="btn btn-xs btn-success role2" data-toggle="modal" data-target="#addModal"> <i class="fa fa-plus fa-fw" style=""></i> 添加 </button>
+                    <button class="btn btn-xs btn-success role2" data-toggle="modal" data-target="#addModal"><i
+                            class="fa fa-plus fa-fw" style=""></i> 添加
+                    </button>
                 </div>
             </div>
             <div class="panel-body">
@@ -77,17 +84,17 @@
 
 <!-- 添加本地日志目录模态框（Add Modal） -->
 <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="addModalLabel">
-					<i class="fa fa-plus fa-fw" style=""></i> 添加目录
-				</h4>
-			</div>
-			<div class="modal-body">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="addModalLabel">
+                    <i class="fa fa-plus fa-fw" style=""></i> 添加目录
+                </h4>
+            </div>
+            <div class="modal-body">
                 <div class="row">
                     <div class="col-sm-12 col-lg-12">
                         <div></div>
@@ -106,31 +113,32 @@
                         </form>
                     </div>
                 </div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
-				</button>
-				<button type="button" class="btn btn-primary" onclick="add_dir()">
-					提交
-				</button>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" onclick="add_dir()">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- 更新本地日志目录模态框（Update Modal） -->
-<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-					&times;
-				</button>
-				<h4 class="modal-title" id="updateLabel">
-					<i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑目录
-				</h4>
-			</div>
-			<div class="modal-body">
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="updateLabel">
+                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑目录
+                </h4>
+            </div>
+            <div class="modal-body">
                 <div class="row">
                     <div class="col-sm-12 col-lg-12">
                         <div id="update_local_log_dir_alert"></div>
@@ -149,16 +157,16 @@
                         </form>
                     </div>
                 </div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
-				</button>
-				<button type="button" class="btn btn-primary" onclick="update_dir()">
-					提交
-				</button>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" onclick="update_dir()">
+                    提交
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% end %}

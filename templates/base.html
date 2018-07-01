@@ -300,7 +300,7 @@
 
     <script>
         $(function(){
-            $("form input[type='password']").keyup(function(){
+            $("form input[type='password']").blur(function(){
                 var form_obj = $(this).parents("form")
                 if (form_obj.attr("id") == "change_password_form"){
                     var password_obj1 = form_obj.find("input[type='password']").eq(1)
