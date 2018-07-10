@@ -1,7 +1,6 @@
 # Created by zhouwang on 2018/5/31.
 
 from .base import BaseRequestHandler, permission
-from crontab import CronTab, CronSlices
 import datetime
 import re
 
@@ -11,7 +10,6 @@ def check_argements(handler, pk=None):
     search_pattern = handler.get_argument('search_pattern', '')
     comment = handler.get_argument('comment', '')
     alert = handler.get_argument('alert', '2')
-    crontab_cycle = handler.get_argument('crontab_cycle', '')
     check_interval = handler.get_argument('check_interval', '0')
     trigger_format = handler.get_argument('trigger_format', '')
     dingding_webhook = handler.get_argument('dingding_webhook', '')
@@ -38,11 +36,6 @@ def check_argements(handler, pk=None):
     if alert != '1' and alert != '2':
         error['alert'] = '告警选择不正确'
     elif alert == '1':
-        if not crontab_cycle:
-            error['crontab_cycle'] = '检查周期是必填项'
-        elif not CronSlices.is_valid(crontab_cycle):
-            error['crontab_cycle'] = '格式不正确'
-
         if not check_interval:
             error['check_interval'] = '检查间隔是必填项'
         elif not check_interval.isnumeric():
@@ -59,7 +52,6 @@ def check_argements(handler, pk=None):
         'search_pattern':search_pattern,
         'comment':comment,
         'alert':alert or '2',
-        'crontab_cycle':crontab_cycle,
         'check_interval':check_interval or '0',
         'trigger_format':trigger_format,
         'dingding_webhook':dingding_webhook
@@ -124,7 +116,6 @@ class LocalLogMonitorItem():
                 local_log_file_id, 
                 search_pattern, 
                 alert, 
-                crontab_cycle,
                 check_interval, 
                 trigger_format, 
                 dingding_webhook, 
@@ -134,7 +125,6 @@ class LocalLogMonitorItem():
         ''' % (self.reqdata['local_log_file_id'],
                self.reqdata['search_pattern'],
                self.reqdata['alert'],
-               self.reqdata['crontab_cycle'],
                self.reqdata['check_interval'],
                self.reqdata['trigger_format'],
                self.reqdata['dingding_webhook'],
@@ -158,7 +148,6 @@ class LocalLogMonitorItem():
               local_log_file_id="%s",
               search_pattern="%s", 
               alert="%s",
-              crontab_cycle="%s",
               check_interval="%s",
               trigger_format="%s",
               dingding_webhook="%s",
@@ -167,7 +156,6 @@ class LocalLogMonitorItem():
         ''' % (self.reqdata['local_log_file_id'],
                self.reqdata['search_pattern'],
                self.reqdata['alert'],
-               self.reqdata['crontab_cycle'],
                self.reqdata['check_interval'],
                self.reqdata['trigger_format'],
                self.reqdata['dingding_webhook'],
@@ -189,7 +177,6 @@ class LocalLogMonitorItem():
                             local_log_file_id,
                             search_pattern,
                             alert,
-                            crontab_cycle,
                             check_interval,
                             trigger_format,
                             dingding_webhook, 

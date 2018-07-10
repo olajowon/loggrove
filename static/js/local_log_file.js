@@ -335,34 +335,29 @@ function new_monitor_item_form(local_log_file_id){
                                 '</div>' +
                             '</div>' +
                             '<div class="form-group">' +
-                                '<div class="col-sm-2">' +
+                                '<div class="col-sm-3">' +
                                     '<label>告警</label>' +
-                                    '<select class="form-control input-sm" name="alert" disabled="disabled">' +
+                                    '<select class="form-control input-sm" name="alert">' +
                                         '<option value="2">关闭</option>' +
                                         '<option value="1">开启</option>' +
                                     '</select>' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
-                                '<div class="col-sm-4">' +
-                                    '<label>检查周期</label>' +
-                                    '<input class="form-control input-sm" name="crontab_cycle" disabled="disabled" placeholder="Crontab cycle: */10 * * * *">' +
-                                    '<span class="error_text"></span>' +
-                                '</div>' +
-                                '<div class="col-sm-2">' +
+                                '<div class="col-sm-3">' +
                                     '<label>检查区间（分钟）</label>' +
-                                    '<input class="form-control input-sm" type="number" name="check_interval" disabled="disabled" placeholder="Interval: 10">' +
+                                    '<input class="form-control input-sm" type="number" name="check_interval" placeholder="Interval: 10">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
-                                '<div class="col-sm-4">' +
+                                '<div class="col-sm-6">' +
                                     '<label>触发公式</label>' +
-                                    '<input class="form-control input-sm" type="text"  name="trigger_format" disabled="disabled" placeholder="Format: 0<{}<10">' +
+                                    '<input class="form-control input-sm" type="text"  name="trigger_format" placeholder="Format: 0<{}<10">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="form-group">' +
                                 '<div class="col-sm-12">' +
                                     '<label>钉钉webhook</label>' +
-                                    '<input class="form-control input-sm" type="text" name="dingding_webhook" disabled="disabled" placeholder="Dingding webhook url">' +
+                                    '<input class="form-control input-sm" type="text" name="dingding_webhook" placeholder="Dingding webhook url">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +

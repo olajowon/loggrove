@@ -40,7 +40,6 @@ CREATE TABLE IF NOT EXISTS `local_log_monitor_item`(
    `local_log_file_id` INT NOT NULL,
    `search_pattern` VARCHAR(200) NOT NULL,
    `alert` TINYINT NOT NULL,
-   `crontab_cycle` VARCHAR(200),
    `check_interval` INT,
    `trigger_format` VARCHAR(100),
    `dingding_webhook` VARCHAR(500),

@@ -35,9 +35,9 @@ Sb-admin 2.0
 
 **位置：** 必须部署在日志服务器上，Loggrove 暂不支持对远程日志的管理和查看；
 
-**组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx 等服务；
+**组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx、Crond 等服务；
 
-**命令：** 配置 python3、pip3、mysql 命令可用，否则会导致初始化 Loggrove 失败。
+**命令：** python3、pip3、mysql、crontab 命令可用，否则会导致初始化 Loggrove 失败。
 
 
 ## Installation & Configuration

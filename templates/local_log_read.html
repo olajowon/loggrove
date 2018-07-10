@@ -18,7 +18,6 @@
     $.ajax({
         url:"/local_log/file/",
         type:"GET",
-        data:'',
         success:function (result) {
             var response_data = jQuery.parseJSON(result)
             var data = response_data['data']
@@ -36,7 +35,6 @@
     $.ajax({
         url:"/local_log/dir/",
         type:"GET",
-        data:'',
         success:function (result) {
             var response_data = jQuery.parseJSON(result)
             var data = response_data['data']
@@ -55,7 +53,6 @@
     $.ajax({
         url:"/local_log/monitor/item/",
         type:"GET",
-        data:'',
         success:function (result) {
             var response_data = jQuery.parseJSON(result)
             var data = response_data['data']
@@ -67,6 +64,8 @@
                     monitor_item_arr.push(data[i]["search_pattern"])
                 }
             }
+            $("#local_log_dir_tabpane select[name='search_pattern']").selectpicker('refresh');
+            $("#local_log_dir_tabpane select[name='search_pattern']").selectpicker('render');
         },
         error:function (result) {}
     })
@@ -108,7 +107,7 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式 <正则表达式>">
+                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式，输入正确的正则表达式并优先匹配">
                                         <span class="error_text" name="search_pattern_error"></span>
                                     </div>
                                     <div class="form-group">

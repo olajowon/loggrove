@@ -70,7 +70,7 @@ def monitor_cron():
     if status == 0:
         print('Existence of Monitoring Task On Crontab, Skip.\n')
     else:
-        command = 'echo -e "\\n* * * * * `which python3` %s >> /dev/null # loggrove_monitor\\n" >> /var/spool/cron/`whoami`' % (monitor_path)
+        command = 'echo -e "\\n* * * * * `which python3` %s >> /tmp/loggrove_monitor.log # loggrove_monitor\\n" >> /var/spool/cron/`whoami`' % (monitor_path)
         print('-->', command)
         status = os.system(command)
         if status != 0:
