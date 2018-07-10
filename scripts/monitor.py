@@ -113,34 +113,36 @@ class MonitorCount(threading.Thread):
             thread_lock.release()
 
             if results:
+                alert_content = None
                 if results[0]['count_sum'] is None:
-                    content = '# Loggrove 告警\n文件: %s\n匹配: %s\n时间: %s 至 %s\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
+                    alert_content = '# Loggrove 告警\n文件: %s\n匹配: %s\n时间: %s 至 %s\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
                               (self.filepath, alert['search_pattern'], min_str_time,
                                self.str_time, 'None')
 
                 elif eval(alert['trigger_format'].format(results[0].get('count_sum'))):
-                    content = '# Loggrove 告警\n文件: %s\n匹配: %s\n时间: %s 至 %s\n统计: %d 次\n公式: %s\n\n' % \
+                    alert_content = '# Loggrove 告警\n文件: %s\n匹配: %s\n时间: %s 至 %s\n统计: %d 次\n公式: %s\n\n' % \
                               (self.filepath, alert['search_pattern'], min_str_time,
                                self.str_time, results[0]['count_sum'], alert['trigger_format'])
 
-                try:
-                    payload = {
-                        'msgtype': 'text',
-                        'text': {
-                            'content': content
-                        },
-                        'at': {
-                            'isAtAll': True
+                if alert_content:
+                    try:
+                        payload = {
+                            'msgtype': 'text',
+                            'text': {
+                                'content': alert_content
+                            },
+                            'at': {
+                                'isAtAll': True
+                            }
                         }
-                    }
-                    requests.post(
-                        alert['dingding_webhook'],
-                        data=json.dumps(payload),
-                        headers={'content-type': 'application/json'}
-                    )
-                except Exception as e:
-                    print('Post %s alert faild, %s' % (self.filepath, str(e)))
-                    print(traceback.format_exc())
+                        requests.post(
+                            alert['dingding_webhook'],
+                            data=json.dumps(payload),
+                            headers={'content-type': 'application/json'}
+                        )
+                    except Exception as e:
+                        print('Post %s alert faild, %s' % (self.filepath, str(e)))
+                        print(traceback.format_exc())
 
 
 
