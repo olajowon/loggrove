@@ -121,7 +121,7 @@ class LocalLogMonitorItem():
                 dingding_webhook, 
                 create_time, 
                 comment) 
-            VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")
+            VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")
         ''' % (self.reqdata['local_log_file_id'],
                self.reqdata['search_pattern'],
                self.reqdata['alert'],
