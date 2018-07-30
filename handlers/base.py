@@ -228,6 +228,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             where = 'WHERE id="%d"' % pk
         elif arguments:
             where = 'WHERE %s' % \
-                    ' and '.join(['%s in (%s)' % (key, ",".join(['"%s"' % val.decode() for val in vals if vals]))
+                    ' and '.join(['%s in (%s)' % (key, ",".join(['"%s"' % val.decode() for val in vals]))
                                   for key, vals in arguments.items()])
         return where

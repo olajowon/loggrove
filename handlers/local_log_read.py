@@ -1,7 +1,7 @@
 # Created by zhouwang on 2018/5/23.
 from .base import BaseRequestHandler, permission
+import tornado
 import os
-import time
 import re
 
 def get_valid(func):
@@ -33,7 +33,14 @@ def get_valid(func):
 class Handler(BaseRequestHandler):
     @permission()
     @get_valid
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def get(self):
+        response = yield tornado.gen.Task(self.read)
+        self._write(response)
+
+    @tornado.gen.coroutine
+    def read(self):
         page = self.get_argument('page', '0') or '0'
         path = self.get_argument('path', '')
         search_pattern = self.get_argument('search_pattern', '')
@@ -54,20 +61,17 @@ class Handler(BaseRequestHandler):
                 page_content = logfile.read(1048576)
                 page_content += logfile.readline()
             except Exception as e:
-                self._write({'code': 500, 'msg': 'Read lines failed, %s' % str(e)})
-                return
+                return {'code': 500, 'msg': 'Read failed, %s' % str(e)}
             else:
                 page_size = logfile.tell() - begin_position
                 lines = page_content.split('\n')
-                page_line_count= len(lines)
+                page_line_count = len(lines)
                 if search_pattern:
                     lines = [line for line in lines if re.search(search_pattern, line)]
 
-                self._write({'code': 200, 'msg': 'Read successful', 'data': {'lines': lines, 'page': page,
-                                                                        'page_count': page_count,
-                                                                        'logfile_size': logfile_size,
-                                                                        'page_size': page_size,
-                                                                        'page_line_count': page_line_count
-                                                                        }})
-                return
-
+                return {'code': 200, 'msg': 'Read successful', 'data': {'lines': lines, 'page': page,
+                                                                             'page_count': page_count,
+                                                                             'logfile_size': logfile_size,
+                                                                             'page_size': page_size,
+                                                                             'page_line_count': page_line_count
+                                                                             }}

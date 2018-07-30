@@ -56,7 +56,6 @@
         .role1 {display: none}
         .role2 {display: none}
         {% end %}
-
     </style>
     {% block style %}
     {% end %}
@@ -120,6 +119,7 @@
 
 
         <div id="page-wrapper">
+
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-header" style="padding-bottom: 0px;margin-top: 20px; border-bottom: 1px solid #ddd">
@@ -129,8 +129,15 @@
                     </div>
                 </div>
             </div>
-
-
+            {% if requser.get('username') == 'guest' %}
+            <div class="alert alert-success alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert"
+                        aria-hidden="true">
+                    &times;
+                </button>
+                <a href="https://github.com/olajowon/loggrove/" target="_blank">点个赞呗！ <i class="fa fa-star" aria-hidden="true"></i> star</a>
+            </div>
+            {% end %}
             {% block content %}{% end %}
 
         </div>

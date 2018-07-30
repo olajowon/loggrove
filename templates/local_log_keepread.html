@@ -5,7 +5,8 @@
 {% block head_js %}
 <script>
     check_in = false
-    $("#log_content").hover(
+    $(function(){
+        $("#log_content").hover(
         function(){
             check_in = true
         },
@@ -13,6 +14,8 @@
             check_in = false
         }
     );
+    })
+
 
     $.ajax({
         url:"/local_log/file/",
@@ -32,6 +35,10 @@
         error:function (result) {}
     })
 </script>
+{% end %}
+{% block style %}
+<style>
+</style>
 {% end %}
 {% block breadcrumb %}
 <li><i class="fa fa-heartbeat fa-fw" ></i> 日志轮询</li>
@@ -86,8 +93,8 @@
                                 <i class="fa fa-flask fa-3x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="logfile_size">0</div>
-                                <div>文件大小 / KB</div>
+                                <div style="font-size: 25px" id="total_size">0</div>
+                                <div>文件总大小 / KB</div>
                             </div>
                         </div>
                     </div>
@@ -102,8 +109,8 @@
                                 <i class="fa fa-coffee fa-3x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="read_size">0</div>
-                                <div>轮询大小 / KB</div>
+                                <div style="font-size: 25px" id="lines_size">0</div>
+                                <div>输出大小 / KB</div>
                             </div>
                         </div>
                     </div>
@@ -117,8 +124,8 @@
                                 <i class="fa fa-list-ol fa-3x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="read_line_count">0</div>
-                                <div>轮询行数</div>
+                                <div style="font-size: 25px" id="lines_quantity">0</div>
+                                <div>输出行数</div>
                             </div>
                         </div>
                     </div>
@@ -133,7 +140,7 @@
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div style="font-size: 25px" id="search_line_count">0</div>
-                                <div>匹配行数</div>
+                                <div>高亮行数</div>
                             </div>
                         </div>
                     </div>
@@ -171,6 +178,7 @@
     websocket = null
     settimeout = null
     function local_log_keepread(_this){
+        $(".error_text").empty()
         var form_obj = $(_this).parent()
         var path = form_obj.find("select[name='path']").val()
         var other_search_pattern = form_obj.find("input[name='other_search_pattern']").val()
@@ -189,7 +197,7 @@
 
         if(websocket){
             websocket.close()
-            clearTimeout(settimeout)
+            //clearTimeout(settimeout)
         }
 
         var log_content_html = "连接中 [Connection] ...<br>"
@@ -202,42 +210,45 @@
             host = "ws://" + location.hostname + ":" + location.port + "/local_log/keepread/?path="+ path
         }
 
+//        host = "ws://" + location.hostname + ":" + location.port +
+//                "/local_log/keepread/?path="+ path +"&search_pattern="+ search_pattern
+
         websocket = new WebSocket(host)
 
-        websocket.onopen = function(evt){}      // 建立连接
+        websocket.onopen = function(evt){
+        }      // 建立连接
         websocket.onmessage = function(evt){    // 获取服务器返回的信息
             var result = $.parseJSON(evt.data)
             if(result['code']==0){
                 if(result['type']=='on_open'){
                     $("#log_content").empty()
                     $("#log_stat_row").show()
-                    $("#log_content").append(result['data']['lines'].join("<br>") + "<br>")
-                    $("#logfile_size").text((result['data']['logfile_size']/1024).toFixed(2))
-                    $("#read_size").text(0.00)
-                    $("#read_line_count").text(0)
+                    $("#log_content").append("<span style='color: green'>连接成功 [Connection successful] ...</span><br><br>")
+                    $("#total_size").text((result['data']['total_size']/1024).toFixed(2))
+                    $("#lines_size").text(0.00)
+                    $("#lines_quantity").text(0)
                     $("#search_line_count").text(0)
                     $("#window_line_count").text(0)
-                    read_begin_size = result['data']['logfile_size']
+                    //read_begin_size = result['data']['logfile_size']
                 }else{
-                    if (log_content_searching(result["data"]["read_line_count"] > 0)){
+                    if (log_content_searching(result["data"]["lines_quantity"] > 0)){
                         var search_result = log_content_searching(result["data"]["lines"], search_pattern)
                         $("#log_content").append(search_result["log_content"])
-                        $("#logfile_size").text((result['data']['logfile_size']/1024).toFixed(2))
-                        $("#read_size").text(((result['data']['logfile_size'] - read_begin_size)/1024).toFixed(2))
-                        $("#read_line_count").text(parseInt($("#read_line_count").text()) + result['data']['read_line_count'])
+                        $("#total_size").text((result['data']['total_size']/1024).toFixed(2))
+                        $("#lines_size").text((parseInt($("#lines_size").text()) + (result['data']['lines_size']/1024)).toFixed(2))
+                        $("#lines_quantity").text(parseInt($("#lines_quantity").text()) + result['data']['lines_quantity'])
                         $("#search_line_count").text(parseInt($("#search_line_count").text()) + search_result['search_count'])
-
                         $("#window_line_count").text(parseInt($("#window_line_count").text()) + result["data"]["lines"].length)
-
+                        console.log(check_in)
                         if(!check_in) {
                             $("#log_content").scrollTop($("#log_content")[0].scrollHeight);
                         }
                     }
                 }
 
-                settimeout = setTimeout(function(){
-                    websocket.send('')
-                }, 5000);
+//                settimeout = setTimeout(function(){
+//                    websocket.send('')
+//                }, 5000);
             }else{
                 if(result['type']=="on_open"){
                     if(result['code']==400){
@@ -261,9 +272,9 @@
         websocket.onerror = function(evt){
             if(result['type']=='on_open'){
                 $("#log_content").empty()
-                $("#log_content").append("连接失败 [Connection failed] ...<br>")
+                $("#log_content").append("<span class=\"error_text\">连接失败 [Connection failed] ...</span><br>")
             }else{
-                $("#log_content").append("连接失败 [Connection failed] ...<br>")
+                $("#log_content").append("<br><span class=\"error_text\">连接失败 [Connection failed] ...</span><br>")
             }
             if(!check_in){
                 $("#log_content").scrollTop($("#log_content")[0].scrollHeight);
@@ -271,7 +282,7 @@
         }
 
         websocket.onclose = function(evt){
-            $("#log_content").append("连接关闭 [Connection closed] ...<br>")
+            $("#log_content").append("<br><span class=\"error_text\">连接关闭 [Connection closed] ...</span><br>")
             if(!check_in) {
                 $("#log_content").scrollTop($("#log_content")[0].scrollHeight);
             }
@@ -306,7 +317,7 @@
     function close_websocket(){
         if(websocket){
             websocket.close()
-            clearTimeout(settimeout)
+            //clearTimeout(settimeout)
         }
     }
 
