@@ -46,20 +46,16 @@ class Handler(tornado.websocket.WebSocketHandler):
         message = {'code': 0, 'msg': 'Open ws successful', 'data': data, 'type': 'on_open'}
         self.write_message(json.dumps(message))
         self.loop = asyncio.get_event_loop()
-
-        keep = threading.Thread(target=self.keepread)
-        keep.start()
-
+        thread = threading.Thread(target=self.keep_read, daemon=True)
+        thread.start()
 
     def on_close(self):
         self.keep = False
 
-
     def on_message(self, message):
         pass
 
-
-    def keepread(self):
+    def keep_read(self):
         asyncio.set_event_loop(self.loop)
         with open(self.path) as logfile:
             logfile.seek(0, 2)
@@ -68,13 +64,11 @@ class Handler(tornado.websocket.WebSocketHandler):
                     lines = logfile.readlines()
                     if lines:
                         total_size = logfile.tell()
-
                         if self.search_pattern:
                             lines = [line for line in lines if re.search(self.search_pattern, line)]
-
                         data = {'lines': lines, 'lines_quantity': len(lines),
                                 'total_size': total_size, 'lines_size': len(''.join(lines))}
-                        message = {'code': 0, 'msg': 'read lines successful', 'data': data, 'type': 'on_message'}
+                        message = {'code': 0, 'msg': 'Read lines successful', 'data': data, 'type': 'on_message'}
                         if self.keep:
                             self.write_message(json.dumps(message))
                     time.sleep(3)
@@ -82,6 +76,8 @@ class Handler(tornado.websocket.WebSocketHandler):
                 if self.keep:
                     message = {'code': 500, 'msg': 'Read lines failed, %s' % str(e), 'type': 'on_message'}
                     self.write_message(json.dumps(message))
+            finally:
+                if self.keep:
                     self.close()
 
 

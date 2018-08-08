@@ -43,6 +43,8 @@ def check_argements(handler, pk=None):
 
         if not trigger_format:
             error['trigger_format'] = '触发公式是必填项'
+        elif not (re.match(r'^([0-9]+[<=])?{}([<=][1-9][0-9]*)?$', trigger_format) and (trigger_format.strip()!='{}')):
+            error['trigger_format'] = '触发公式格式不正确'
 
         if not dingding_webhook:
             error['dingding_webhook'] = '钉钉webhook是必填项'

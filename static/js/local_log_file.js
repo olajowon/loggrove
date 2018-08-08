@@ -344,13 +344,13 @@ function new_monitor_item_form(local_log_file_id){
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                                 '<div class="col-sm-3">' +
-                                    '<label>检查区间（分钟）</label>' +
-                                    '<input class="form-control input-sm" type="number" name="check_interval" placeholder="Interval: 10">' +
+                                    '<label>检查区间(m)</label>' +
+                                    '<input class="form-control input-sm" type="number" name="check_interval" placeholder="Interval: number">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                                 '<div class="col-sm-6">' +
                                     '<label>触发公式</label>' +
-                                    '<input class="form-control input-sm" type="text"  name="trigger_format" placeholder="Format: 0<{}<10">' +
+                                    '<input class="form-control input-sm" type="text"  name="trigger_format" placeholder="Format: n1<{}<n2">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +
@@ -361,6 +361,7 @@ function new_monitor_item_form(local_log_file_id){
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +
+                            '<button type="button" class="btn btn-info btn-circle" onclick="open_monitor_item_explain_modal()" title="监控项说明"><i class="fa fa-question"></i></button>' +
                             '<button type="button" class="btn btn-primary btn-sm role2" style="float: right; margin-left: 15px" onclick="save_monitor_item(this)">保存</button>' +
                             '<button type="button" class="btn btn-danger btn-sm role2" style="float: right" onclick="del_monitor_item(this)">删除</button> ' +
                         '</form>' +
@@ -369,4 +370,14 @@ function new_monitor_item_form(local_log_file_id){
             '</div>' +
         '</div>'
     )
+}
+
+function open_monitor_item_explain_modal() {
+    var body_has_modal_open = $("body").is(".modal-open")
+    if (body_has_modal_open){
+        $("#monitorItemExplainModal").on('hidden.bs.modal', function () {
+          $("body").addClass("modal-open")
+        })
+    }
+    $("#monitorItemExplainModal").modal("show")
 }
