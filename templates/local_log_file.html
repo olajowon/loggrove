@@ -2,6 +2,12 @@
 {% block title %}
 日志文件
 {% end %}
+{% block style %}
+<style>
+    #monitorItemExplainModal small {margin-bottom: 5px}
+    #monitorItemExplainModal span {font-size: 14px}
+</style>
+{% end %}
 {% block head_js %}
 <script src="{{ static_url('js/local_log_file.js') }}"></script>
 <script src="{{ static_url('js/local_log_chart.js') }}"></script>
@@ -131,7 +137,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                     &times;
                 </button>
-                <h4 class="modal-title" id="updateLabel">
+                <h4 class="modal-title" id="updateModalLabel">
                     <i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑文件
                 </h4>
             </div>
@@ -166,7 +172,7 @@
     </div>
 </div>
 
-<!-- 监控项模态框（Update Modal） -->
+<!-- 监控项模态框（Monitor Item Modal） -->
 <div class="modal fade" id="monitorItemModal" tabindex="-1" role="dialog" aria-labelledby="monitorItemModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -175,8 +181,9 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                     &times;
                 </button>
-                <h4 class="modal-title" id="monitorItemLabel">
+                <h4 class="modal-title" id="monitorItemModalLabel">
                     <i class="fa fa-cogs fa-fw" style=""></i> 监控项
+                    <a href="#" onclick="open_monitor_item_explain_modal()" title="监控项说明"><i class="fa fa-question"></i></a>
                 </h4>
             </div>
             <div class="modal-body">
@@ -190,7 +197,7 @@
 </div>
 
 
-<!-- 图表模态框（chart Modal） -->
+<!-- 图表模态框（Chart Modal） -->
 <div class="modal fade" id="chartModal" tabindex="-1" role="dialog" aria-labelledby="chartModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -199,11 +206,11 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                     &times;
                 </button>
-                <h4 class="modal-title" id="hchartLabel">
+                <h4 class="modal-title" id="chartModalLabel">
                     <i class="fa fa-line-chart fa-fw" style=""></i> 图表
                 </h4>
             </div>
-            <div class="modal-body" id="chartBody">
+            <div class="modal-body">
                 <div id="log_chart"></div>
             </div>
             <div class="modal-footer">
@@ -213,6 +220,84 @@
         </div>
     </div>
 </div>
+
+<!-- 监控项说明模态框（Monitor Item Explain Modal） -->
+<div class="modal fade" id="monitorItemExplainModal" tabindex="-1" role="dialog" aria-labelledby="monitorItemExplainModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="monitorItemExplainModalLabel">
+                    <i class="fa fa-question fa-fw" style=""></i> 监控项说明
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 col-lg-12">
+                        <blockquote>
+                            <span>匹配模式</span>
+                            <small>
+                                <cite>用于日志阅读、轮询 高亮匹配，日志 监控、图表、告警 匹配的字符；</cite>
+                            </small>
+                            <small>
+                                <cite>格式要求：正则表达式或关键字</cite>
+                            </small>
+                            <span>备注</span>
+                            <small>
+                                <cite>监控项名称或注释</cite>
+                            </small>
+                            <small>
+                                <cite>格式要求：精简</cite>
+                            </small>
+                            <span>告警</span>
+                            <small>
+                                <cite>是否开启告警</cite>
+                            </small>
+                            <small>
+                                <cite>格式要求：开启后，<b>检查区间</b>、<b>触发公式</b>、<b>钉钉webhook</b>必填</cite>
+                            </small>
+                            <span>检查区间(m)</span>
+                            <small>
+                                <cite>检查匹配告警的时间区间，每间隔n分钟进行一次检查；</cite>
+                            </small>
+                            <small>
+                                <cite>格式要求：正整数</cite>
+                            </small>
+                            <small>
+                                <cite>如n=5：每5分钟，统计过去5分钟的匹配总数，判断匹配总数是否满足<b>触发公式</b>，满足则进行告警</cite>
+                            </small>
+                            <span>触发公式</span>
+                            <small>
+                                <cite>判断<b>检查区间</b>内的匹配总数是否满足此公式，满足则进行告警</cite>
+                            </small>
+                            <small>
+                                <cite>格式要求：n1&lt;{}、n1&lt;={}、{}&lt;n1、{}&lt;=n1、n1&lt;{}&lt;n2、n1&lt;={}&lt;n2、
+                                    n1&lt;{}&lt;=n2、n1&lt;={}&lt;=n2 等，其中n1、n2 为自定义正整数
+                                </cite>
+                            </small>
+                            <span>钉钉webhook</span>
+                            <small>
+                                <cite>钉钉小机器人的消息推送https地址，钉钉群组-群机器人-自定义webhook</cite>
+                            </small>
+                             <small>
+                                <cite>格式要求：https://...</cite>
+                            </small>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 {% end %}
 {% block body_js %}
