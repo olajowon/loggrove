@@ -13,63 +13,8 @@
 </style>
 {% end %}
 {% block head_js %}
-<script src="{{ static_url('js/local_log_read.js') }}"></script>
-<script>
-    $.ajax({
-        url:"/local_log/file/",
-        type:"GET",
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            var select_obj = $("#local_log_file_tabpane select[name='path']")
-            for(var i=0; i<data.length; i++){
-                select_obj.append("<option rowid='"+data[i]["id"]+"' value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
-            }
-            $("#local_log_file_tabpane select[name='path']").selectpicker('refresh');
-            $("#local_log_file_tabpane select[name='path']").selectpicker('render');
-        },
-        error:function (result) {}
-    })
+<script src="{{ static_url('js/read.js') }}"></script>
 
-    local_log_dir_map = {}
-    $.ajax({
-        url:"/local_log/dir/",
-        type:"GET",
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            var select_obj = $("#local_log_dir_tabpane select[name='dir']")
-            for(var i=0; i<data.length; i++){
-                select_obj.append("<option value='"+ data[i]["path"] +"'>"+ data[i]["path"] +"</option>")
-                local_log_dir_map[data[i]["path"]] = data[i]["nodes"]
-            }
-            $("#local_log_dir_tabpane select[name='dir']").selectpicker('refresh');
-            $("#local_log_dir_tabpane select[name='dir']").selectpicker('render');
-        },
-        error:function (result) {}
-    })
-
-    monitor_item_arr = []
-    $.ajax({
-        url:"/local_log/monitor/item/",
-        type:"GET",
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            var select_obj = $("#local_log_dir_tabpane select[name='search_pattern']")
-            for(var i=0; i<data.length; i++){
-                if($.inArray(data[i]["search_pattern"], monitor_item_arr) < 0){
-                    select_obj.append("<option value='"+
-                        data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>");
-                    monitor_item_arr.push(data[i]["search_pattern"])
-                }
-            }
-            $("#local_log_dir_tabpane select[name='search_pattern']").selectpicker('refresh');
-            $("#local_log_dir_tabpane select[name='search_pattern']").selectpicker('render');
-        },
-        error:function (result) {}
-    })
-</script>
 {% end %}
 {% block breadcrumb %}
 <li><i class="fa fa-file-text fa-fw" ></i> 日志阅读</li>
@@ -81,24 +26,21 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-sm-10 col-lg-10">
-                        <!-- Nav tabs -->
                         <ul class="nav nav-pills">
-                            <li class="active"><a href="#local_log_file_tabpane" data-toggle="tab">日志文件</a>
+                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab">本地日志</a>
                             </li>
-                            <li><a href="#local_log_dir_tabpane" data-toggle="tab">日志目录</a>
+                            <li><a href="#remote_logfile_tabpane" data-toggle="tab">远程日志</a>
                             </li>
-
                         </ul>
-                        <!-- Tab panes -->
                         <div class="tab-content">
-                            <div class="tab-pane fade in active" id="local_log_file_tabpane" style="padding-top: 15px">
+                            <div class="tab-pane fade in active" id="local_logfile_tabpane" style="padding-top: 15px">
                                 <form role="form">
                                     <div class="form-group">
-                                        <label>文件路径 *</label>
-                                        <select class="form-control selectpicker" name="path" data-live-search="true">
+                                        <label>日志文件 *</label>
+                                        <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
-                                        <span name="path_error" class="error_text"></span>
+                                        <span name="logfile_id_error" class="error_text"></span>
                                     </div>
                                     <div class="form-group">
                                         <label>匹配模式</label>
@@ -115,23 +57,23 @@
                                             <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
                                         </label>
                                     </div>
-                                    <button type="button" class="btn btn-default" onclick="local_log_read(this)">查看</button>
+                                    <button type="button" class="btn btn-default" onclick="logfile_read(this)">查看</button>
                                 </form>
                             </div>
-                            <div class="tab-pane fade" id="local_log_dir_tabpane" style="padding-top: 15px">
+                            <div class="tab-pane fade" id="remote_logfile_tabpane" style="padding-top: 15px">
                                 <form role="form">
                                     <div class="form-group">
-                                        <label>目录路径 *</label>
-                                        <select class="form-control selectpicker" name="dir" data-live-search="true">
+                                        <label>主机地址 *</label>
+                                        <select class="form-control selectpicker" name="host" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>文件路径 *</label>
-                                        <select class="form-control selectpicker" name="path" data-live-search="true">
+                                        <label>日志文件 *</label>
+                                        <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
-                                        <span class="error_text" name="path_error"></span>
+                                        <span class="error_text" name="logfile_id_error"></span>
                                     </div>
                                     <div class="form-group">
                                         <label>匹配模式</label>
@@ -148,7 +90,7 @@
                                             <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
                                         </label>
                                     </div>
-                                    <button type="button" class="btn btn-default" onclick="local_log_read(this)">查看</button>
+                                    <button type="button" class="btn btn-default" onclick="logfile_read(this)">查看</button>
                                 </form>
                             </div>
                         </div>
@@ -170,8 +112,8 @@
                                 <i class="fa fa-flask fa-3x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="logfile_size">0</div>
-                                <div>文件大小 / KB</div>
+                                <div style="font-size: 23px" id="total_size">0</div>
+                                <div>文件总大小 / KB</div>
                             </div>
                         </div>
                     </div>
@@ -179,49 +121,51 @@
             </div>
 
             <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-green">
-                    <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-xs-3">
-                                <i class="fa fa-file-o fa-3x"></i>
-                            </div>
-                            <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="page_size">0</div>
-                                <div>本页总大小 / KB</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-yellow">
+                <div class="panel panel-primary">
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
                                 <i class="fa fa-list-ol fa-3x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="page_line_count">0</div>
-                                <div>本页总行数</div>
+                                <div style="font-size: 23px" id="total_lines">0</div>
+                                <div>文件总行数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-file-o fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 23px" id="size">0</div>
+                                <div>输出大小 / KB</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-red">
+                <div class="panel panel-primary">
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
-                                <i class="fa fa-filter fa-3x"></i>
+                                <i class="fa fa-list-ol fa-3x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div style="font-size: 25px" id="page_search_line_count">0</div>
-                                <div>高亮行数</div>
+                                <div style="font-size: 23px">
+                                    <span id="highlight_lines">0</span>/<span id="lines">0</span>
+                                </div>
+                                <div>高亮/输出行数</div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -245,53 +189,95 @@
     </div>
 </div>
 
-<div class="row">
-
-</div>
-
 
 {% end %}
 {% block body_js %}
 <script>
-    $(function(){
-        $("#local_log_dir_tabpane select[name='dir']").change(function(){
-            var dir_path = $(this).val()
-            if(!dir_path){
-                $("#local_log_dir_tabpane select[name='path']").html('<option value=""> ---- </option>')
-            }else{
-                var paths = log_path(".", local_log_dir_map[dir_path])
-                var select_options = '<option value=""> ---- </option>'
-                for(var i=0;i<paths.length;i++){
-                    var option_value = (dir_path.substr(dir_path.length-1,1)=="/" ? dir_path + paths[i] : dir_path + "/" +paths[i])
-                    select_options += '<option value="'+ option_value +'"> '+ paths[i] +' </option>'
-                }
-                $("#local_log_dir_tabpane select[name='path']").html(select_options);
+    $.ajax({
+        url: "/logfiles/",
+        type: "GET",
+        data: {"location": "1"},
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#local_logfile_tabpane select[name='logfile_id']")
+            for(var i=0; i<data.length; i++){
+                select_obj.append("<option value='"+ data[i]["id"] +"'>"+ data[i]["path"] +"</option>")
             }
-            $("#local_log_dir_tabpane select[name='path']").selectpicker('refresh');
-            $("#local_log_dir_tabpane select[name='path']").selectpicker('render');
+            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
+            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+        },
+        error:function (result) {}
+    })
+
+    remote_logfile_map = {}
+    $.ajax({
+        url:"/logfiles/",
+        type:"GET",
+        data: {"location": "2"},
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#remote_logfile_tabpane select[name='host']")
+            for(var i=0; i<data.length; i++){
+                if(!remote_logfile_map.hasOwnProperty(data[i]["host"])){
+                    remote_logfile_map[data[i]["host"]] = [data[i]]
+                    select_obj.append("<option value='"+ data[i]["host"] +"'>"+ data[i]["host"] +"</option>")
+                }else{
+                    remote_logfile_map[data[i]["host"]].push(data[i])
+                }
+            }
+            //console.log(remote_logfile_map)
+            $("#remote_logfile_tabpane select[name='host']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='host']").selectpicker('render');
+        },
+        error:function (result) {}
+    })
+
+    $(function(){
+        $("#remote_logfile_tabpane select[name='host']").change(function(){
+            var host = $(this).val()
+            if(!host){
+                $("#remote_logfile_tabpane select[name='logfile_id']").html('<option value=""> ---- </option>')
+            }else{
+                var logfiles = remote_logfile_map[host]
+                var select_options = '<option value=""> ---- </option>'
+                for(var i=0;i<logfiles.length;i++){
+                    select_options += '<option value="'+ logfiles[i]["id"] +'"> '+ logfiles[i]["path"] +' </option>'
+                }
+                $("#remote_logfile_tabpane select[name='logfile_id']").html(select_options);
+            }
+            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+            $("#remote_logfile_tabpane select[name='search_pattern']").html('<option value=""> ---- </option>')
+            $("#remote_logfile_tabpane select[name='search_pattern']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='search_pattern']").selectpicker('render');
         })
 
-        $("#local_log_file_tabpane select[name='path']").change(function(){
-            var id = $(this).find("option:selected").attr("rowid")
-            $("#local_log_file_tabpane select[name='search_pattern']").html("<option value=''> ---- </option>")
-            if(id){
+        $("select[name='logfile_id']").change(function(){
+            var form_obj = $(this).parents("form")
+            var logfile_id = $(this).find("option:selected").val()
+            form_obj.find("select[name='search_pattern']").html("<option value=''> ---- </option>")
+            if(logfile_id){
                 $.ajax({
-                    url:"/local_log/monitor/item/",
+                    url:"/monitor/items/",
                     type:"GET",
-                    data:{"local_log_file_id":id},
+                    data:{"logfile_id": logfile_id},
                     success:function (result) {
                         var response_data = jQuery.parseJSON(result)
                         var data = response_data['data']
                         for(var i=0; i<data.length; i++){
-                            $("#local_log_file_tabpane select[name='search_pattern']").append("<option value='"+
+                            form_obj.find("select[name='search_pattern']").append("<option value='"+
                                 data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>")
                         }
-                        $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('refresh');
-                        $("#local_log_file_tabpane select[name='search_pattern']").selectpicker('render');
+                        form_obj.find("select[name='search_pattern']").selectpicker('refresh');
+                        form_obj.find("select[name='search_pattern']").selectpicker('render');
                     },
                     error:function (result) {}
                 })
             }
+            form_obj.find("select[name='search_pattern']").selectpicker('refresh');
+            form_obj.find("select[name='search_pattern']").selectpicker('render');
         })
     })
 </script>

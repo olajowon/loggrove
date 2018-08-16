@@ -49,7 +49,9 @@ Dashboard
                                 <i class="fa fa-users fa-4x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div class="huge" id="online_user_count">0</div>
+                                <div class="huge">
+                                    <span id="online_user_count"></span>/<span id="user_count"></span>
+                                </div>
                                 <div>在线/用户</div>
                             </div>
                         </div>
@@ -71,8 +73,10 @@ Dashboard
                                 <i class="fa fa-file fa-4x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div class="huge" id="local_log_file_count">0</div>
-                                <div>日志文件</div>
+                                <div class="huge">
+                                    <span id="local_logfile_count"></span>/<span id="remote_logfile_count"></span>/<span id="logfile_count"></span>
+                                </div>
+                                <div>本地/远程/全部日志</div>
                             </div>
                         </div>
                     </div>
@@ -90,11 +94,11 @@ Dashboard
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
-                                <i class="fa fa-folder-open fa-4x"></i>
+                                <i class="fa fa-server fa-4x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div class="huge" id="local_log_dir_count">0</div>
-                                <div>日志目录</div>
+                                <div class="huge" id="host_count">0</div>
+                                <div>日志主机</div>
                             </div>
                         </div>
                     </div>
@@ -115,7 +119,7 @@ Dashboard
                                 <i class="fa fa-cogs fa-4x"></i>
                             </div>
                             <div class="col-xs-9 text-right">
-                                <div class="huge" id="local_log_monitor_item_count">0</div>
+                                <div class="huge" id="monitor_item_count">0</div>
                                 <div>监控项</div>
                             </div>
                         </div>
@@ -219,10 +223,13 @@ Dashboard
         data:'',
         success:function (result) {
             var response_data = jQuery.parseJSON(result)
-            $("#online_user_count").text(response_data["data"][0]["online_user_count"] + "/" + response_data["data"][0]["user_count"])
-            $("#local_log_file_count").text(response_data["data"][0]["local_log_file_count"])
-            $("#local_log_dir_count").text(response_data["data"][0]["local_log_dir_count"])
-            $("#local_log_monitor_item_count").text(response_data["data"][0]["local_log_monitor_item_count"])
+            $("#logfile_count").text(response_data["data"][0]["logfile_count"])
+            $("#local_logfile_count").text(response_data["data"][0]["local_logfile_count"])
+            $("#remote_logfile_count").text(response_data["data"][0]["remote_logfile_count"])
+            $("#host_count").text(response_data["data"][0]["host_count"])
+            $("#monitor_item_count").text(response_data["data"][0]["monitor_item_count"])
+            $("#user_count").text(response_data["data"][0]["user_count"])
+            $("#online_user_count").text(response_data["data"][0]["online_user_count"])
         },
         error:function (result) {}
     })

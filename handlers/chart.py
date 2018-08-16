@@ -8,7 +8,7 @@ def get_valid(func):
     def _wrapper(self):
         error = {}
         self.mode = self.get_argument('mode', 'interval')
-        self.local_log_file_id = self.get_argument('local_log_file_id', '')
+        self.logfile_id = self.get_argument('logfile_id', '')
         self.monitor_item_ids = [item_id for item_id in self.get_arguments('monitor_item_id') if item_id]
         now = datetime.datetime.now()
         if self.mode == 'interval':
@@ -21,20 +21,20 @@ def get_valid(func):
         elif self.mode == 'contrast':
             self.dates = [date for date in self.get_arguments('date') if date] or [now.strftime('%Y-%m-%d')]
 
-        if not self.local_log_file_id:
-            error['local_log_file_id'] = '日志文件是必填项'
+        if not self.logfile_id:
+            error['logfile_id'] = '日志文件是必填项'
         else:
-            select_sql = 'SELECT id,path FROM local_log_file WHERE id="%s"' % self.local_log_file_id
+            select_sql = 'SELECT id,path FROM logfile WHERE id="%s"' % self.logfile_id
             count = self.mysqldb_cursor.execute(select_sql)
             if count:
-                self.local_log_file_id, self.local_log_file_path = self.mysqldb_cursor.fetchone()
+                self.logfile_id, self.logfile_path = self.mysqldb_cursor.fetchone()
                 if self.monitor_item_ids:
                     if '0' in self.monitor_item_ids and len(self.monitor_item_ids)==1:
                         self.monitor_items = ((0, 'total'),)
                     else:
-                        select_sql = 'SELECT id, search_pattern FROM local_log_monitor_item ' \
-                                     'WHERE local_log_file_id="%s" AND id IN (%s)' % \
-                                     (self.local_log_file_id, ','.join(self.monitor_item_ids))
+                        select_sql = 'SELECT id, search_pattern FROM monitor_item ' \
+                                     'WHERE logfile_id="%s" AND id IN (%s)' % \
+                                     (self.logfile_id, ','.join(self.monitor_item_ids))
                         self.mysqldb_cursor.execute(select_sql)
                         self.monitor_items = self.mysqldb_cursor.fetchall()
 
@@ -43,13 +43,13 @@ def get_valid(func):
                         elif not self.monitor_items:
                             error['monitor_item_id'] = '监控项无效'
                 else:
-                    select_sql = 'SELECT id, search_pattern FROM local_log_monitor_item WHERE local_log_file_id="%s"' % \
-                                 self.local_log_file_id
+                    select_sql = 'SELECT id, search_pattern FROM monitor_item WHERE logfile_id="%s"' % \
+                                 self.logfile_id
                     self.mysqldb_cursor.execute(select_sql)
                     self.monitor_items = ((0, 'total'),) + self.mysqldb_cursor.fetchall()
 
             else:
-                error['local_log_file_id'] = '日志文件不存在'
+                error['logfile_id'] = '日志文件不存在'
 
         if error:
             self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})
@@ -62,8 +62,8 @@ class Handler(BaseRequestHandler):
     def __init__(self, *args, **kwargs):
         super(Handler, self).__init__(*args, **kwargs)
         self.mode = None
-        self.local_log_file_id = None
-        self.local_log_file_path = None
+        self.logfile_id = None
+        self.logfile_path = None
         self.begin_time = None
         self.end_time = None
         self.dates = None
@@ -86,11 +86,11 @@ class Handler(BaseRequestHandler):
                       UNIX_TIMESTAMP(count_time) * 1000,
                       count
                     FROM    
-                      local_log_monitor_count
+                      monitor_count
                     WHERE 
-                      count_time>='%s' AND count_time<='%s' AND monitor_item_id='%s' AND local_log_file_id='%d'
+                      count_time>='%s' AND count_time<='%s' AND monitor_item_id='%s' AND logfile_id='%d'
                     ORDER BY count_time
-                ''' % (self.begin_time, self.end_time, item_id, self.local_log_file_id)
+                ''' % (self.begin_time, self.end_time, item_id, self.logfile_id)
                 self.mysqldb_cursor.execute(select_sql)
                 results = self.mysqldb_cursor.fetchall()
                 series.append({'name': search_pattern, 'data': results,})
@@ -104,15 +104,16 @@ class Handler(BaseRequestHandler):
                           UNIX_TIMESTAMP(date_format(count_time, "1970-1-1 %%H:%%i:%%s")) * 1000,
                           count
                         FROM    
-                          local_log_monitor_count
+                          monitor_count
                         WHERE 
-                          count_time>='%s' AND count_time<='%s' AND monitor_item_id='%s' AND local_log_file_id='%d'
+                          count_time>='%s' AND count_time<='%s' AND monitor_item_id='%s' AND logfile_id='%d'
                         ORDER BY count_time
-                    ''' % ('%s 00:00' % date, '%s 23:59' % date, item_id, self.local_log_file_id)
+                    ''' % ('%s 00:00' % date, '%s 23:59' % date, item_id, self.logfile_id)
                     self.mysqldb_cursor.execute(select_sql)
                     results = self.mysqldb_cursor.fetchall()
                     series.append({'name': '%s %s' % (date, search_pattern), 'data': results})
 
         data.append({'series' : series, 'xAxis':{'min':min_mktime, 'max':max_mktime}})
         self._write({'code': 200, 'msg': 'Query successful', 'data': data})
+
 

@@ -4,7 +4,7 @@
 
 function write_new_row(id){
     $.ajax({
-        url:"/user/" + id + "/",
+        url:"/users/" + id + "/",
         type:"GET",
         success:function(result){
             var response_data = jQuery.parseJSON(result)
@@ -31,13 +31,14 @@ function write_new_row(id){
 }
 
 function add_user(){
+
     var form_obj = $("#add_user_form")
     form_obj.prev().empty()
     $(".error_text").empty()
 
     var form_data = form_obj.serialize()
     $.ajax({
-        url:"/user/",
+        url:"/users/",
         type:"POST",
         data:form_data,
         success:function (result) {
@@ -91,7 +92,7 @@ function update_user(id){
     }
 
     $.ajax({
-        url:"/user/" + id + "/",
+        url:"/users/" + id + "/",
         type:"PUT",
         data:form_data,
         success:function(result){
@@ -141,7 +142,7 @@ function delete_user(id){
     }
 
     $.ajax({
-        url:"/user/" + id +"/",
+        url:"/users/" + id +"/",
         type:"DELETE",
         data:{'_xsrf':get_cookie('_xsrf')},
         success:function(result){
@@ -184,9 +185,30 @@ function reset_password(id){
     var form_obj = $("#reset_password_form")
     form_obj.prev().empty()
     $(".error_text").empty()
+
+    var password = form_obj.find("input[name='password']").val()
+    var confirm_password = form_obj.find("input[name='confirm_password']").val()
+
+    if(!password){
+        form_obj.find("input[name='password']").next().text("请输入密码")
+        return false
+    }
+    if(!confirm_password){
+        form_obj.find("input[name='confirm_password']").next().text("请输入确认密码")
+        return false
+    }
+    if(password != confirm_password){
+        form_obj.find("input[name='confirm_password']").next().text("错误的确认密码")
+        return false
+    }
+    if(password.length < 6){
+        form_obj.find("input[name='confirm_password']").next().text("密码不可少于6个字符")
+        return false
+    }
+
     var form_data = form_obj.serialize()
     $.ajax({
-        url:"/user/"+id+"/password/reset/",
+        url:"/users/"+ id +"/password/",
         type:"PUT",
         data:form_data,
         success:function(result){

@@ -2,9 +2,15 @@
 
 from .base import BaseRequestHandler, permission
 
-class Profile():
-    def __init__(self):
-        pass
+
+
+
+
+class Handler(BaseRequestHandler):
+    @permission()
+    def get(self):
+        response_data = self._query()
+        self._write(response_data)
 
     def _query(self):
         select_sql = '''
@@ -38,10 +44,3 @@ class Profile():
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
         return {'code': 200, 'msg': 'Query Successful', 'data': results}
-
-
-class Handler(BaseRequestHandler, Profile):
-    @permission()
-    def get(self):
-        response_data = self._query()
-        self._write(response_data)

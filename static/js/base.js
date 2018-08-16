@@ -10,7 +10,7 @@ function get_cookie(key) {
 
 function log_content_searching(lines, search_pattern){
     var content_html = ""
-    var search_count = 0
+    var highlight_lines = 0
     for(var i=0;i<lines.length;i++){
         var line = lines[i]
         if(line){
@@ -20,14 +20,14 @@ function log_content_searching(lines, search_pattern){
                 var match_arr = line.match(reg)
                 if(match_arr){
                     content_html += (line.replace(new RegExp(match_arr[0]), '<b style="background-color: yellow">' + match_arr[0]+ "</b>") + "<br>")
-                    search_count += 1
+                    highlight_lines += 1
                     continue
                 }
             }
             content_html += (line + "<br>")
         }
     }
-    return {'log_content': content_html, 'search_count':search_count}
+    return {'log_content': content_html, 'highlight_lines':highlight_lines}
 }
 
 

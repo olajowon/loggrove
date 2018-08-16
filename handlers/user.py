@@ -3,8 +3,10 @@
 from .base import BaseRequestHandler, permission
 import datetime
 import hashlib
+import logging
+logger = logging.getLogger()
 
-def check_argements(handler, pk=None):
+def argements_valid(handler, pk=None):
     error = {}
     username = handler.get_argument('username', '')
     password = handler.get_argument('password', '')
@@ -47,7 +49,7 @@ def check_argements(handler, pk=None):
 
 def add_valid(func):
     def _wrapper(self):
-        error, self.reqdata = check_argements(self)
+        error, self.reqdata = argements_valid(self)
         if error:
             return {'code': 400, 'msg': 'Bad POST data', 'error': error}
         return func(self)
@@ -73,7 +75,7 @@ def update_valid(func):
         count = self.mysqldb_cursor.execute(select_sql)
         if not count:
             return {'code': 404, 'msg': 'Update row not found'}
-        error, self.reqdata = check_argements(self, pk)
+        error, self.reqdata = argements_valid(self, pk)
         if error:
             return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
         return func(self, pk)
@@ -90,24 +92,43 @@ def del_valid(func):
     return _wrapper
 
 
-class User():
-    def __init__(self):
-        self.reqdata = {}
+class Handler(BaseRequestHandler):
+    @permission(role=1)
+    def get(self, pk=0):
+        ''' Query '''
+        response_data = self._query(int(pk))
+        return self._write(response_data)
+
+    @permission(role=1)
+    def post(self):
+        response_data = self._add()
+        self._write(response_data, audit=True)
+
+    @permission(role=1)
+    def put(self, pk=0):
+        response_data = self._update(int(pk))
+        self._write(response_data, audit=True)
+
+    @permission(role=1)
+    def delete(self, pk=0):
+        response_data = self._del(int(pk))
+        self._write(response_data, audit=True)
+
 
     @query_valid
     def _query(self, pk):
         select_sql = '''
-                        SELECT
-                            id,
-                            username,
-                            fullname,
-                            email,
-                            status,
-                            role,  
-                            date_format(join_time, "%%Y-%%m-%%d %%H:%%i:%%s") as join_time
-                        FROM user
-                        %s
-                        ''' % self.format_where_param(pk, self.request.arguments)
+        SELECT
+            id,
+            username,
+            fullname,
+            email,
+            status,
+            role,  
+            date_format(join_time, "%%Y-%%m-%%d %%H:%%i:%%s") as join_time
+        FROM user
+        %s
+        ''' % self.format_where_param(pk, self.request.arguments)
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
         return {'code': 200, 'msg': 'Query successful', 'data': results}
@@ -136,7 +157,8 @@ class User():
             self.mysqldb_cursor.execute(insert_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Add failed, %s' % str(e)}
+            logger.error('Add user failed: %s' % str(e))
+            return {'code': 500, 'msg': 'Add failed', 'detail': str(e)}
         else:
             self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
             return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
@@ -155,18 +177,19 @@ class User():
             WHERE 
               id="%d"
         ''' % (
-            self.reqdata['username'],
-            self.reqdata['fullname'],
-            self.reqdata['email'],
-            self.reqdata['status'],
-            self.reqdata['role'],
-            pk)
+        self.reqdata['username'],
+        self.reqdata['fullname'],
+        self.reqdata['email'],
+        self.reqdata['status'],
+        self.reqdata['role'],
+        pk)
 
         try:
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Update failed, %s' % str(e)}
+            logger.error('Update user failed: %s' % str(e))
+            return {'code': 500, 'msg': 'Update failed', 'detail': str(e)}
         else:
             return {'code': 200, 'msg': 'Update successful', 'data': {'id': pk}}
 
@@ -177,29 +200,7 @@ class User():
             self.mysqldb_cursor.execute(delete_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Delete failed, %s' % str(e)}
+            logger.error('Delete user failed: %s' % str(e))
+            return {'code': 500, 'msg': 'Delete failed', 'detail': str(e)}
         else:
             return {'code': 200, 'msg': 'Delete successful'}
-
-
-class Handler(BaseRequestHandler, User):
-    @permission(role=1)
-    def get(self, pk=0):
-        ''' Query '''
-        response_data = self._query(int(pk))
-        return self._write(response_data)
-
-    @permission(role=1)
-    def post(self):
-        response_data = self._add()
-        self._write(response_data, audit=True)
-
-    @permission(role=1)
-    def put(self, pk=0):
-        response_data = self._update(int(pk))
-        self._write(response_data, audit=True)
-
-    @permission(role=1)
-    def delete(self, pk=0):
-        response_data = self._del(int(pk))
-        self._write(response_data, audit=True)

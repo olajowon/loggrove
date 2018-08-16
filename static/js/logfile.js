@@ -1,16 +1,18 @@
 /**
- * Created by zhouwang on 2018/5/12.
+ * Created by zhouwang on 2018/8/8.
  */
 
 function write_new_row(id){
     $.ajax({
-        url:"/local_log/file/" + id + "/",
+        url:"/logfiles/" + id + "/",
         type:"GET",
         success:function(result){
             var response_data = jQuery.parseJSON(result)
             var data = response_data["data"]
             for(var i=0; i<data.length; i++){
-                local_log_file_datatable.row.add( [
+                logfile_datatable.row.add( [
+                    data[i]["location"]==1?"本地":"远程",
+                    data[i]["host"],
                     data[i]["path"],
                     data[i]["comment"],
                     data[i]["create_time"],
@@ -30,13 +32,13 @@ function write_new_row(id){
 }
 
 function add_file(){
-    var form_obj = $("#add_local_log_file_form")
+    var form_obj = $("#add_logfile_form")
     form_obj.prev().empty()
     $(".error_text").empty()
 
     var form_data = form_obj.serialize()
     $.ajax({
-        url:"/local_log/file/",
+        url:"/logfiles/",
         type:"POST",
         data:form_data,
         success:function (result) {
@@ -81,11 +83,11 @@ function delete_file(id){
     }
 
     $.ajax({
-        url:"/local_log/file/" + id +"/",
+        url:"/logfiles/" + id +"/",
         type:"DELETE",
         data:{'_xsrf':get_cookie('_xsrf')},
         success:function(result){
-            local_log_file_datatable.row('#tr'+id).remove().draw(false);
+            logfile_datatable.row('#tr'+id).remove().draw(false);
             alert("删除成功！")
         },
         error:function(result){
@@ -95,18 +97,20 @@ function delete_file(id){
 }
 
 function update_file(id){
-    var form_obj = $("#update_local_log_file_form")
+    var form_obj = $("#update_logfile_form")
     form_obj.prev().empty()
     $(".error_text").empty()
 
     var form_data = {
+        'location':form_obj.find("input[name='location']:checked").val(),
+        'host':form_obj.find("input[name='host']").val(),
         'path':form_obj.find("input[name='path']").val(),
         'comment':form_obj.find("input[name='comment']").val(),
         '_xsrf':get_cookie('_xsrf')
     }
 
     $.ajax({
-        url:"/local_log/file/" + id + "/",
+        url:"/logfiles/" + id + "/",
         type:"PUT",
         data:form_data,
         success:function(result){
@@ -117,8 +121,10 @@ function update_file(id){
                 '</div>'
             )
             var tr = $("#tr"+id)
-            local_log_file_datatable.cell(tr.children("td:eq(0)")).data(form_data["path"])
-            local_log_file_datatable.cell(tr.children("td:eq(1)")).data(form_data["comment"])
+            logfile_datatable.cell(tr.children("td:eq(0)")).data(form_data["location"]=="1"?"本地":"远程")
+            logfile_datatable.cell(tr.children("td:eq(1)")).data(form_data["host"])
+            logfile_datatable.cell(tr.children("td:eq(2)")).data(form_data["path"])
+            logfile_datatable.cell(tr.children("td:eq(3)")).data(form_data["comment"])
         },
         error:function(result) {
             if (result.status != 0) {
@@ -147,32 +153,39 @@ function update_file(id){
 
 
 function open_update_file_modal(id){
-    var form_obj = $("#update_local_log_file_form")
+    var form_obj = $("#update_logfile_form")
     form_obj.prev().empty()
     $(".error_text").empty()
-
     var tr = $("#tr"+id)
-    form_obj.find("input[name='path']").val(tr.children("td:eq(0)").text())
-    form_obj.find("input[name='comment']").val(tr.children("td:eq(1)").text())
+    var localtion = (tr.children("td:eq(0)").text()=="本地"? "1" :"2")
+
+    form_obj.find("input[name='location']").each(function(){
+        if($(this).val() == localtion){
+            $(this).prop("checked", true)
+        }
+    })
+    form_obj.find("input[name='host']").val(tr.children("td:eq(1)").text())
+    form_obj.find("input[name='path']").val(tr.children("td:eq(2)").text())
+    form_obj.find("input[name='comment']").val(tr.children("td:eq(3)").text())
     $("#updateModal .modal-footer").children("button:eq(1)").attr("onclick", "update_file(" +id+ ")")
     $("#updateModal").modal("show")
 }
 
 
-function open_monitor_item_modal(local_log_file_id){
+function open_monitor_item_modal(logfile_id){
     $("#monitorItemModal .modal-body").empty()
     $.ajax({
-        url:"/local_log/monitor/item/",
+        url:"/monitor/items/",
         type:"GET",
-        data:{"local_log_file_id":local_log_file_id},
+        data:{"logfile_id":logfile_id},
         success:function(result){
             var response_data = jQuery.parseJSON(result)
             for(var i=0;i<response_data["data"].length;i++){
-                new_monitor_item_form(local_log_file_id)
+                new_monitor_item_form(logfile_id)
                 var new_form = $("#monitorItemModal .modal-body .row .col-sm-12").find("form").last()
                 new_form.find("[name='id']").val(response_data["data"][i]["id"])
                 new_form.find("[name='search_pattern']").val(response_data["data"][i]["search_pattern"])
-                new_form.find("[name='local_log_file_id']").val(response_data["data"][i]["local_log_file_id"])
+                new_form.find("[name='logfile_id']").val(response_data["data"][i]["logfile_id"])
                 new_form.find("[name='crontab_cycle']").val(response_data["data"][i]["crontab_cycle"])
                 new_form.find("[name='check_interval']").val(response_data["data"][i]["check_interval"])
                 new_form.find("[name='trigger_format']").val(response_data["data"][i]["trigger_format"])
@@ -180,7 +193,7 @@ function open_monitor_item_modal(local_log_file_id){
                 new_form.find("[name='comment']").val(response_data["data"][i]["comment"])
                 new_form.find("[name='alert']").val(response_data["data"][i]["alert"])
             }
-            new_monitor_item_form(local_log_file_id)
+            new_monitor_item_form(logfile_id)
         },
         error:function(result){}
     })
@@ -209,7 +222,7 @@ function del_monitor_item(_this){
     }
 
     $.ajax({
-        url:"/local_log/monitor/item/" + id +"/",
+        url:"/monitor/items/" + id +"/",
         type:"DELETE",
         data:{'_xsrf':get_cookie('_xsrf')},
         success:function(result){
@@ -228,7 +241,7 @@ function update_monitor_item(form_obj){
     var form_data = form_obj.serialize()
     var id = form_obj.find("input[name='id']").val()
     $.ajax({
-        url:"/local_log/monitor/item/" + id + "/",
+        url:"/monitor/items/" + id + "/",
         type:"PUT",
         data:form_data,
         success:function(result){
@@ -270,7 +283,7 @@ function add_monitor_item(form_obj){
     form_obj.find(".error_text").empty()
     var form_data = form_obj.serialize()
     $.ajax({
-        url:"/local_log/monitor/item/",
+        url:"/monitor/items/",
         type:"POST",
         data:form_data,
         success:function(result){
@@ -282,7 +295,7 @@ function add_monitor_item(form_obj){
             )
             var id = response_data["data"][0]["id"]
             form_obj.find("input[name='id']").val(id)
-            new_monitor_item_form(form_obj.find("input[name='local_log_file_id']").val())
+            new_monitor_item_form(form_obj.find("input[name='logfile_id']").val())
         },
         error:function(result){
             if (result.status != 0) {
@@ -310,7 +323,7 @@ function add_monitor_item(form_obj){
 }
 
 
-function new_monitor_item_form(local_log_file_id){
+function new_monitor_item_form(logfile_id){
     $("#monitorItemModal .modal-body").append(
         '<div class="row">' +
             '<div class="col-sm-12">' +
@@ -320,7 +333,7 @@ function new_monitor_item_form(local_log_file_id){
                         '<div></div>' +
                         '<form role="form" class="form-horizontal">' +
                             '<input type="hidden" name="id">' +
-                            '<input type="hidden" name="local_log_file_id" value="'+local_log_file_id+'">' +
+                            '<input type="hidden" name="logfile_id" value="'+logfile_id+'">' +
                             '<input type="hidden" name="_xsrf" value="'+get_cookie('_xsrf')+'">' +
                             '<div class="form-group">' +
                                 '<div class="col-sm-6">' +
@@ -381,3 +394,27 @@ function open_monitor_item_explain_modal() {
     }
     $("#monitorItemExplainModal").modal("show")
 }
+
+$(function(){
+    $("[name=location]").change(function(){
+        console.log("change")
+        var form_obj = $(this).parents("form")
+        if(form_obj.find("input[name=location]:checked").val() == "1"){
+            form_obj.find("input[name=host]").val("localhost")
+        }else{
+            if(form_obj.find("input[name=host]").val() == "localhost"){
+                form_obj.find("input[name=host]").val("")
+            }
+        }
+    })
+
+    $('#addModal').on('show.bs.modal', function (){
+        $("#add_logfile_form").prev().empty()
+        $("#add_logfile_form")[0].reset()
+    })
+})
+
+
+
+
+

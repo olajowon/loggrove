@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% block title %}
+日志图表
+{% end %}
+{% block head_js %}
+{% end %}
+{% block breadcrumb %}
+<li><i class="fa fa-line-chart fa-fw" ></i> 日志图表</li>
+{% end %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-12 col-lg-10">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-10 col-lg-10">
+                        <ul class="nav nav-pills">
+                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab">本地日志</a>
+                            </li>
+                            <li><a href="#remote_logfile_tabpane" data-toggle="tab">远程日志</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="local_logfile_tabpane" style="padding-top: 15px">
+                                <form role="form" class="form-horizontal">
+                                    <div></div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <label>日志文件 *</label>
+                                            <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
+                                                <option value=""> ---- </option>
+                                            </select>
+                                            <span class="error_text" name="logfile_id_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <label>监控项</label>
+                                            <select multiple class="form-control selectpicker" name="monitor_item_id" data-live-search="true">
+                                                <option value="0" selected>total</option>
+                                            </select>
+                                            <span class="error_text" name="monitor_item_id_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <button type="button" class="btn btn-default" onclick="show_24h_chart(this)">查看24时</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_datetime" name="begin_time" placeholder="开始时间">
+                                            <span class="error_text" name="begin_time_error"></span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_datetime" name="end_time" placeholder="结束时间">
+                                            <span class="error_text" name="end_time_error"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <button type="button" class="btn btn-default" onclick="show_interval_chart(this)">连续查询</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_date" name="date" placeholder="日期一">
+                                            <span class="error_text" name="date_error"></span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_date" name="date" placeholder="日期二">
+                                            <span class="error_text" name="date_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <button type="button" class="btn btn-default" onclick="show_contrast_chart(this)">日期对比</button>
+                                        </div>
+                                    </div>
+
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="remote_logfile_tabpane" style="padding-top: 15px">
+                                <form role="form" class="form-horizontal">
+                                    <div></div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <label>主机地址 *</label>
+                                            <select class="form-control selectpicker" name="host" data-live-search="true">
+                                                <option value=""> ---- </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <label>日志文件 *</label>
+                                            <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
+                                                <option value=""> ---- </option>
+                                            </select>
+                                            <span class="error_text" name="logfile_id_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <label>监控项</label>
+                                            <select multiple class="form-control selectpicker" name="monitor_item_id" data-live-search="true">
+                                                <option value="0" selected>total</option>
+                                            </select>
+                                            <span class="error_text" name="monitor_item_id_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <button type="button" class="btn btn-default" onclick="show_24h_chart(this)">查看24时</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_datetime" name="begin_time" placeholder="开始时间">
+                                            <span class="error_text" name="begin_time_error"></span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_datetime" name="end_time" placeholder="结束时间">
+                                            <span class="error_text" name="end_time_error"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <button type="button" class="btn btn-default" onclick="show_interval_chart(this)">连续查询</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_date" name="date" placeholder="日期一">
+                                            <span class="error_text" name="date_error"></span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form_date" name="date" placeholder="日期二">
+                                            <span class="error_text" name="date_error"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <button type="button" class="btn btn-default" onclick="show_contrast_chart(this)">日期对比</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 col-lg-10" style="clear: both">
+        <div class="panel panel-default" style="display: none">
+            <div class="panel-body" id="log_chart">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% end %}
+{% block body_js %}
+<script src="{{ static_url('js/chart.js') }}"></script>
+<script>
+    $.ajax({
+        url: "/logfiles/",
+        type: "GET",
+        data: {"location": "1"},
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#local_logfile_tabpane select[name='logfile_id']")
+            for(var i=0; i<data.length; i++){
+                select_obj.append("<option value='"+ data[i]["id"] +"'>"+ data[i]["path"] +"</option>")
+            }
+            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
+            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+        },
+        error:function (result) {}
+    })
+
+    remote_logfile_map = {}
+    $.ajax({
+        url:"/logfiles/",
+        type:"GET",
+        data: {"location": "2"},
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#remote_logfile_tabpane select[name='host']")
+            for(var i=0; i<data.length; i++){
+                if(!remote_logfile_map.hasOwnProperty(data[i]["host"])){
+                    remote_logfile_map[data[i]["host"]] = [data[i]]
+                    select_obj.append("<option value='"+ data[i]["host"] +"'>"+ data[i]["host"] +"</option>")
+                }else{
+                    remote_logfile_map[data[i]["host"]].push(data[i])
+                }
+            }
+            //console.log(remote_logfile_map)
+            $("#remote_logfile_tabpane select[name='host']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='host']").selectpicker('render');
+        },
+        error:function (result) {}
+    })
+
+    $(function(){
+        $("#remote_logfile_tabpane select[name='host']").change(function(){
+            var host = $(this).val()
+            if(!host){
+                $("#remote_logfile_tabpane select[name='logfile_id']").html("<option value='0' selected> total </option>")
+            }else{
+                var logfiles = remote_logfile_map[host]
+                var select_options = '<option value=""> ---- </option>'
+                for(var i=0;i<logfiles.length;i++){
+                    select_options += '<option value="'+ logfiles[i]["id"] +'"> '+ logfiles[i]["path"] +' </option>'
+                }
+                $("#remote_logfile_tabpane select[name='logfile_id']").html(select_options);
+            }
+            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+            $("#remote_logfile_tabpane select[name='monitor_item_id']").html("<option value='0' selected> total </option>")
+            $("#remote_logfile_tabpane select[name='monitor_item_id']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='monitor_item_id']").selectpicker('render');
+        })
+
+        $("select[name='logfile_id']").change(function(){
+            var form_obj = $(this).parents("form")
+            var logfile_id = $(this).find("option:selected").val()
+            form_obj.find("select[name='monitor_item_id']").html("<option value='0' selected> total </option>")
+            if(logfile_id){
+                $.ajax({
+                    url:"/monitor/items/",
+                    type:"GET",
+                    data:{"logfile_id": logfile_id},
+                    success:function (result) {
+                        var response_data = jQuery.parseJSON(result)
+                        var data = response_data['data']
+                        for(var i=0; i<data.length; i++){
+                            form_obj.find("select[name='monitor_item_id']").append("<option value='"+
+                                data[i]["id"] +"'>"+ data[i]["search_pattern"] +"</option>")
+                        }
+                        form_obj.find("select[name='monitor_item_id']").selectpicker('refresh');
+                        form_obj.find("select[name='monitor_item_id']").selectpicker('render');
+                    },
+                    error:function (result) {}
+                })
+            }
+            form_obj.find("select[name='monitor_item_id']").selectpicker('refresh');
+            form_obj.find("select[name='monitor_item_id']").selectpicker('render');
+        })
+    })
+
+
+    $(".form_datetime").datetimepicker({
+        language: 'zh-CN',
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+    });
+    $(".form_date").datetimepicker({
+        language: 'zh-CN',
+        format: "yyyy-mm-dd",
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        minView: 2
+    });
+</script>
+{% end %}

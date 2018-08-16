@@ -15,9 +15,13 @@ def query_valid(func):
         return func(self, pk)
     return _wrapper
 
-class Auditlog():
-    def __init__(self):
-        self.reqdata = {}
+
+class Handler(BaseRequestHandler):
+    @permission(role=1)
+    def get(self, pk=0):
+        ''' Query audit log '''
+        response_data = self._query(int(pk))
+        self._write(response_data)
 
     @query_valid
     def _query(self, pk):
@@ -40,10 +44,3 @@ class Auditlog():
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
         return {'code': 200, 'msg': 'Query Successful', 'data': results}
-
-class Handler(BaseRequestHandler, Auditlog):
-    @permission(role=1)
-    def get(self, pk=0):
-        ''' Query audit log '''
-        response_data = self._query(int(pk))
-        self._write(response_data)

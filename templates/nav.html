@@ -21,34 +21,32 @@
                         <li>
                             <a href="/"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
                         </li>
-                        <!-- 本地日志目录 -->
                         <li>
-                            <a href="/local_log/dir/html/"><i class="fa fa-folder-open fa-fw"></i> 日志目录</a>
+                            <a href="/logfiles/html/"><i class="fa fa-file fa-fw"></i> 日志文件</span></a>
                         </li>
-                        <!-- 本地日志文件 -->
+                        <!-- 阅读日志-->
                         <li>
-                            <a href="/local_log/file/html/"><i class="fa fa-file fa-fw"></i> 日志文件</span></a>
+                            <a href="/read/html/"><i class="fa fa-file-text fa-fw"></i> 日志阅读</span></a>
                         </li>
-                        <!-- 本地日志图表-->
+
+                        <!-- 轮询日志-->
                         <li>
-                            <a href="/local_log/chart/html/"><i class="fa fa-line-chart fa-fw"></i> 日志图表</span></a>
+                            <a href="/keepread/html/"><i class="fa fa-heartbeat fa-fw"></i> 日志轮询</span></a>
                         </li>
-                        <!-- 阅读本地日志-->
+
+                        <!-- 日志图表-->
                         <li>
-                            <a href="/local_log/read/html/"><i class="fa fa-file-text fa-fw"></i> 日志阅读</span></a>
+                            <a href="/charts/html/"><i class="fa fa-line-chart fa-fw"></i> 日志图表</span></a>
                         </li>
-                        <!-- 轮询本地日志-->
-                        <li>
-                            <a href="/local_log/keepread/html/"><i class="fa fa-heartbeat fa-fw"></i> 日志轮询</span></a>
-                        </li>
-                        {% if requser.get('role') == 1 %}
+
+                        {% if requser.get('role') == 1 or requser.get('username') == 'guest' %}
                         <!-- 用户-->
                         <li class="role1">
-                            <a href="/user/html/" class="role1"><i class="fa fa-users fa-fw"></i> 用户</span></a>
+                            <a href="/users/html/" class="role1"><i class="fa fa-users fa-fw"></i> 用户</span></a>
                         </li>
                         <!-- 审计-->
                         <li class="role1">
-                            <a href="/auditlog/html/" class="role1"><i class="fa fa-calendar-check-o fa-fw"></i> 审计</span></a>
+                            <a href="/auditlogs/html/" class="role1"><i class="fa fa-calendar-check-o fa-fw"></i> 审计</span></a>
                         </li>
                         {% end %}
                         <!--

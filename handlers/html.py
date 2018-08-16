@@ -5,8 +5,15 @@ from .base import permission, BaseRequestHandler
 class Handler(BaseRequestHandler):
     @permission()
     def get(self, uri=None):
-        html_path = '%s.html' % (uri.replace('/', '_') if uri else 'dashboard')
-        self.render(html_path, **{'requser': self.requser})
+        htmls = {
+            'logfiles': 'logfile.html',
+            'users': 'user.html',
+            'read': 'read.html',
+            'keepread': 'keepread.html',
+            'charts': 'chart.html',
+            'auditlogs': 'auditlog.html'
+        }
+        self.render(htmls.get(uri) if uri else 'dashboard.html', **{'requser': self.requser})
 
 class LoginHander(BaseRequestHandler):
     def get(self):

@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% block title %}
+日志轮询
+{% end %}
+{% block head_js %}
+<script src="{{ static_url('js/keepread.js') }}"></script>
+<script>
+    check_in = false
+    $(function(){
+        $("#log_content").hover(
+            function(){
+                check_in = true
+            },
+            function(){
+                check_in = false
+            }
+        );
+    })
+</script>
+{% end %}
+{% block style %}
+<style>
+</style>
+{% end %}
+{% block breadcrumb %}
+<li><i class="fa fa-heartbeat fa-fw" ></i> 日志轮询</li>
+{% end %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-12 col-lg-10">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-10 col-lg-10">
+                        <ul class="nav nav-pills">
+                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab">本地日志</a>
+                            </li>
+                            <li><a href="#remote_logfile_tabpane" data-toggle="tab">远程日志</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="local_logfile_tabpane" style="padding-top: 15px">
+                                <form role="form">
+                                    <div class="form-group">
+                                        <label>日志文件 *</label>
+                                        <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                        <span name="logfile_id_error" class="error_text"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>匹配模式</label>
+                                        <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式，输入正确的正则表达式并优先匹配">
+                                        <span class="error_text" name="search_pattern_error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)">查看</button>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="remote_logfile_tabpane" style="padding-top: 15px">
+                                <form role="form">
+                                    <div class="form-group">
+                                        <label>主机地址 *</label>
+                                        <select class="form-control selectpicker" name="host" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>日志文件 *</label>
+                                        <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                        <span class="error_text" name="logfile_id_error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>匹配模式</label>
+                                        <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
+                                            <option value=""> ---- </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式，输入正确的正则表达式并优先匹配">
+                                        <span class="error_text" name="search_pattern_error"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)">查看</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="log_stat_row" style="display: none">
+    <div class="col-sm-12 col-lg-10" style="clear: both; ">
+        <div class="row">
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-flask fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 23px" id="total_size">0</div>
+                                <div>文件总大小 / KB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-list-ol fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 23px" id="total_lines">0</div>
+                                <div>文件总行数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-file-o fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 23px" id="size">0</div>
+                                <div>输出大小 / KB</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="col-xs-3">
+                                <i class="fa fa-list-ol fa-3x"></i>
+                            </div>
+                            <div class="col-xs-9 text-right">
+                                <div style="font-size: 23px">
+                                    <span id="highlight_lines">0</span>/<span id="lines">0</span>
+                                </div>
+                                <div>高亮/输出行数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="row" id="log_content_row" style="display: none">
+    <div class="col-sm-12 col-lg-10" style="clear: both">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                窗口内容行数：<span id="window_lines">0</span>
+                <div class="pull-right">
+                    <button class="btn btn-xs btn-primary" onclick="close_websocket()"> <i class="fa fa-stop fa-fw" style=""></i> 关闭 </button>
+                    <button class="btn btn-xs btn-warning" onclick="clear_log_content()"> <i class="fa fa-trash-o fa-fw" style=""></i> 清空 </button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-12" style="max-height:500px;overflow:auto; clear: both;line-height: 20px" id="log_content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% end %}
+{% block body_js %}
+<script>
+    $.ajax({
+        url: "/logfiles/",
+        type: "GET",
+        data: {"location": "1"},
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#local_logfile_tabpane select[name='logfile_id']")
+            for(var i=0; i<data.length; i++){
+                select_obj.append("<option value='"+ data[i]["id"] +"'>"+ data[i]["path"] +"</option>")
+            }
+            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
+            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+        },
+        error:function (result) {}
+    })
+
+    remote_logfile_map = {}
+    $.ajax({
+        url:"/logfiles/",
+        type:"GET",
+        data: {"location": "2"},
+        success:function (result) {
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data['data']
+            var select_obj = $("#remote_logfile_tabpane select[name='host']")
+            for(var i=0; i<data.length; i++){
+                if(!remote_logfile_map.hasOwnProperty(data[i]["host"])){
+                    remote_logfile_map[data[i]["host"]] = [data[i]]
+                    select_obj.append("<option value='"+ data[i]["host"] +"'>"+ data[i]["host"] +"</option>")
+                }else{
+                    remote_logfile_map[data[i]["host"]].push(data[i])
+                }
+            }
+            //console.log(remote_logfile_map)
+            $("#remote_logfile_tabpane select[name='host']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='host']").selectpicker('render');
+        },
+        error:function (result) {}
+    })
+
+    $(function(){
+        $("#remote_logfile_tabpane select[name='host']").change(function(){
+            var host = $(this).val()
+            if(!host){
+                $("#remote_logfile_tabpane select[name='logfile_id']").html('<option value=""> ---- </option>')
+            }else{
+                var logfiles = remote_logfile_map[host]
+                var select_options = '<option value=""> ---- </option>'
+                for(var i=0;i<logfiles.length;i++){
+                    select_options += '<option value="'+ logfiles[i]["id"] +'"> '+ logfiles[i]["path"] +' </option>'
+                }
+                $("#remote_logfile_tabpane select[name='logfile_id']").html(select_options);
+            }
+            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+            $("#remote_logfile_tabpane select[name='search_pattern']").html('<option value=""> ---- </option>')
+            $("#remote_logfile_tabpane select[name='search_pattern']").selectpicker('refresh');
+            $("#remote_logfile_tabpane select[name='search_pattern']").selectpicker('render');
+        })
+
+        $("select[name='logfile_id']").change(function(){
+            var form_obj = $(this).parents("form")
+            var logfile_id = $(this).find("option:selected").val()
+            form_obj.find("select[name='search_pattern']").html("<option value=''> ---- </option>")
+            if(logfile_id){
+                $.ajax({
+                    url:"/monitor/items/",
+                    type:"GET",
+                    data:{"logfile_id": logfile_id},
+                    success:function (result) {
+                        var response_data = jQuery.parseJSON(result)
+                        var data = response_data['data']
+                        for(var i=0; i<data.length; i++){
+                            form_obj.find("select[name='search_pattern']").append("<option value='"+
+                                data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>")
+                        }
+                        form_obj.find("select[name='search_pattern']").selectpicker('refresh');
+                        form_obj.find("select[name='search_pattern']").selectpicker('render');
+                    },
+                    error:function (result) {}
+                })
+            }
+            form_obj.find("select[name='search_pattern']").selectpicker('refresh');
+            form_obj.find("select[name='search_pattern']").selectpicker('render');
+        })
+    })
+</script>
+{% end %}

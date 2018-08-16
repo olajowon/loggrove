@@ -54,18 +54,22 @@ def change_valid(func):
     return _wrapper
 
 
-class Password():
+class ResetHandler(BaseRequestHandler):
+    @permission(role=1)
+    def put(self, pk=0):
+        response_data = self._reset(int(pk))
+        self._write(response_data)
 
     @reset_valid
     def _reset(self, pk):
         update_sql = '''
-                    UPDATE 
-                      user 
-                    SET 
-                      password="%s"
-                    WHERE 
-                      id="%d"
-                ''' % (self.reqdata['password'], pk)
+            UPDATE 
+              user 
+            SET 
+              password="%s"
+            WHERE 
+              id="%d"
+        ''' % (self.reqdata['password'], pk)
         try:
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
@@ -75,6 +79,12 @@ class Password():
             self.reqdata['password'] = '*' * 6  # 隐藏密码
             return {'code': 200, 'msg': 'Reset successful', 'data': {'id': pk}}
 
+
+class Handler(BaseRequestHandler):
+    @permission()
+    def put(self):
+        response_data = self._change()
+        self._write(response_data)
 
     @change_valid
     def _change(self):
@@ -93,19 +103,5 @@ class Password():
             return {'code': 500, 'msg': 'Change failed, %s' % str(e)}
         else:
             self.requser['password'] = self.reqdata['password']
-            self.reqdata['password'] = '*' * 6   # 隐藏密码
+            self.reqdata['password'] = '*' * 6  # 隐藏密码
             return {'code': 200, 'msg': 'Change successful', 'data': {'id': self.requser.get('id')}}
-
-
-class ResetHandler(BaseRequestHandler, Password):
-    @permission(role=1)
-    def put(self, pk=0):
-        response_data = self._reset(int(pk))
-        self._write(response_data)
-
-
-class Handler(BaseRequestHandler, Password):
-    @permission()
-    def put(self):
-        response_data = self._change()
-        self._write(response_data)

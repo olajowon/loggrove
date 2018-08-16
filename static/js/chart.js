@@ -2,6 +2,9 @@
  * Created by zhouwang on 2018/6/24.
  */
 
+chartobj = null
+interval = null
+Highcharts.setOptions({global: {useUTC: false}})
 
 function show_24h_chart(_this){
     /* 24 小时实时图表 */
@@ -14,13 +17,13 @@ function show_24h_chart(_this){
     form_obj.prev().empty()
     $(".error_text").empty()
     $("#log_chart").parent().show()
-    var local_log_file_id = form_obj.find("[name=local_log_file_id]").val()
-    var local_log_file_path = form_obj.find("[name=local_log_file_id]").find("option:selected").text()
+    var logfile_id = form_obj.find("[name=logfile_id]").val()
+    var local_log_file_path = form_obj.find("[name=logfile_id]").find("option:selected").text()
     var monitor_item_ids = form_obj.find("[name=monitor_item_id]").val()
-    var get_data = "local_log_file_id=" + local_log_file_id + "&monitor_item_id=" + monitor_item_ids.join("&monitor_item_id=")
+    var get_data = "logfile_id=" + logfile_id + "&monitor_item_id=" + monitor_item_ids.join("&monitor_item_id=")
 
     $.ajax({
-        url:"/local_log/chart/",
+        url:"/charts/",
         type:"GET",
         data:get_data,
         success:function(result){
@@ -64,7 +67,7 @@ function show_24h_chart(_this){
 }
 
 
-function open_chart_modal(local_log_file_id){
+function open_chart_modal(logfile_id){
     /* 图表modal */
 
     if(interval){
@@ -74,15 +77,15 @@ function open_chart_modal(local_log_file_id){
     $("#update_chart").empty()
 
     $("#chartModal").modal("show")
-    var get_data = "local_log_file_id=" + local_log_file_id
+    var get_data = "logfile_id=" + logfile_id
     $.ajax({
-        url:"/local_log/chart/",
+        url:"/charts/",
         type:"GET",
         data:get_data,
         success:function(result){
             var response_data = jQuery.parseJSON(result)
             var data = response_data["data"]
-            var tr = $("#tr"+local_log_file_id)
+            var tr = $("#tr"+logfile_id)
 
             var chartdata = {
                 "title": {"text": "24小时日志行数趋势图"},
@@ -125,7 +128,7 @@ function update_24h_chart(get_data){
     /* 实时刷新 */
 
     $.ajax({
-        url:"/local_log/chart/",
+        url:"/charts/",
         type:"GET",
         data:get_data,
         success:function(result){
@@ -151,16 +154,16 @@ function show_interval_chart(_this){
     form_obj.prev().empty()
     $(".error_text").empty()
     $("#log_chart").parent().show()
-    var local_log_file_id = form_obj.find("[name=local_log_file_id]").val()
-    var local_log_file_path = form_obj.find("[name=local_log_file_id]").find("option:selected").text()
+    var logfile_id = form_obj.find("[name=logfile_id]").val()
+    var local_log_file_path = form_obj.find("[name=logfile_id]").find("option:selected").text()
     var begin_time = form_obj.find("[name=begin_time]").val()
     var end_time = form_obj.find("[name=end_time]").val()
     var monitor_item_ids = form_obj.find("[name=monitor_item_id]").val()
-    var get_data = "local_log_file_id=" + local_log_file_id + "&monitor_item_id=" + monitor_item_ids.join("&monitor_item_id=") +
+    var get_data = "logfile_id=" + logfile_id + "&monitor_item_id=" + monitor_item_ids.join("&monitor_item_id=") +
         "&begin_time=" + begin_time + "&end_time=" + end_time
 
     $.ajax({
-        url:"/local_log/chart/",
+        url:"/charts/",
         type:"GET",
         data: get_data,
         success:function(result){
@@ -211,15 +214,15 @@ function show_contrast_chart(_this){
     form_obj.prev().empty()
     $(".error_text").empty()
     $("#log_chart").parent().show()
-    var local_log_file_id = form_obj.find("[name=local_log_file_id]").val()
-    var local_log_file_path = form_obj.find("[name=local_log_file_id]").find("option:selected").text()
+    var logfile_id = form_obj.find("[name=logfile_id]").val()
+    var local_log_file_path = form_obj.find("[name=logfile_id]").find("option:selected").text()
     var monitor_item_ids = form_obj.find("[name=monitor_item_id]").val()
     var dates = [form_obj.find("[name=date]").eq(0).val(), form_obj.find("[name=date]").eq(1).val()]
 
-    var get_data = "local_log_file_id=" + local_log_file_id + "&date=" + dates.join("&date=") + "&mode=contrast" +
+    var get_data = "logfile_id=" + logfile_id + "&date=" + dates.join("&date=") + "&mode=contrast" +
         "&monitor_item_id=" + monitor_item_ids.join("&monitor_item_id=")
     $.ajax({
-            url:"/local_log/chart/",
+            url:"/charts/",
             type:"GET",
             data: get_data,
             success:function(result){

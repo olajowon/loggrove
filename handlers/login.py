@@ -19,7 +19,7 @@ class Handler(BaseRequestHandler):
         if username and password:
             select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s" and password="%s"' % \
                          (username, hashlib.md5(password.encode('UTF-8')).hexdigest())
-            count = self.mysqldb_cursor.execute(select_sql)
+            self.mysqldb_cursor.execute(select_sql)
             user = self.mysqldb_cursor.fetchone()
 
             if not user:

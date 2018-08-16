@@ -1,6 +1,7 @@
 # Created by zhouwang on 2018/5/5.
 
 import tornado.web
+import tornado.websocket
 import pymysql
 import pymysql.cursors
 import json
@@ -9,44 +10,55 @@ import urllib
 import uuid
 import datetime
 import settings
+import logging
+logger = logging.getLogger()
 
 def permission(role=3):
-    def __decorator(func):
-        def __wrapper(self, *args):
+    def _decorator(func):
+        def _wrapper(self, *args):
             if self.is_authenticated:
                 if role != 3:
                     if self.requser and self.requser.get('role') <= role:
                         return func(self, *args)
+                    elif self.request.headers.get('Upgrade') == 'websocket':
+                        self.write_message({'code': 403, 'msg': 'Forbidden'})
+                        self.close()
                     elif self.request.headers.get('Accept', '*/*').find('html') >= 0:
-                        #self.redirect('/user/login/html/?next=%s' % urllib.parse.quote(self.request.uri))
+                        self.set_status(403)
                         self.write('HTTP 403: Forbidden')
                     else:
                         self._write({'code': 403, 'msg': 'Forbidden'})
                 else:
                     return func(self, *args)
+            elif self.request.headers.get('Upgrade') == 'websocket':
+                self.write_message({'code': 401, 'msg': 'Unauthorized'})
+                self.close()
             elif self.request.headers.get('Accept', '*/*').find('html') >= 0:
                 self.redirect('/login/html/?next=%s' % urllib.parse.quote(self.request.uri))
             else:
                 self._write({'code': 401, 'msg': 'Unauthorized'})
-        return __wrapper
-    return __decorator
+        return _wrapper
+    return _decorator
 
 
 def mysqldb_conn_valid(func):
-    ''' 检查 mysql 连接 '''
+    ''' ping mysql 连接 '''
     def _wrapper(self):
         self.mysqldb_conn = self.application.settings.get('mysqldb_conn')
         try:
             self.mysqldb_conn.ping(True)
-        except:
+        except Exception as e:
+            logger.error('Ping MySQL failed: %s' % str(e))
             try:
                 mysqldb = settings.MYSQL_DB
                 self.mysqldb_conn = pymysql.connect(**mysqldb)
             except Exception as e:
+                logger.error('Connect MySQL failed: %s' % str(e))
                 if self.request.headers.get('Accept', '*/*').find('html') >= 0:
-                    self.write('HTTP 500: %s' % str(e))
+                    self.set_status(500)
+                    # self.write('HTTP 500: %s' % str(e))
                 else:
-                    self._write({'code':500, 'msg':'Connect MySQL failed, %s' % str(e)})
+                    self._write({'code':500, 'msg':'Connect MySQL failed', 'detail': str(e)})
                 return
             else:
                 self.application.settings['mysqldb_conn'] = self.mysqldb_conn
@@ -64,26 +76,15 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         if self.session_id:
             self.session_id = self.session_id.decode('utf-8')
             select_sql = '''
-                SELECT
-                  * 
-                FROM 
-                  session 
-                WHERE 
-                  session_id="%s" and expire_time>="%s"
+                SELECT * FROM session WHERE session_id="%s" and expire_time>="%s"
             ''' % (self.session_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
             self.mysqldb_cursor.execute(select_sql)
             self.session = self.mysqldb_cursor.fetchone()
-            #print(self.session)
 
         self.requser = None
         if self.session:
             select_sql = '''
-                SELECT
-                  * 
-                FROM 
-                  user 
-                WHERE 
-                  id="%d"
+                SELECT * FROM user WHERE id="%d"
             ''' % (self.session.get('user_id'))
             self.mysqldb_cursor.execute(select_sql)
             self.requser = self.mysqldb_cursor.fetchone()
@@ -91,6 +92,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         self.is_authenticated = False
         if self.requser:
             self.is_authenticated = True
+
 
     def logout(self):
         if self.session:
@@ -150,7 +152,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         exc_info = kwargs['exc_info']
         if status_code == 500:
             self.write(json.dumps({'code': status_code,
-                                   'msg': 'HTTP 500: Internal Server Error, %s' % exc_info[1].__str__()}))
+                                   'msg': 'HTTP 500: Internal Server Error', 'detail': exc_info[1].__str__()}))
         else:
             self.write(json.dumps({'code': status_code,
                                    'msg': exc_info[1].__str__()}))
@@ -231,3 +233,32 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                     ' and '.join(['%s in (%s)' % (key, ",".join(['"%s"' % val.decode() for val in vals]))
                                   for key, vals in arguments.items()])
         return where
+
+
+class BaseWebsocketHandler(tornado.websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        super(BaseWebsocketHandler, self).__init__(*args, **kwargs)
+        self.mysqldb_conn = self.application.settings.get('mysqldb_conn')
+
+        with self.mysqldb_conn.cursor(cursor=pymysql.cursors.DictCursor) as self.mysqldb_cursor:
+            self.session = None
+            self.session_id = self.get_secure_cookie('session_id')
+            if self.session_id:
+                self.session_id = self.session_id.decode('utf-8')
+                select_sql = '''
+                    SELECT * FROM session WHERE session_id="%s" and expire_time>="%s"
+                ''' % (self.session_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+                self.mysqldb_cursor.execute(select_sql)
+                self.session = self.mysqldb_cursor.fetchone()
+
+            self.requser = None
+            if self.session:
+                select_sql = '''
+                    SELECT * FROM user WHERE id="%d"
+                ''' % (self.session.get('user_id'))
+                self.mysqldb_cursor.execute(select_sql)
+                self.requser = self.mysqldb_cursor.fetchone()
+
+            self.is_authenticated = False
+            if self.requser:
+                self.is_authenticated = True

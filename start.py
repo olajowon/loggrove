@@ -30,6 +30,7 @@ mysqldb = settings.MYSQL_DB
 mysqldb_conn = pymysql.connect(**mysqldb)
 
 application = tornado.web.Application(
+    ssh = settings.SSH,
     mysqldb_conn = mysqldb_conn,
     handlers = urls.urlpatterns,
     template_path = settings.TEMPLATE_PATH,
@@ -37,7 +38,9 @@ application = tornado.web.Application(
     cookie_secret = 'qsefthukoplijygrdwa',
     login_url = settings.LOGIN_URL,
     #debug = True,
-    xsrf_cookies = True
+    xsrf_cookies = True,
+    #websocket_ping_interval = settings.WEBSOCKET_PING_INTERVAL,
+    #websocket_ping_timeout = settings.WEBSOCKET_PING_TIMEOUT,
 )
 
 http_server = tornado.httpserver.HTTPServer(application)
