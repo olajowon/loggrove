@@ -2,36 +2,7 @@
  * Created by zhouwang on 2018/8/8.
  */
 
-function write_new_row(id){
-    $.ajax({
-        url:"/logfiles/" + id + "/",
-        type:"GET",
-        success:function(result){
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data["data"]
-            for(var i=0; i<data.length; i++){
-                logfile_datatable.row.add( [
-                    data[i]["location"]==1?"本地":"远程",
-                    data[i]["host"],
-                    data[i]["path"],
-                    data[i]["comment"],
-                    data[i]["create_time"],
-                    "<button class='btn btn-xs btn-danger role2' " +
-                                    "onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-warning role2' " +
-                                    "onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-info' " +
-                                    "onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-primary' " +
-                                    "onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>",
-                    ]).draw().nodes().to$().attr('id', 'tr'+data[i]["id"])
-            }
-        },
-        error:function(result){}
-    })
-}
-
-function add_file(){
+function add_logfile(){
     var form_obj = $("#add_logfile_form")
     form_obj.prev().empty()
     $(".error_text").empty()
@@ -49,7 +20,7 @@ function add_file(){
                 '</div>'
             )
             var id = response_data["data"][0]["id"]
-            write_new_row(id)
+            add_new_row(id)
         },
         error:function (result) {
             if (result.status != 0) {
@@ -76,7 +47,33 @@ function add_file(){
     })
 }
 
-function delete_file(id){
+
+function add_new_row(id){
+    $.ajax({
+        url:"/logfiles/" + id + "/",
+        type:"GET",
+        success:function(result){
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data["data"]
+            var rows = []
+            for(var i=0; i<data.length; i++){
+                data[i]["option"] = "<button class='btn btn-xs btn-danger role2' " +
+                                    "onclick='delete_logfile(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
+                                "<button class='btn btn-xs btn-warning role2' " +
+                                    "onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+                                "<button class='btn btn-xs btn-info' " +
+                                    "onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
+                                "<button class='btn btn-xs btn-primary' " +
+                                    "onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>"
+                rows.push(data[i])
+            }
+            $("#logfile_table").bootstrapTable('prepend', rows);
+        },
+        error:function(result){}
+    })
+}
+
+function delete_logfile(id){
     var r = confirm("确定删除？");
     if(r == false){
         return false
@@ -87,7 +84,10 @@ function delete_file(id){
         type:"DELETE",
         data:{'_xsrf':get_cookie('_xsrf')},
         success:function(result){
-            logfile_datatable.row('#tr'+id).remove().draw(false);
+            $("#logfile_table").bootstrapTable('remove', {
+                field: 'id',
+                values: [id,]
+            });
             alert("删除成功！")
         },
         error:function(result){
@@ -96,7 +96,28 @@ function delete_file(id){
     })
 }
 
-function update_file(id){
+
+function open_update_modal(id){
+    var form_obj = $("#update_logfile_form")
+    form_obj.prev().empty()
+    $(".error_text").empty()
+
+    var row = $("#logfile_table").bootstrapTable('getRowByUniqueId', id)
+    var location = row["location"]
+    form_obj.find("input[name='location']").each(function(){
+        if($(this).val() == location){
+            $(this).prop("checked", true)
+        }
+    })
+    form_obj.find("input[name='host']").val(row["host"])
+    form_obj.find("input[name='path']").val(row["path"])
+    form_obj.find("input[name='comment']").val(row["comment"])
+    $("#updateModal .modal-footer").children("button:eq(1)").attr("onclick", "update_logfile(" +id+ ")")
+    $("#updateModal").modal("show")
+}
+
+
+function update_logfile(id){
     var form_obj = $("#update_logfile_form")
     form_obj.prev().empty()
     $(".error_text").empty()
@@ -120,11 +141,16 @@ function update_file(id){
                 '<i class="fa fa-check"></i> ' + response_data["msg"] +
                 '</div>'
             )
-            var tr = $("#tr"+id)
-            logfile_datatable.cell(tr.children("td:eq(0)")).data(form_data["location"]=="1"?"本地":"远程")
-            logfile_datatable.cell(tr.children("td:eq(1)")).data(form_data["host"])
-            logfile_datatable.cell(tr.children("td:eq(2)")).data(form_data["path"])
-            logfile_datatable.cell(tr.children("td:eq(3)")).data(form_data["comment"])
+
+            $("#logfile_table").bootstrapTable('updateByUniqueId', {
+                id: id,
+                row: {
+                    location: form_data["location"],
+                    host: form_data["host"] ? form_data["host"] : "localhost",
+                    path: form_data["path"],
+                    comment: form_data["comment"],
+                }
+            })
         },
         error:function(result) {
             if (result.status != 0) {
@@ -149,26 +175,6 @@ function update_file(id){
             }
         }
     })
-}
-
-
-function open_update_file_modal(id){
-    var form_obj = $("#update_logfile_form")
-    form_obj.prev().empty()
-    $(".error_text").empty()
-    var tr = $("#tr"+id)
-    var localtion = (tr.children("td:eq(0)").text()=="本地"? "1" :"2")
-
-    form_obj.find("input[name='location']").each(function(){
-        if($(this).val() == localtion){
-            $(this).prop("checked", true)
-        }
-    })
-    form_obj.find("input[name='host']").val(tr.children("td:eq(1)").text())
-    form_obj.find("input[name='path']").val(tr.children("td:eq(2)").text())
-    form_obj.find("input[name='comment']").val(tr.children("td:eq(3)").text())
-    $("#updateModal .modal-footer").children("button:eq(1)").attr("onclick", "update_file(" +id+ ")")
-    $("#updateModal").modal("show")
 }
 
 
@@ -411,6 +417,7 @@ $(function(){
     $('#addModal').on('show.bs.modal', function (){
         $("#add_logfile_form").prev().empty()
         $("#add_logfile_form")[0].reset()
+        $(".error_text").empty()
     })
 })
 

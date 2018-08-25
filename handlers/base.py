@@ -56,7 +56,7 @@ def mysqldb_conn_valid(func):
                 logger.error('Connect MySQL failed: %s' % str(e))
                 if self.request.headers.get('Accept', '*/*').find('html') >= 0:
                     self.set_status(500)
-                    # self.write('HTTP 500: %s' % str(e))
+                    self.write('HTTP 500: Internal Server Error')
                 else:
                     self._write({'code':500, 'msg':'Connect MySQL failed', 'detail': str(e)})
                 return
@@ -224,15 +224,27 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             return {'code': 200, 'msg': 'Successful'}
 
 
-    def format_where_param(self, pk, arguments):
-        where = ''
+    def select_sql_params(self, pk=0, fields=[], search_fields=[]):
+        where = limit = order = ''
         if pk:
             where = 'WHERE id="%d"' % pk
-        elif arguments:
-            where = 'WHERE %s' % \
-                    ' and '.join(['%s in (%s)' % (key, ",".join(['"%s"' % val.decode() for val in vals]))
-                                  for key, vals in arguments.items()])
-        return where
+        elif self.request.arguments:
+            if not self.get_argument('search', None):
+                where_fields = [field for field in fields if self.get_argument(field, None) != None]
+                if where_fields:
+                    where = ' WHERE %s' % \
+                        ' and '.join(['%s in (%s)' % (field, ",".join(self.get_arguments(field)))
+                                      for field in where_fields])
+            else:
+                where = 'WHERE concat(%s) like "%%%s%%"' % (','.join(search_fields), self.get_argument('search'))
+
+            if self.get_argument('offset', None) and self.get_argument('limit', None):
+                limit = 'LIMIT %s, %s' % (self.get_argument('offset'), self.get_argument('limit'))
+
+            if self.get_argument('order', None) and self.get_argument('sort', None):
+                order = 'ORDER BY %s %s' % (self.get_argument('sort'), self.get_argument('order'))
+        return where, order, limit
+
 
 
 class BaseWebsocketHandler(tornado.websocket.WebSocketHandler):

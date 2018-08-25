@@ -117,6 +117,7 @@ class Handler(BaseWebsocketHandler):
                 total_lines = int(output.split()[0].strip())
 
                 logfile.seek(0, 2)
+                total_size = logfile.tell()
                 while self.ws_connection:
                     contents = logfile.readlines()
                     if contents:
@@ -125,11 +126,11 @@ class Handler(BaseWebsocketHandler):
 
                         if self.search_pattern:
                             contents = [line for line in contents if re.search(self.search_pattern, line)]
-                        data = {'contents': contents, 'total_size': total_size, 'total_lines':total_lines,
-                                'lines': len(contents), 'size': len(''.join(contents))}
-                        message = {'code': 0, 'msg': 'Read lines successful', 'data': data}
-                        if self.ws_connection:
-                            self.write_message(json.dumps(message))
+                    data = {'contents': contents, 'total_size': total_size, 'total_lines':total_lines,
+                            'lines': len(contents), 'size': len(''.join(contents))}
+                    message = {'code': 0, 'msg': 'Read lines successful', 'data': data}
+                    if self.ws_connection:
+                        self.write_message(json.dumps(message))
                     time.sleep(3)
             except Exception as e:
                 logging.error('Keepread logfile failed: %s' % str(e))

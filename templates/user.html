@@ -4,41 +4,12 @@
 {% end %}
 {% block style %}
 <style>
+    #user_table td {word-break: keep-all; white-space:nowrap; }
+    #user_table th {word-break: keep-all; white-space:nowrap; }
 </style>
 {% end %}
 {% block head_js %}
 <script src="{{ static_url('js/user.js') }}"></script>
-<script>
-    $.ajax({
-        url:"/users/",
-        type:"GET",
-        data:'',
-        success:function (result) {
-            $("#user_table tbody").empty()
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            for(var i=0; i<data.length; i++){
-                var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
-                    "<td>" + data[i]["username"] +  "</td>" +
-                    "<td>" + data[i]["fullname"] +  "</td>" +
-                    "<td>" + data[i]["email"] +  "</td>" +
-                    "<td>" + data[i]["join_time"] +  "</td>" +
-                    "<td>" + (data[i]["status"]=="1"?"活动":"禁用") +  "</td>" +
-                    "<td>" + (data[i]["role"]=="1" ? "超级管理员" : (data[i]["role"]=="2" ? "管理员" : "普通用户")) +  "</td>" +
-                    "<td >" +
-                    "<button class='btn btn-xs btn-danger role1' " +
-                    "onclick='delete_user(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-                    "<button class='btn btn-xs btn-warning role1' " +
-                    "onclick='open_update_user_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-                    "<button class='btn btn-xs btn-primary role1' " +
-                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>重置密码</button>&nbsp;" +
-                    "</td></tr>"
-                $("#user_table tbody").append(tr_html)
-            }
-        },
-        error:function (result) {}
-    })
-</script>
 {% end %}
 {% block breadcrumb %}
 <li><i class="fa fa-users fa-fw"></i> 用户</li>
@@ -56,20 +27,7 @@
             </div>
             <div class="panel-body">
                 <div class="table-responsive" style="border: 0">
-                    <table width="100%" class="table table-striped table-bordered table-hover" id="user_table">
-                        <thead>
-                        <tr>
-                            <th>用户名</th>
-                            <th>姓名</th>
-                            <th>邮箱</th>
-                            <th>加入时间</th>
-                            <th>状态</th>
-                            <th>角色</th>
-                            <th>选项</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
+                    <table id="user_table">
                     </table>
                 </div>
             </div>
@@ -293,29 +251,70 @@
 {% end %}
 {% block body_js %}
 <script>
-    //$("#addModal").modal("show")
-    $(function(){
-        user_datatable = $('#user_table').DataTable({
-            aaSorting : [[3, "desc"]],
-            language:{
-                "emptyTable":     "表中没有可用数据",
-                "info": "当前 _START_ - _END_ 条，共 _TOTAL_ 条",
-                "infoFiltered":   "",
-                "infoPostFix":    "",
-                "thousands":      ",",
-                "infoEmpty": "_TOTAL_ 条",
-                "lengthMenu":     "每页 _MENU_ 条",
-                "loadingRecords": "加载中...",
-                "processing":     "处理中...",
-                "search": "搜索:",
-                "paginate": {
-                    "first":      "首页",
-                    "last":       "尾页",
-                    "next":       "下一页",
-                    "previous":   "上一页"
-                },
-            }
+    function role_formatter(value, row) {
+        return (value == 1 ? "超级管理员" : (value==2 ? "管理员" : "普通用户"))
+    }
 
+    function status_formatter(value, row) {
+        return (value == 1 ? "活动" : "禁用")
+    }
+
+    $(function(){
+        $('#user_table').bootstrapTable({
+            columns: [{
+                field: 'id',
+                title: 'ID',
+                sortable: true
+            }, {
+                field: 'username',
+                title: '用户名',
+                sortable: true,
+            }, {
+                field: 'fullname',
+                title: '姓名',
+                sortable: true
+            }, {
+                field: 'email',
+                title: '邮箱',
+                sortable: true
+            }, {
+                field: 'join_time',
+                title: '加入时间',
+                sortable: true
+            }, {
+                field: 'role',
+                title: '角色',
+                sortable: true,
+                formatter: role_formatter,
+            }, {
+                field: 'status',
+                title: '状态',
+                sortable: true,
+                formatter: status_formatter,
+            }, {
+                field: 'option',
+                title: '选项',
+            },],
+            uniqueId: "id",
+            toggle: "table",
+            search: "true",
+            searchOnEnterKey: true,
+            sidePagination: "server",
+            pagination: true,
+            url:"/users/",
+            responseHandler:function(data){
+                var rows = []
+                for(var i=0;i<data["data"].length;i++){
+                    data["data"][i]["option"] = "<button class='btn btn-xs btn-danger role1' " +
+                                "onclick='delete_user(" + data["data"][i]["id"] + ")'>删除</button>&nbsp;" +
+                            "<button class='btn btn-xs btn-warning role1' " +
+                                "onclick='open_update_modal(" + data["data"][i]["id"] + ")'>编辑</button>&nbsp;" +
+                            "<button class='btn btn-xs btn-primary role1' " +
+                                "onclick='open_reset_password_modal(" + data["data"][i]["id"] + ")'>重置密码</button>"
+                    rows.push(data["data"][i])
+                }
+                return {"total": data["total"], "rows": rows}
+            },
         });
     })
 </script>

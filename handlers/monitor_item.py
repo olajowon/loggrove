@@ -80,7 +80,8 @@ def query_valid(func):
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
             query_keys = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle','check_interval',
-                          'trigger_format', 'dingding_webhook', 'comment', 'create_time']
+                          'trigger_format', 'dingding_webhook', 'comment', 'create_time',  'order', 'search',
+                          'offset', 'limit', 'sort']
             error = {key:'参数不可用' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
@@ -191,6 +192,9 @@ class Handler(BaseRequestHandler):
 
     @query_valid
     def _query(self, pk):
+        fields = search_fields = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle','check_interval',
+                          'trigger_format', 'dingding_webhook', 'comment', 'create_time']
+        where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
         select_sql = '''
             SELECT
               id, logfile_id, 
@@ -203,10 +207,15 @@ class Handler(BaseRequestHandler):
               comment 
             FROM 
               monitor_item
-            %s
-        ''' % self.format_where_param(pk, self.request.arguments)
+            %s %s %s
+        ''' % (where, order, limit)
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
+        if limit:
+            total_sql = 'SELECT count(*) as total FROM monitor %s' % where
+            self.mysqldb_cursor.execute(total_sql)
+            total = self.mysqldb_cursor.fetchone().get('total')
+            return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query successful', 'data': results}
 
 

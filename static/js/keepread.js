@@ -3,10 +3,14 @@
  */
  
 websocket = null
-settimeout = null
 
 function logfile_keepread(_this){
-    $(".error_text").empty()
+    if(websocket){
+        alert('需要先关闭上一次连接或刷新页面！')
+        return false
+    }
+
+    $("form .error_text").empty()
     var form_obj = $(_this).parent()
     var logfile_id = form_obj.find("select[name='logfile_id']").val()
     var other_search_pattern = form_obj.find("input[name='other_search_pattern']").val()
@@ -23,12 +27,8 @@ function logfile_keepread(_this){
 
     $("#log_content_row").show()
 
-    if(websocket){
-        websocket.close()
-    }
-
     var log_content_html = "连接中 [Connection] ...<br>"
-    $("#log_content").append(log_content_html)
+    $("#log_content").html(log_content_html)
 
     if(filter_search_line){
         var host = "ws://" + location.hostname + ":" + location.port +
@@ -105,6 +105,7 @@ function logfile_keepread(_this){
         if(!check_in) {
             $("#log_content").scrollTop($("#log_content")[0].scrollHeight);
         }
+        websocket = null
     }
 }
 

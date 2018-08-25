@@ -137,3 +137,11 @@ function open_show_profile_modal(){
     })
     $("#profileModal").modal("show")
 }
+
+$(function(){
+    $('#changePasswordModal').on('show.bs.modal', function (){
+        $("#change_password_form").prev().empty()
+        $("#change_password_form")[0].reset()
+        $(".error_text").empty()
+    })
+})

@@ -60,7 +60,8 @@ def query_valid(func):
         error = {}
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
-            query_keys = ['id', 'location', 'path', 'comment', 'create_time']
+            query_keys = ['id', 'location', 'host', 'path', 'comment', 'create_time',
+                          'order', 'search', 'offset', 'limit', 'sort']
             error = {key: '参数不可用' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
@@ -125,16 +126,24 @@ class Handler(BaseRequestHandler):
 
     @query_valid
     def _query(self, pk):
+        fields = search_fields = ['id', 'location', 'host', 'path', 'comment', 'create_time']
+        where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
         select_sql = '''
-            SELECT 
-              id, location, host, path, date_format(create_time, "%%Y-%%m-%%d %%H:%%i:%%s") as create_time, comment 
-            FROM 
+            SELECT
+              id, location, host, path, date_format(create_time, "%%Y-%%m-%%d %%H:%%i:%%s") as create_time, comment
+            FROM
               logfile
-            %s
-        ''' % self.format_where_param(int(pk), self.request.arguments)
+            %s %s %s
+        ''' % (where, order, limit)
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
+        if limit:
+            total_sql = 'SELECT count(*) as total FROM logfile %s' % where
+            self.mysqldb_cursor.execute(total_sql)
+            total = self.mysqldb_cursor.fetchone().get('total')
+            return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query Successful', 'data': results}
+
 
 
     @add_valid

@@ -2,36 +2,30 @@
  * Created by zhouwang on 2018/6/2.
  */
 
-function write_new_row(id){
+function add_new_row(id){
     $.ajax({
         url:"/users/" + id + "/",
         type:"GET",
         success:function(result){
             var response_data = jQuery.parseJSON(result)
             var data = response_data["data"]
+            var rows = []
             for(var i=0; i<data.length; i++){
-                user_datatable.row.add( [
-                    data[i]["username"],
-                    data[i]["fullname"],
-                    data[i]["email"],
-                    data[i]["join_time"],
-                    (data[i]["status"]=="1"?"活动":"禁用"),
-                    (data[i]["role"]=="1" ? "超级管理员" : (data[i]["role"]=="2" ? "管理员" : "普通用户")),
-                    "<button class='btn btn-xs btn-danger' " +
+                data[i]["option"] = "<button class='btn btn-xs btn-danger role1' " +
                                     "onclick='delete_user(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-warning' " +
-                                    "onclick='open_update_user_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-                                "<button class='btn btn-xs btn-primary perm' " +
-                                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>重置密码</button>&nbsp;",
-                    ]).draw().nodes().to$().attr('id', 'tr'+data[i]["id"])
+                                "<button class='btn btn-xs btn-warning role1' " +
+                                    "onclick='open_update_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+                                "<button class='btn btn-xs btn-primary role1' " +
+                                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>重置密码</button>"
+                rows.push(data[i])
             }
+            $("#user_table").bootstrapTable('prepend', rows);
         },
         error:function(result){}
     })
 }
 
 function add_user(){
-
     var form_obj = $("#add_user_form")
     form_obj.prev().empty()
     $(".error_text").empty()
@@ -49,7 +43,7 @@ function add_user(){
                 '</div>'
             )
             var id = response_data["data"][0]["id"]
-            write_new_row(id)
+            add_new_row(id)
         },
         error:function (result) {
             if (result.status != 0) {
@@ -102,12 +96,17 @@ function update_user(id){
                 '<i class="fa fa-check"></i> ' + response_data["msg"] +
                 '</div>'
             )
-            var tr = $("#tr"+id)
-            user_datatable.cell(tr.children("td:eq(0)")).data(form_data["username"])
-            user_datatable.cell(tr.children("td:eq(1)")).data(form_data["fullname"])
-            user_datatable.cell(tr.children("td:eq(2)")).data(form_data["email"])
-            user_datatable.cell(tr.children("td:eq(4)")).data(form_data["status"]=="1"?"活动":"禁用")
-            user_datatable.cell(tr.children("td:eq(5)")).data((form_data["role"]=="1" ? "超级管理员" : (form_data["role"]=="2" ? "管理员" : "普通用户")))
+
+            $("#user_table").bootstrapTable('updateByUniqueId', {
+                id: id,
+                row: {
+                    username: form_data["username"],
+                    fullname: form_data["fullname"],
+                    email: form_data["email"],
+                    status: form_data["status"],
+                    role: form_data["role"],
+                }
+            })
         },
         error:function(result) {
             if (result.status != 0) {
@@ -146,7 +145,10 @@ function delete_user(id){
         type:"DELETE",
         data:{'_xsrf':get_cookie('_xsrf')},
         success:function(result){
-            user_datatable.row('#tr'+id).remove().draw(false);
+            $("#user_table").bootstrapTable('remove', {
+                field: 'id',
+                values: [id,]
+            });
             alert("删除成功！")
         },
         error:function(result){
@@ -156,17 +158,18 @@ function delete_user(id){
 }
 
 
-function open_update_user_modal(id){
+function open_update_modal(id){
     var form_obj = $("#update_user_form")
     form_obj.prev().empty()
     $(".error_text").empty()
 
-    var tr = $("#tr"+id)
-    form_obj.find("input[name='username']").val(tr.children("td:eq(0)").text())
-    form_obj.find("input[name='fullname']").val(tr.children("td:eq(1)").text())
-    form_obj.find("input[name='email']").val(tr.children("td:eq(2)").text())
-    form_obj.find("select[name='status'] option").filter(function(){return $(this).text()==tr.children("td:eq(4)").text()}).prop("selected", true);
-    form_obj.find("select[name='role'] option").filter(function(){return $(this).text()==tr.children("td:eq(5)").text()}).prop("selected", true);
+    var row = $("#user_table").bootstrapTable('getRowByUniqueId', id)
+
+    form_obj.find("input[name='username']").val(row["username"])
+    form_obj.find("input[name='fullname']").val(row["fullname"])
+    form_obj.find("input[name='email']").val(row["email"])
+    form_obj.find("select[name='status'] option").filter(function(){return $(this).val()==row["status"]}).prop("selected", true);
+    form_obj.find("select[name='role'] option").filter(function(){return $(this).val()==row["role"]}).prop("selected", true);
     $("#updateModal .modal-footer").children("button:eq(1)").attr("onclick", "update_user(" +id+ ")")
     $("#updateModal").modal("show")
 }
@@ -175,6 +178,7 @@ function open_update_user_modal(id){
 function open_reset_password_modal(id){
     var form_obj = $("#reset_password_form")
     form_obj.prev().empty()
+    form_obj[0].reset()
     $(".error_text").empty()
     $("#resetPasswordModal .modal-footer").children("button:eq(1)").attr("onclick", "reset_password(" +id+ ")")
     $("#resetPasswordModal").modal("show")
@@ -243,3 +247,11 @@ function reset_password(id){
         }
     })
 }
+
+$(function(){
+    $('#addModal').on('show.bs.modal', function (){
+        $("#add_user_form").prev().empty()
+        $("#add_user_form")[0].reset()
+        $(".error_text").empty()
+    })
+})

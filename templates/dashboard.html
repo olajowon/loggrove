@@ -10,28 +10,6 @@ Dashboard
 {% end %}
 {% block head_js %}
 <script src="{{ static_url('js/user.js') }}"></script>
-<script>
-    $.ajax({
-        url:"/history/",
-        type:"GET",
-        data:'',
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-
-            for(var i=0; i<response_data["data"].length; i++){
-                var n = i+1
-                $("#myhistory tbody").append("<tr>"+
-                    "<td>"+ n +"</td>" +
-                    "<td>"+ response_data["data"][i]["record_time"] +"</td>" +
-                    "<td>"+ response_data["data"][i]["uri"] +"</td>" +
-                    "<td>"+ response_data["data"][i]["method"] +"</td>" +
-                    "</tr>")
-            }
-
-        },
-        error:function (result) {}
-    })
-</script>
 {% end %}
 {% block breadcrumb %}
 <li><i class="fa fa-dashboard fa-fw"></i> Dashboard</li>
@@ -185,23 +163,14 @@ Dashboard
             </div>
 
             <div class="col-lg-8">
-                <div class="panel panel-default" id="myhistory">
+                <div class="panel panel-default">
                     <div class="panel-heading">
-                        <div class="panel-title"><i class="fa fa-calendar-check-o fa-fw"></i> 最近操作</div>
+                        <div class="panel-title"><i class="fa fa-calendar-check-o fa-fw"></i> 最近操作 (前100)</div>
                     </div>
                     <div class="panel-body">
                         <div class="table-responsive" style="border: 0">
-                            <table width="100%" class="table table-striped table-bordered">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>时间</th>
-                                    <th>Uri</th>
-                                    <th>Method</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
+                            <table width="100%" id="history_table">
+
                             </table>
                         </div>
                     </div>
@@ -254,25 +223,27 @@ Dashboard
     })
 
     $(function(){
-        myhistory_datatable = $('#myhistory table').DataTable({
-            aaSorting : [[1, "desc"]],
-            language:{
-                "emptyTable":     "表中没有可用数据",
-                "info": "当前 _START_ - _END_ 条，共 _TOTAL_ 条",
-                "infoFiltered":   "",
-                "infoPostFix":    "",
-                "thousands":      ",",
-                "infoEmpty": "_TOTAL_ 条",
-                "lengthMenu":     "每页 _MENU_ 条",
-                "loadingRecords": "加载中...",
-                "processing":     "处理中...",
-                "search": "搜索:",
-                "paginate": {
-                    "first":      "首页",
-                    "last":       "尾页",
-                    "next":       "下一页",
-                    "previous":   "上一页"
-                },
+        $('#history_table').bootstrapTable({
+            columns: [ {
+                field: 'record_time',
+                title: '记录时间',
+                sortable: true,
+            }, {
+                field: 'uri',
+                title: 'Uri',
+                sortable: true
+            }, {
+                field: 'method',
+                title: 'Method',
+                sortable: true
+            },],
+            toggle: "table",
+            pagination: true,
+            sortName: 'record_time',
+            sortOrder: 'desc',
+            url:"/historys/",
+            responseHandler:function(data){
+                return data["data"]
             }
         });
     })

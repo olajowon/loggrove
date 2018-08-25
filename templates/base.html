@@ -32,14 +32,18 @@
     <!-- Custom CSS -->
     <link href="{{ static_url('sb-admin-2/dist/css/sb-admin-2.css') }}" rel="stylesheet">
 
-    <!-- Custom Fonts -->
+    <!-- Font-awesome CSS -->
     <link href="{{ static_url('sb-admin-2/vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
 
-    <!-- bootstrap-select -->
+    <!-- Bootstrap-select CSS -->
     <link href="{{ static_url('bootstrap-select-1.13.1/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
 
-    <!-- bootstrap-datetimepicker -->
+    <!-- Bootstrap-datetimepicker CSS -->
     <link href="{{ static_url('bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+
+    <!-- Bootstrap-table CSS -->
+    <link href="{{ static_url('bootstrap-table/dist/bootstrap-table.min.css') }}" rel="stylesheet">
+
 
     <style>
         .error_text {color: #FFCC00}
@@ -137,7 +141,7 @@
                 </button>
                 <a href="https://github.com/olajowon/loggrove/" target="_blank">点个赞呗！ <i class="fa fa-star" aria-hidden="true"></i> star</a><br>
 
-                <span>注：这里的 添加、编辑、删除按钮、用户页面、审计页面 仅让 guest 用户能够预览，想要更多的操作及权限，<a href="https://github.com/olajowon/loggrove/" target="_blank">请点我下载 Loggrove</a>。</span>
+                <span>注：这里的 添加、编辑、删除按钮、用户页面、审计页面 仅让 guest 用户能够预览，想要更多的操作及权限，<a href="https://github.com/olajowon/loggrove/" target="_blank">请点我下载L</a>。</span>
             </div>
             {% end %}
             {% block content %}{% end %}
@@ -293,19 +297,21 @@
     <!-- Custom Theme JavaScript -->
     <script src="{{ static_url('sb-admin-2/dist/js/sb-admin-2.js') }}"></script>
 
-    <!-- bootstrap-select JavaScript -->
+    <!-- Bootstrap-select JavaScript -->
     <script src="{{ static_url('bootstrap-select-1.13.1/dist/js/bootstrap-select.min.js') }}"></script>
 
-    <!-- bootstrap-treeview JavaScript -->
-    <script src="{{ static_url('bootstrap-treeview/dist/bootstrap-treeview.min.js') }}"></script>
-
-    <!-- bootstrap-datetimepicker JavaScript -->
+    <!-- Bootstrap-datetimepicker JavaScript -->
     <script src="{{ static_url('bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js') }}"></script>
     <script src="{{ static_url('bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js') }}"></script>
 
-    <!-- highcharts JavaScript -->
+    <!-- Highcharts JavaScript -->
     <script src="{{ static_url('highcharts-6.1.0/code/highcharts.js') }}"></script>
     <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+
+    <!-- Bootstrap-table JavaScript -->
+    <script src="{{ static_url('bootstrap-table/dist/bootstrap-table.min.js') }}"></script>
+    <!-- Bootstrap-table zh-CN JavaScript -->
+    <script src="{{ static_url('bootstrap-table/dist/bootstrap-table-zh-CN.js') }}"></script>
 
     <script>
         $(function(){

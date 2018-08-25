@@ -4,7 +4,6 @@ import subprocess
 import tornado
 import re
 import paramiko
-import tornado.log
 import logging
 logger = logging.getLogger()
 

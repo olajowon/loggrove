@@ -6,6 +6,8 @@
 <style>
     #monitorItemExplainModal small {margin-bottom: 5px}
     #monitorItemExplainModal span {font-size: 14px}
+    #logfile_table td {word-break: keep-all; white-space:nowrap;}
+    #logfile_table th {word-break: keep-all; white-space:nowrap;}
 </style>
 {% end %}
 {% block head_js %}
@@ -22,29 +24,19 @@
             <div class="panel-heading">
                 <i class="fa fa-table fa-fw"></i> 日志列表
                 <div class="pull-right">
-                    <button class="btn btn-xs btn-success role2" data-toggle="modal" data-target="#addModal"><i
-                            class="fa fa-plus fa-fw" style=""></i> 添加
+                    <button class="btn btn-xs btn-success role2" data-toggle="modal" data-target="#addModal">
+                        <i class="fa fa-plus fa-fw" style=""></i> 添加
                     </button>
                 </div>
             </div>
             <div class="panel-body">
                 <div class="table-responsive" style="border: 0">
-                    <table width="100%" class="table table-striped table-bordered table-hover"
-                           id="logfile_table">
-                        <thead>
-                        <tr>
-                            <th>位置</th>
-                            <th>主机地址</th>
-                            <th>日志路径</th>
-                            <th>备注</th>
-                            <th>录入时间</th>
-                            <th>选项</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
+                    <table id="logfile_table">
                     </table>
                 </div>
+            </div>
+
+            <div style="text-align:center; margin-top:2%; clear: both" id="paging">
             </div>
         </div>
     </div>
@@ -106,7 +98,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                 </button>
-                <button type="button" class="btn btn-primary" onclick="add_file()">
+                <button type="button" class="btn btn-primary" onclick="add_logfile()">
                     提交
                 </button>
             </div>
@@ -170,7 +162,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                 </button>
-                <button type="button" class="btn btn-primary" onclick="update_file()">
+                <button type="button" class="btn btn-primary" onclick="update_logfile()">
                     提交
                 </button>
             </div>
@@ -309,57 +301,62 @@
 {% block body_js %}
 <script src="{{ static_url('js/chart.js') }}"></script>
 <script>
-    $.ajax({
-        url: "/logfiles/",
-        type: "GET",
-        data: '',
-        success: function (result) {
-            $("#logfile_table tbody").empty()
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            for (var i = 0; i < data.length; i++) {
-                var tr_html = "<tr id='tr" + data[i]["id"] + "'>" +
-                    "<td>" + (data[i]["location"]==1?"本地":"远程") + "</td>" +
-                    "<td>" + data[i]["host"] + "</td>" +
-                    "<td>" + data[i]["path"] + "</td>" +
-                    "<td>" + data[i]["comment"] + "</td>" +
-                    "<td>" + data[i]["create_time"] + "</td>" +
-                    "<td>" +
-                    "<button class='btn btn-xs btn-danger role2' " +
-                    "onclick='delete_file(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
-                    "<button class='btn btn-xs btn-warning role2' " +
-                    "onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
-                    "<button class='btn btn-xs btn-info' " +
-                    "onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
-                    "<button class='btn btn-xs btn-primary'" +
-                    "onclick='open_monitor_item_modal(" + data[i]["id"] + ")'>监控项</button>" +
-                    "</td></tr>"
-                $("#logfile_table tbody").append(tr_html)
-            }
-        },
-        error: function (result) {}
-    })
+    function location_formatter(value, row) {
+        return (value==1?"本地":"远程")
+    }
 
-    $(function () {
-        logfile_datatable = $('#logfile_table').DataTable({
-            aaSorting: [[4, "desc"]],
-            language: {
-                "emptyTable": "表中没有可用数据",
-                "info": "当前 _START_ - _END_ 条，共 _TOTAL_ 条",
-                "infoFiltered": "",
-                "infoPostFix": "",
-                "thousands": ",",
-                "infoEmpty": "_TOTAL_ 条",
-                "lengthMenu": "每页 _MENU_ 条",
-                "loadingRecords": "加载中...",
-                "processing": "处理中...",
-                "search": "搜索:",
-                "paginate": {
-                    "first": "首页",
-                    "last": "尾页",
-                    "next": "下一页",
-                    "previous": "上一页"
-                },
+    $(function(){
+        $('#logfile_table').bootstrapTable({
+            columns: [{
+                field: 'id',
+                title: 'ID',
+                sortable: true
+            }, {
+                field: 'location',
+                title: '位置',
+                sortable: true,
+                formatter: location_formatter,
+            }, {
+                field: 'host',
+                title: '主机',
+                sortable: true
+            }, {
+                field: 'path',
+                title: '文件路径',
+                sortable: true
+            }, {
+                field: 'comment',
+                title: '备注',
+                sortable: true
+            }, {
+                field: 'create_time',
+                title: '录入时间',
+                sortable: true
+            }, {
+                field: 'option',
+                title: '选项',
+            },],
+            uniqueId: "id",
+            toggle: "table",
+            search: "true",
+            searchOnEnterKey: true,
+            sidePagination: "server",
+            pagination: true,
+            url:"/logfiles/",
+            responseHandler:function(data){
+                var rows = []
+                for(var i=0;i<data["data"].length;i++){
+                    data["data"][i]["option"] = "<button class='btn btn-xs btn-danger role2' " +
+                                "onclick='delete_logfile(" + data["data"][i]["id"] + ")'>删除</button>&nbsp;" +
+                            "<button class='btn btn-xs btn-warning role2' " +
+                                "onclick='open_update_modal(" + data["data"][i]["id"] + ")'>编辑</button>&nbsp;" +
+                            "<button class='btn btn-xs btn-info' " +
+                                "onclick='open_chart_modal(" + data["data"][i]["id"] + ")'>图表</button>&nbsp;" +
+                            "<button class='btn btn-xs btn-primary' " +
+                                "onclick='open_monitor_item_modal(" + data["data"][i]["id"] + ")'>监控项</button>"
+                    rows.push(data["data"][i])
+                }
+                return {"total": data["total"], "rows": rows}
             }
         });
     })

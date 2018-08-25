@@ -5,7 +5,7 @@
 [![Tornado](https://img.shields.io/badge/tornado-5.0.2-brightgreen.svg)](http://www.tornadoweb.org/)
 
 ## Introduction
-Loggrove 是对**日志文件**进行 阅读、轮询、关键词匹配、监控告警、图表展示 的 Web 服务。
+Loggrove 是对本地、远程**日志文件**进行 阅读、轮询、关键词匹配、统计、监控、告警、图表展示 的 Web 服务。
 
 ### 超轻组件
 Python 3.6 
@@ -32,13 +32,9 @@ Sb-admin 2.0
 
 
 ## Requirements
-
-**位置：** 必须部署在日志服务器上，Loggrove 暂不支持对远程日志的管理和查看；
-
 **组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx、Crond 等服务；
 
-**命令：** python3、pip3、mysql、crontab 命令可用，否则会导致初始化 Loggrove 失败。
-
+**命令：** python3、pip3、mysql、crontab 命令可用，否则会导致初始化 Loggrove 失败；
 
 ## Installation & Configuration
 ### 下载
@@ -52,6 +48,15 @@ Sb-admin 2.0
 	    'passwd': '<passwd>',
 	    ...
 	}
+	
+	SSH = {
+    	'username': 'root',                  
+    	'password': '<password>',                          
+    	...
+	}
+**MYSQL_DB：** MySQL数据库连接配置，请配置一个所有远程日志主机可以正确的连接的地址，避免localhost、127.0.0.1 类似的地址；	
+
+**SSH：** SSH连接配置，用于SSH连接远程日志主机，建议使用root，避免权限不够。
 
 ### 构建 build.py
 	python3 build.py
@@ -91,9 +96,27 @@ Supervisor 文档: <http://demo.pythoner.com/itt2zh/ch8.html#ch8-3>
 	    }
 	}
 	
-### 默认日志
+### 项目日志
 	tail -f /tmp/loggrove.log	
 
+### 监控任务（统计、监控、告警）
+#### 监控脚本
+	loggrove/scripts/monitor.py
+	
+#### 本地日志监控（crontab）
+	crontab -e
+	
+	* * * * * /usr/local/bin/python3 /room/programs/loggrove/scripts/monitor.py localhost >> /tmp/loggrove_monitor.log # loggrove_monitor
+**注：** 构建 build.py 初始化时，会向本地crontab添加该任务	 
+	
+#### 远程日志监控（crontab）				
+	crontab -e
+	
+	* * * * * /usr/bin/python /anypath/monitor.py HOST >> /tmp/loggrove_monitor.log # loggrove_monitor
+**注：** 添加远程日志后，需要在远程主机上，部署monitor.py脚本，并添加crontab任务
+	
+	
+	
 
 
 

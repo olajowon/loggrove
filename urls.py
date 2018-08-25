@@ -27,7 +27,7 @@ urlpatterns = [
     (r'^/login/$', login.Handler),
     (r'^/logout/$', logout.Handler),
     (r'^/profile/$', profile.Handler),
-    (r'^/history/$', history.Handler),
+    (r'^/historys/$', history.Handler),
     (r'^/users/$', user.Handler),
     (r'^/users/(\d+)/$', user.Handler),
     (r'^/users/(\d+)/password/$', password.ResetHandler),

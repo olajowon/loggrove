@@ -61,7 +61,7 @@ def query_valid(func):
         error = {}
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
-            query_keys = ['id', 'username', 'email', 'fullname']
+            query_keys = ['id', 'username', 'email', 'fullname', 'order', 'search', 'offset', 'limit', 'sort']
             error = {key:'参数不可用' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
@@ -117,6 +117,8 @@ class Handler(BaseRequestHandler):
 
     @query_valid
     def _query(self, pk):
+        fields = search_fields = ['id', 'username', 'email', 'fullname']
+        where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
         select_sql = '''
         SELECT
             id,
@@ -127,10 +129,15 @@ class Handler(BaseRequestHandler):
             role,  
             date_format(join_time, "%%Y-%%m-%%d %%H:%%i:%%s") as join_time
         FROM user
-        %s
-        ''' % self.format_where_param(pk, self.request.arguments)
+        %s %s %s
+        ''' % (where, order, limit)
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
+        if limit:
+            total_sql = 'SELECT count(*) as total FROM user %s' % where
+            self.mysqldb_cursor.execute(total_sql)
+            total = self.mysqldb_cursor.fetchone().get('total')
+            return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query successful', 'data': results}
 
     @add_valid
@@ -176,14 +183,12 @@ class Handler(BaseRequestHandler):
               role="%s"
             WHERE 
               id="%d"
-        ''' % (
-        self.reqdata['username'],
-        self.reqdata['fullname'],
-        self.reqdata['email'],
-        self.reqdata['status'],
-        self.reqdata['role'],
-        pk)
-
+        ''' % (self.reqdata['username'],
+               self.reqdata['fullname'],
+               self.reqdata['email'],
+               self.reqdata['status'],
+               self.reqdata['role'],
+               pk)
         try:
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
