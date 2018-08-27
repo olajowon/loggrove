@@ -12,10 +12,10 @@ LOGIN_URL = '/login/html/'
 
 
 MYSQL_DB = {
-    'host': 'host',      # 请不要使用localhost,127.0.0.1等本地地址，这些地址会导致生成的监控脚本在远程日志主机上无法连接数据库
+    'host': 'localhost',      # 请不要使用localhost,127.0.0.1等本地地址，这些地址会导致生成的监控脚本在远程日志主机上无法连接数据库
     'port': 3306,
-    'user': 'user',
-    'password': 'password',
+    'user': 'root',
+    'password': '123456',
     'db': 'loggrove',
     'charset': 'utf8',
     'autocommit': True,
@@ -23,7 +23,7 @@ MYSQL_DB = {
 
 SSH = {
     'username': 'root',                         # 请使用 root，避免权限不够
-    'password': 'password',                     # 使用公私钥认证时，密码可为空
+    'password': 'www.yunniao.cn==2016',                     # 使用公私钥认证时，密码可为空
     'port': 22,
 #    'key_filename': '~/.ssh/id_rsa',        # 用户私钥文件路径，启用后优先使用公私钥验证
     'timeout': 5
