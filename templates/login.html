@@ -86,17 +86,21 @@
                             for (var k in response_data["error"]) {
                                 form_obj.find("[name='" + k + "']").parent().next().text(response_data["error"][k])
                             }
+                        }else if(response_data["code"] == 401){
+                            form_obj.find("[name='password']").parent().next().text('用户名或密码不正确')
+                        }else if(response_data["code"] == 403){
+                            form_obj.find("[name='username']").parent().next().text('用户已禁用')
                         }else{
                             form_obj.children().first().html(
                                 '<div class="alert alert-danger">' +
-                                '<i class="fa fa-times"></i> ' + response_data["msg"] +
+                                '<i class="fa fa-times"></i> 登录失败，请联系管理员' +
                                 '</div>'
                             )
                         }
                     }else{
                         form_obj.children().first().html(
                             '<div class="alert alert-danger">' +
-                            '<i class="fa fa-times"></i> HTTP: 0 ' + result.statusText +
+                            '<i class="fa fa-times"></i>  登录失败，请联系管理员' +
                             '</div>'
                         )
                     }

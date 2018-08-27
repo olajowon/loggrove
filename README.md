@@ -5,7 +5,7 @@
 [![Tornado](https://img.shields.io/badge/tornado-5.0.2-brightgreen.svg)](http://www.tornadoweb.org/)
 
 ## Introduction
-Loggrove 是对本地、远程**日志文件**进行 阅读、轮询、关键词匹配、统计、监控、告警、图表展示 的 Web 服务。
+Loggrove 是对本地、远程**日志文件**进行 阅读、轮询、关键词匹配、统计、监控、钉钉告警、Highcharts图表展示 的 Web 平台服务，并包含 用户认证、LDAP认证、操作审计 等基础服务。
 
 ### 超轻组件
 Python 3.6 
@@ -42,21 +42,32 @@ Sb-admin 2.0
 
 ### 修改配置 settings.py
 	MYSQL_DB = {
-	    'host': '<host>',
-	    'port': <port>,
-	    'user': '<user>',
-	    'passwd': '<passwd>',
+	    'host': 'host',
+	    'port': 3306,
+	    'user': 'user',
+	    'password': 'password',
 	    ...
 	}
 	
 	SSH = {
-    	'username': 'root',                  
-    	'password': '<password>',                          
-    	...
+       'username': 'root',                  
+       'password': 'password', 
+       'port': 22,                         
+       ...
 	}
-**MYSQL_DB：** MySQL数据库连接配置，请配置一个所有远程日志主机可以正确的连接的地址，避免localhost、127.0.0.1 类似的地址；	
+	
+	LDAP = {
+       'auth': False,           # True 开启ldap认证
+       'base_dn': 'cn=cn,dc=dc,dc=dc',     
+       'server_uri': 'ldap://...',
+       'bind_dn': 'uid=uid,cn=cn,cn=cn,dc=dc,dc=dc',    
+       'bind_password': 'password',
+	}
+**MYSQL_DB：** MySQL数据库连接配置，请配置一个所有远程日志主机可以正确的连接的地址，避免localhost、127.0.0.1 类似的地址。	
 
 **SSH：** SSH连接配置，用于SSH连接远程日志主机，建议使用root，避免权限不够。
+
+**LDAP：** LDAP认证配置，这里选择性开启，Loggrove 本身内置了用户认证 ，没有LDAP需求的场景可以忽略此配置。
 
 ### 构建 build.py
 	python3 build.py
@@ -106,13 +117,13 @@ Supervisor 文档: <http://demo.pythoner.com/itt2zh/ch8.html#ch8-3>
 #### 本地日志监控（crontab）
 	crontab -e
 	
-	* * * * * /usr/local/bin/python3 /room/programs/loggrove/scripts/monitor.py localhost >> /tmp/loggrove_monitor.log # loggrove_monitor
-**注：** 构建 build.py 初始化时，会向本地crontab添加该任务	 
+	* * * * * /usr/local/bin/python3 <loggrove path>/scripts/monitor.py localhost >> /tmp/loggrove_monitor.log # loggrove_monitor
+**注：** 构建 build.py 初始化时，程序会向本地crontab添加该任务	 
 	
 #### 远程日志监控（crontab）				
 	crontab -e
 	
-	* * * * * /usr/bin/python /anypath/monitor.py HOST >> /tmp/loggrove_monitor.log # loggrove_monitor
+	* * * * * /usr/bin/python <any path>/monitor.py HOST >> /tmp/loggrove_monitor.log # loggrove_monitor
 **注：** 添加远程日志后，需要在远程主机上，部署monitor.py脚本，并添加crontab任务
 	
 	

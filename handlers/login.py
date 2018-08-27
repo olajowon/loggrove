@@ -2,39 +2,147 @@
 
 from .base import BaseRequestHandler
 import hashlib
+import ldap
+import datetime
+import logging
+logger = logging.getLogger()
+
+
+def login_valid(func):
+    def _wrapper(self):
+        self.username = self.get_argument('username', '')
+        self.password = self.get_argument('password', '')
+        error = {}
+        if not self.username:
+            error['username'] = '用户名是必填项'
+        if not self.password:
+            error['password'] = '密码是必填项'
+        if error:
+            self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})
+        else:
+            return func(self)
+    return _wrapper
+
 
 class Handler(BaseRequestHandler):
     ''' login '''
+
+    @login_valid
     def post(self):
         self.logout()   #退出登录
-
-        username = self.get_argument('username', '')
-        password = self.get_argument('password', '')
-        error = {}
-        if not username:
-            error['username'] = '用户名是必填项'
-        if not password:
-            error['password'] = '密码是必填项'
-
-        if username and password:
-            select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s" and password="%s"' % \
-                         (username, hashlib.md5(password.encode('UTF-8')).hexdigest())
-            self.mysqldb_cursor.execute(select_sql)
-            user = self.mysqldb_cursor.fetchone()
-
-            if not user:
-                error['username'] = '用户名或密码错误'
-                error['password'] = '用户名或密码错误'
-            elif user.get('status') != 1:
-                error['username'] = '用户已禁用'
-
-        if error:
-            response_data = {'code':400, 'msg':'Bad POST data', 'error':error}
+        if self.application.settings.get('ldap').get('auth') != True or self.username == 'admin':
+            response_data = self.base_auth_login()
         else:
-            self.reqdata = {    # 用于存储操作记录
-                'username': username,
-                'password': '*' * 6     # 隐藏密码
-            }
-            response_data = self.login(user)    # 登录用户
+            response_data = self.ldap_auth_login()
+
+        self.reqdata = {            # 用于存储操作记录
+            'username': self.username,
+            'password': '*' * 6     # 隐藏密码
+        }
         self._write(response_data)
 
+
+    def ldap_auth_login(self):
+        _ldap = self.application.settings.get('ldap')
+        try:
+            conn = ldap.initialize(_ldap.get('server_uri'))
+            conn.protocal_version = ldap.VERSION3
+            conn.simple_bind_s(_ldap.get('bind_dn'), _ldap.get('bind_password'))
+        except Exception as e:
+            logging.error('Initialize Bind ldap failed: %s' % str(e))
+            response_data = {'code': 500, 'msg': 'Login failed'}
+        else:
+            scope_subtree = ldap.SCOPE_SUBTREE
+            filterstr = '(uid=%s)' % self.username
+            result_id = conn.search(_ldap.get('base_dn'), scope_subtree, filterstr, None)
+            result_type, result_data = conn.result(result_id, 0)
+            if not result_data:
+                response_data = {'code': 401, 'msg': 'Username or password incorrect'}
+            else:
+                try:
+                    conn.simple_bind_s(result_data[0][0], self.password)
+                except Exception as e:
+                    logging.error('Bind ldap user failed: %s' % str(e))
+                    response_data = {'code': 401, 'msg': 'Username or password incorrect'}
+                else:
+                    self.ldap_user = result_data[0][1]
+                    user = self.base_user()     # loggrove 基本用户
+                    if not user:
+                        response_data = {'code': 500, 'msg': 'Login failed'}
+                    elif user.get('status') != 1:
+                        response_data = {'code': 403, 'msg': 'User disabled'}
+                    else:
+                        response_data = self.login(user)
+        return response_data
+
+
+    def base_auth_login(self):
+        select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s" and password="%s"' % \
+                     (self.username, hashlib.md5(self.password.encode('UTF-8')).hexdigest())
+        self.mysqldb_cursor.execute(select_sql)
+        user = self.mysqldb_cursor.fetchone()
+
+        if not user:
+            response_data = {'code': 401, 'msg': 'Username or password incorrect'}
+        elif user.get('status') != 1:
+            response_data = {'code': 403, 'msg': 'User disabled'}
+        else:
+            response_data = self.login(user)  # 登录用户
+        return response_data
+
+
+    def base_user(self):
+        select_sql = 'SELECT * FROM user WHERE username="%s"' % self.username
+        self.mysqldb_cursor.execute(select_sql)
+        user = self.mysqldb_cursor.fetchone()
+
+        if not user:
+            insert_sql = '''
+                INSERT INTO 
+                  user (
+                    username, 
+                    password, 
+                    fullname, 
+                    email,
+                    join_time, 
+                    status, 
+                    role) 
+                VALUES ("%s", "%s", "%s", "%s", "%s", "1", "3")
+            ''' % (self.username,
+                   hashlib.md5(self.password.encode('UTF-8')).hexdigest(),
+                   self.username.capitalize(),
+                   self.ldap_user.get('mail')[0].decode('UTF-8')
+                                            if self.ldap_user.get('mail') else '%s@loggrove.com' % self.username,
+                   datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),)
+
+            try:
+                self.mysqldb_cursor.execute(insert_sql)
+            except Exception as e:
+                self.mysqldb_conn.rollback()
+                logger.error('Add base user failed: %s' % str(e))
+                return False
+        else:
+            update_sql = '''
+                UPDATE 
+                  user 
+                SET 
+                  username="%s", 
+                  password="%s",
+                  email="%s"
+                WHERE 
+                  id="%d"
+            ''' % (self.username,
+                   hashlib.md5(self.password.encode('UTF-8')).hexdigest(),
+                   self.ldap_user.get('mail')[0].decode('UTF-8') if self.ldap_user.get('mail') else user['email'],
+                   user['id'])
+
+            try:
+                self.mysqldb_cursor.execute(update_sql)
+            except Exception as e:
+                self.mysqldb_conn.rollback()
+                logger.error('Update base user failed: %s' % str(e))
+                return False
+
+        select_sql = 'SELECT * FROM user WHERE username="%s"' % self.username
+        self.mysqldb_cursor.execute(select_sql)
+        return self.mysqldb_cursor.fetchone()

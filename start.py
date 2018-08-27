@@ -14,8 +14,8 @@ import pymysql.cursors
 tornado.options.define('port', default=8800, help='Run on the given port', type=int)
 
 # 日志选项
-for key, value in settings.LOGGING['options'].items():
-    tornado.options.options.__setattr__(key, value)
+# for key, value in settings.LOGGING['options'].items():
+#     tornado.options.options.__setattr__(key, value)
 
 tornado.options.parse_command_line()
 
@@ -31,13 +31,14 @@ mysqldb_conn = pymysql.connect(**mysqldb)
 
 application = tornado.web.Application(
     ssh = settings.SSH,
+    ldap = settings.LDAP,
     mysqldb_conn = mysqldb_conn,
     handlers = urls.urlpatterns,
     template_path = settings.TEMPLATE_PATH,
     static_path = settings.STATIC_PATH,
     cookie_secret = 'qsefthukoplijygrdwa',
     login_url = settings.LOGIN_URL,
-    #debug = True,
+    debug = True,
     xsrf_cookies = True,
     #websocket_ping_interval = settings.WEBSOCKET_PING_INTERVAL,
     #websocket_ping_timeout = settings.WEBSOCKET_PING_TIMEOUT,

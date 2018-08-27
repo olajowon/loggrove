@@ -12,21 +12,29 @@ LOGIN_URL = '/login/html/'
 
 
 MYSQL_DB = {
-    'host': '<host>',      # 请不要使用localhost,127.0.0.1等本地地址，这些地址会导致生成的监控脚本在远程日志主机上无法连接数据库
-    'port': <port>,
-    'user': '<user>',
-    'password': '<password>',
+    'host': 'host',      # 请不要使用localhost,127.0.0.1等本地地址，这些地址会导致生成的监控脚本在远程日志主机上无法连接数据库
+    'port': 3306,
+    'user': 'user',
+    'password': 'password',
     'db': 'loggrove',
     'charset': 'utf8',
     'autocommit': True,
 }
 
 SSH = {
-    'username': 'root',                      # 请使用 root，避免权限不够
-    'password': '<password>',                # 使用公私钥认证时，密码可为空
+    'username': 'root',                         # 请使用 root，避免权限不够
+    'password': 'password',                     # 使用公私钥认证时，密码可为空
     'port': 22,
-#    'key_filename': '~/.ssh/id_rsa',        # 指定用户私钥文件路径，启用后优先使用公私钥验证且不能为空
+#    'key_filename': '~/.ssh/id_rsa',        # 用户私钥文件路径，启用后优先使用公私钥验证
     'timeout': 5
+}
+
+LDAP = {
+    'auth': False,           # True 开启ldap认证，admin 不会通过ldap认证
+    'base_dn': 'cn=cn,dc=dc,dc=dc',     # cn=cn,dc=dc,dc=dc
+    'server_uri': 'ldap://...',
+    'bind_dn': 'uid=uid,cn=cn,cn=cn,dc=dc,dc=dc', # uid=uid,cn=cn,cn=cn,dc=dc,dc=dc
+    'bind_password': 'password',
 }
 
 LOGGING = {

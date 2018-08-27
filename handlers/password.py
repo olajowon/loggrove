@@ -5,10 +5,15 @@ import hashlib
 
 def reset_valid(func):
     def _wrapper(self, pk):
-        select_sql = 'SELECT id FROM user WHERE id="%d"' % int(pk)
+        select_sql = 'SELECT id, username FROM user WHERE id="%d"' % int(pk)
         count = self.mysqldb_cursor.execute(select_sql)
+
         if not count:
             return  {'code': 404, 'msg': 'Reset user not found'}
+        else:
+            username = self.mysqldb_cursor.fetchone().get('username')
+            if username != 'admin' and self.application.settings.get('ldap').get('auth') == True:
+                return {'code': 403, 'msg': 'Authentication based no LDAP, Prohibit reset password'}
 
         error = {}
         password = self.get_argument('password', '')
@@ -29,6 +34,9 @@ def reset_valid(func):
 
 def change_valid(func):
     def _wrapper(self):
+        if self.application.settings.get('ldap').get('auth') == True and self.requser.get('username') != 'admin':
+            return {'code': 403, 'msg': 'Authentication based no LDAP, Prohibit change password'}
+
         error = {}
         old_password = self.get_argument('old_password', '')
         new_password = self.get_argument('new_password', '')

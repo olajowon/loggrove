@@ -143,13 +143,13 @@ class MonitorCount(threading.Thread):
 
     def send_alert(self):
         for item in self.alert_items:
-            min_str_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.mk_time-item[3]*60))
+            min_str_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.mk_time-item[3]*60+60))
             select_sql = '''
                 SELECT SUM(count) as count_sum
                 FROM monitor_count
                 WHERE logfile_id="%d"
                 AND monitor_item_id="%d"
-                AND count_time >"%s" 
+                AND count_time >="%s"
             ''' % (self.fileid, item[0], min_str_time)
             thread_lock.acquire()
             self.cursor.execute(select_sql)
