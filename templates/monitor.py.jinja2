@@ -69,7 +69,7 @@ class MonitorCount(threading.Thread):
         print('%s, %s, End positon: %s' % (self.str_time, self.filepath, end_position))
         for item in monitor_items:
             self.counts[item[0]] = 0
-            if item[2] == 1 and self.mk_time%(item[3]*60) == 0:
+            if item[2] == 1 and (self.mk_time+60)%(item[3]*60) == 0:
                 self.alert_items.append(item)
 
         with open(self.filepath) as file:

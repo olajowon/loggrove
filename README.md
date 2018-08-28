@@ -34,7 +34,7 @@ Sb-admin 2.0
 ## Requirements
 **组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx、Crond 等服务；
 
-**命令：** python3、pip3、mysql、crontab 命令可用，否则会导致初始化 Loggrove 失败；
+**命令：** python3、pip3、mysql、crontab、yum 命令可用，否则会导致初始化 Loggrove 失败；
 
 ## Installation & Configuration
 ### 下载
