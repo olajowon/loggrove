@@ -222,89 +222,89 @@ function show_contrast_chart(_this){
     var get_data = "logfile_id=" + logfile_id + "&date=" + dates.join("&date=") + "&mode=contrast" +
         "&monitor_item_id=" + monitor_item_ids.join("&monitor_item_id=")
     $.ajax({
-            url:"/charts/",
-            type:"GET",
-            data: get_data,
-            success:function(result){
-                var response_data = jQuery.parseJSON(result)
-                var data = response_data["data"]
+        url:"/charts/",
+        type:"GET",
+        data: get_data,
+        success:function(result){
+            var response_data = jQuery.parseJSON(result)
+            var data = response_data["data"]
 
-                Highcharts.chart('log_chart', {
-                    chart: {
-                        type: 'spline',
-                        zoomType: 'x'
+            Highcharts.chart('log_chart', {
+                chart: {
+                    type: 'spline',
+                    zoomType: 'x'
+                },
+                title: {"text": "日志行数对比图"},
+                subtitle: {"text": local_log_file_path},
+                xAxis: {
+                    type: 'datetime',
+                    title: {
+                        text: null
                     },
-                    title: {"text": "日志行数对比图"},
-                    subtitle: {"text": local_log_file_path},
-                    xAxis: {
-                        type: 'datetime',
-                        title: {
-                            text: null
+                    min: data[0]["xAxis"]["min"],
+                    max: data[0]["xAxis"]["max"],
+                    labels: {
+                        formatter:function () {
+                            return Highcharts.dateFormat("%H:%M",this.value);
                         },
-                        min: data[0]["xAxis"]["min"],
-                        max: data[0]["xAxis"]["max"],
-                        labels: {
-                            formatter:function () {
-                                return Highcharts.dateFormat("%H:%M",this.value);
-                            },
-                        }
-                    },
-                    yAxis: {
-                        title: {
-                            text: '行数'
-                        },
-                        min: 0
-                    },
-                    tooltip: {
-                        valueSuffix: '',
-                        shared: true,
-                        crosshairs: true,
-
-                        dateTimeLabelFormats: {
-                            minute:"%H:%M",
-                        },
-                    },
-                    plotOptions: {
-                        spline: {
-                            marker: {
-                                enabled: true
-                            }
-                        }
-
-                    },
-                    series: data[0]["series"],
-                    credits: {
-                        text: 'Loggrove',
-                        href: ''
-                    },
-                    global: {
-                        useUTC: false
                     }
-                });
-            },
-            error:function(result){
-                if (result.status != 0) {
-                    var response_data = jQuery.parseJSON(result.responseText)
-                    if (response_data["code"] == 400) {
-                        for (var k in response_data["error"]) {
-                            form_obj.find("[name='" + k + "_error']").text(response_data["error"][k])
+                },
+                yAxis: {
+                    title: {
+                        text: '行数'
+                    },
+                    min: 0
+                },
+                tooltip: {
+                    valueSuffix: '',
+                    shared: true,
+                    crosshairs: true,
+
+                    dateTimeLabelFormats: {
+                        minute:"%H:%M",
+                    },
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            enabled: true
                         }
-                    }else{
-                        form_obj.prev().html(
-                            '<div class="alert alert-danger">' +
-                            '<i class="fa fa-times"></i> ' + response_data["msg"] +
-                            '</div>'
-                        )
+                    }
+
+                },
+                series: data[0]["series"],
+                credits: {
+                    text: 'Loggrove',
+                    href: ''
+                },
+                global: {
+                    useUTC: false
+                }
+            });
+        },
+        error:function(result){
+            if (result.status != 0) {
+                var response_data = jQuery.parseJSON(result.responseText)
+                if (response_data["code"] == 400) {
+                    for (var k in response_data["error"]) {
+                        form_obj.find("[name='" + k + "_error']").text(response_data["error"][k])
                     }
                 }else{
                     form_obj.prev().html(
                         '<div class="alert alert-danger">' +
-                        '<i class="fa fa-times"></i> HTTP: 0 ' + result.statusText +
+                        '<i class="fa fa-times"></i> ' + response_data["msg"] +
                         '</div>'
                     )
                 }
+            }else{
+                form_obj.prev().html(
+                    '<div class="alert alert-danger">' +
+                    '<i class="fa fa-times"></i> HTTP: 0 ' + result.statusText +
+                    '</div>'
+                )
             }
-        })
+        }
+    })
 }
 
 

@@ -95,13 +95,13 @@ class Handler(BaseRequestHandler):
                 results = self.mysqldb_cursor.fetchall()
                 series.append({'name': search_pattern, 'data': results,})
         elif self.mode == 'contrast':
-            min_mktime = time.mktime(time.strptime('1970-1-1 00:00', '%Y-%m-%d %H:%M')) * 1000
-            max_mktime = time.mktime(time.strptime('1970-1-1 23:59', '%Y-%m-%d %H:%M')) * 1000
+            min_mktime = time.mktime(time.strptime('2000-1-1 00:00', '%Y-%m-%d %H:%M')) * 1000
+            max_mktime = time.mktime(time.strptime('2000-1-1 23:59', '%Y-%m-%d %H:%M')) * 1000
             for date in self.dates:
                 for item_id, search_pattern in self.monitor_items:
                     select_sql = '''
                         SELECT
-                          UNIX_TIMESTAMP(date_format(count_time, "1970-1-1 %%H:%%i:%%s")) * 1000,
+                          UNIX_TIMESTAMP(date_format(count_time, "2000-1-1 %%H:%%i:%%s")) * 1000,
                           count
                         FROM    
                           monitor_count

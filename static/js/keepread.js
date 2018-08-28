@@ -34,7 +34,7 @@ function logfile_keepread(_this){
         var host = "ws://" + location.hostname + ":" + location.port +
             "/keepread/?logfile_id="+ logfile_id +"&search_pattern="+ search_pattern
     }else{
-        var host = "ws://" + location.hostname + ":" + location.port + "/local_log/keepread/?logfile_id="+ logfile_id
+        var host = "ws://" + location.hostname + ":" + location.port + "/keepread/?logfile_id="+ logfile_id
     }
 
     websocket = new WebSocket(host)

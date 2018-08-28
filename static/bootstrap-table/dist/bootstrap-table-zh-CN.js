@@ -19,7 +19,7 @@
             return '搜索...';
         },
         formatNoMatches: function () {
-            return '没有找到匹配的记录';
+            return '无相关数据';
         },
         formatPaginationSwitch: function () {
             return '隐藏/显示分页';
