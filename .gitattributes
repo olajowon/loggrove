@@ -4,3 +4,4 @@ static/bootstrap-table/* linguist-vendored
 static/highcharts-6.1.0/* linguist-vendored
 static/img/* linguist-vendored
 static/sb-admin-2/* linguist-vendored
+templates/* linguist-vendored
