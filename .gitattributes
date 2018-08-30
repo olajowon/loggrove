@@ -1,4 +1,6 @@
-static/bootstrap* linguist-vendored=false
-static/highcharts/* linguist-vendored=false
+static/bootstrap-datetimepicker/* linguist-vendored=false
+static/bootstrap-select-1.13.1/* linguist-vendored=false
+static/bootstrap-table/* linguist-vendored=false
+static/highcharts-6.1.0/* linguist-vendored=false
 static/img/* linguist-vendored=false
 static/sb-admin-2/* linguist-vendored=false
