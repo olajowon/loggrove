@@ -233,7 +233,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                 where_fields = [field for field in fields if self.get_argument(field, None) != None]
                 if where_fields:
                     where = ' WHERE %s' % \
-                        ' and '.join(['%s in (%s)' % (field, ",".join(self.get_arguments(field)))
+                        ' and '.join(['%s in (%s)' % (field, ','.join(['"%s"' % v for v in self.get_arguments(field)]))
                                       for field in where_fields])
             else:
                 where = 'WHERE concat(%s) like "%%%s%%"' % (','.join(search_fields), self.get_argument('search'))

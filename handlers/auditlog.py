@@ -8,12 +8,11 @@ def query_valid(func):
         error = {}
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
-            query_keys = ['id', 'uri', 'method', 'record_time', 'user_id',
+            query_keys = ['id', 'uri', 'method', 'record_time', 'username',
                           'order', 'search', 'offset', 'limit', 'sort']
             error = {key:'参数不可用' for key in argument_keys if key not in query_keys}
         if error:
-            self._write({'code': 400, 'msg': 'Bad GET param', 'error': error})
-            return
+            return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)
     return _wrapper
 
@@ -33,8 +32,8 @@ class Handler(BaseRequestHandler):
         fields = ['id', 'uri', 'method', 'record_time', 'username']
         search_fields = ['uri', 'method', 'record_time', 'username']
         where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
-        where = where.replace('id', 't1.id').replace('uri', 't1.uri').replace('method', 't1.method').\
-            replace('record_time', 't1.record_time').replace('username', 't2.username')
+        where, order = self._replace(where), self._replace(order)
+
         select_sql = '''
             SELECT
               t1.id,
@@ -60,3 +59,7 @@ class Handler(BaseRequestHandler):
             total = self.mysqldb_cursor.fetchone().get('total')
             return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query Successful', 'data': results}
+
+    def _replace(self, param):
+        return param.replace('id', 't1.id').replace('uri', 't1.uri').replace('method', 't1.method').\
+            replace('record_time', 't1.record_time').replace('username', 't2.username')
