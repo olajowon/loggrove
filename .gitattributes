@@ -1,0 +1,4 @@
+static/bootstrap* linguist-vendored=false
+static/highcharts/* linguist-vendored=false
+static/img/* linguist-vendored=false
+static/sb-admin-2/* linguist-vendored=false
