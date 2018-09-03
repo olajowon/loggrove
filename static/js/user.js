@@ -12,11 +12,11 @@ function add_new_row(id){
             var rows = []
             for(var i=0; i<data.length; i++){
                 data[i]["option"] = "<button class='btn btn-xs btn-danger role1' " +
-                                    "onclick='delete_user(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
+                                    "onclick='delete_user(" + data[i]["id"] + ")'>"+ _("Delete") +"</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-warning role1' " +
-                                    "onclick='open_update_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+                                    "onclick='open_update_modal(" + data[i]["id"] + ")'>"+ _("Update") +"</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-primary role1' " +
-                                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>重置密码</button>"
+                                    "onclick='open_reset_password_modal(" + data[i]["id"] + ")'>"+ _("Reset password") +"</button>"
                 rows.push(data[i])
             }
             $("#user_table").bootstrapTable('prepend', rows);
@@ -135,7 +135,7 @@ function update_user(id){
 
 
 function delete_user(id){
-    var r = confirm("确定删除？");
+    var r = confirm(_("Do you want to delete it") + "？");
     if(r == false){
         return false
     }
@@ -149,10 +149,10 @@ function delete_user(id){
                 field: 'id',
                 values: [id,]
             });
-            alert("删除成功！")
+            alert(_("Delete successful"))
         },
         error:function(result){
-            alert("删除失败！")
+            alert(_("Delete failed"))
         }
     })
 }
@@ -194,19 +194,19 @@ function reset_password(id){
     var confirm_password = form_obj.find("input[name='confirm_password']").val()
 
     if(!password){
-        form_obj.find("input[name='password']").next().text("请输入密码")
+        form_obj.find("input[name='password']").next().text("Required")
         return false
     }
     if(!confirm_password){
-        form_obj.find("input[name='confirm_password']").next().text("请输入确认密码")
+        form_obj.find("input[name='confirm_password']").next().text("Required")
         return false
     }
     if(password != confirm_password){
-        form_obj.find("input[name='confirm_password']").next().text("错误的确认密码")
+        form_obj.find("input[name='confirm_password']").next().text("Confirm password is incorrect")
         return false
     }
     if(password.length < 6){
-        form_obj.find("input[name='confirm_password']").next().text("密码不可少于6个字符")
+        form_obj.find("input[name='password']").next().text("Must be more than 6 characters")
         return false
     }
 

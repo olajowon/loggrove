@@ -42,7 +42,7 @@ def permission(role=3):
 
 
 def mysqldb_conn_valid(func):
-    ''' ping mysql 连接 '''
+    ''' ping mysql connect '''
     def _wrapper(self):
         self.mysqldb_conn = self.application.settings.get('mysqldb_conn')
         try:

@@ -3,9 +3,6 @@
 from .base import BaseRequestHandler, permission
 
 
-
-
-
 class Handler(BaseRequestHandler):
     @permission()
     def get(self):

@@ -6,7 +6,7 @@ websocket = null
 
 function logfile_keepread(_this){
     if(websocket){
-        alert('需要先关闭上一次连接或刷新页面！')
+        alert(_("Please close the previous connection or refresh the page"))
         return false
     }
 
@@ -21,13 +21,13 @@ function logfile_keepread(_this){
     }
     var filter_search_line = form_obj.find("input[name='filter_search_line']:checked").val()
     if(!logfile_id){
-        form_obj.find("span[name='logfile_id_error']").text('日志路径是必选项')
+        form_obj.find("span[name='logfile_id_error']").text("Required")
         return false
     }
 
     $("#log_content_row").show()
 
-    var log_content_html = "连接中 [Connection] ...<br>"
+    var log_content_html = "Connection ...<br>"
     $("#log_content").html(log_content_html)
 
     if(filter_search_line){
@@ -48,9 +48,9 @@ function logfile_keepread(_this){
         $("#lines").text(0)
         $("#highlight_lines").text(0)
         $("#window_lines").text(0)
-        $("#log_content").append("<span style='color: green'>连接成功 [Connection successful] ...</span><br><br>")
+        $("#log_content").append("<span style='color: green'>Connection successful ...</span><br><br>")
     }
-    websocket.onmessage = function(evt){    // 获取服务器返回的信息
+    websocket.onmessage = function(evt){
         var result = $.parseJSON(evt.data)
         if(result['code']==0){
             var search_result = log_content_searching(result["data"]["contents"], search_pattern)
@@ -74,7 +74,7 @@ function logfile_keepread(_this){
             }
 
             $("#log_content").append(
-                '<span class="error_text">' + "错误 [Code: "+ result["code"] + "] " + result["msg"] + "</span><br>"
+                '<span class="error_text">' + "Error [Code: "+ result["code"] + "] " + result["msg"] + "</span><br>"
                 + (
                 result["detail"]
                     ?
@@ -92,7 +92,7 @@ function logfile_keepread(_this){
     }
 
     websocket.onerror = function(evt){
-        $("#log_content").append("<br><span class=\"error_text\">连接失败 [Connection failed] ...</span><br>")
+        $("#log_content").append("<br><span class=\"error_text\">Connection error ...</span><br>")
         websocket = null
         if(!check_in){
             $("#log_content").scrollTop($("#log_content")[0].scrollHeight);
@@ -100,7 +100,7 @@ function logfile_keepread(_this){
     }
 
     websocket.onclose = function(evt){
-        $("#log_content").append("<br><span class=\"error_text\">连接关闭 [Connection closed] ...</span><br>")
+        $("#log_content").append("<br><span class=\"error_text\">Connection closed ...</span><br>")
         console.log('onclose')
         if(!check_in) {
             $("#log_content").scrollTop($("#log_content")[0].scrollHeight);

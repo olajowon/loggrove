@@ -22,31 +22,31 @@
                             <a href="/"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
                         </li>
                         <li>
-                            <a href="/logfiles/html/"><i class="fa fa-file fa-fw"></i> 日志文件</span></a>
+                            <a href="/logfiles/html/"><i class="fa fa-file fa-fw"></i> <script>document.write(_("Logfiles"))</script></span></a>
                         </li>
                         <!-- 阅读日志-->
                         <li>
-                            <a href="/read/html/"><i class="fa fa-file-text fa-fw"></i> 日志阅读</span></a>
+                            <a href="/read/html/"><i class="fa fa-file-text fa-fw"></i> <script>document.write(_("Reading"))</script></span></a>
                         </li>
 
                         <!-- 轮询日志-->
                         <li>
-                            <a href="/keepread/html/"><i class="fa fa-heartbeat fa-fw"></i> 日志轮询</span></a>
+                            <a href="/keepread/html/"><i class="fa fa-heartbeat fa-fw"></i> <script>document.write(_("Keep reading"))</script></span></a>
                         </li>
 
                         <!-- 日志图表-->
                         <li>
-                            <a href="/charts/html/"><i class="fa fa-line-chart fa-fw"></i> 日志图表</span></a>
+                            <a href="/charts/html/"><i class="fa fa-line-chart fa-fw"></i> <script>document.write(_("Charts"))</script></span></a>
                         </li>
 
                         {% if requser.get('role') == 1 or requser.get('username') == 'guest' %}
                         <!-- 用户-->
                         <li class="role1">
-                            <a href="/users/html/" class="role1"><i class="fa fa-users fa-fw"></i> 用户</span></a>
+                            <a href="/users/html/" class="role1"><i class="fa fa-users fa-fw"></i> <script>document.write(_("Users"))</script></span></a>
                         </li>
                         <!-- 审计-->
                         <li class="role1">
-                            <a href="/auditlogs/html/" class="role1"><i class="fa fa-calendar-check-o fa-fw"></i> 审计</span></a>
+                            <a href="/auditlogs/html/" class="role1"><i class="fa fa-calendar-check-o fa-fw"></i> <script>document.write(_("Auditlogs"))</script></span></a>
                         </li>
                         {% end %}
                         <!--

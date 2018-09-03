@@ -20,7 +20,7 @@ function logfile_read(_this){
 
 
 function get_log_content(p){
-    $("#log_content").html("获取中 [GET]...")
+    $("#log_content").html("Reading...")
     $(".error_text").empty()
     $("#total_size").text(0)
     $("#total_lines").text(0)
@@ -107,29 +107,57 @@ function log_content_paging(){
             page_range.push(page+i)
         }
     }
-    var page_li = '<li class="'+ (page==1?'disabled':'') +'"><span onclick="get_log_content(1)">首页</span></li>' +
+    if(language == "cn"){
+        var page_li = '<li class="'+ (page==1?'disabled':'') +'"><span onclick="get_log_content(1)">首页</span></li>' +
                     '<li class="'+ (page==1?'disabled':'') +'"><span onclick="get_log_content('+ (page-1) +')">上一页</span></li>'
 
-    for(var i=0; i<page_range.length;i++){
-        page_li += '<li class="'+ (page_range[i]==page?'active':'') +'"><span onclick="get_log_content('+ (page_range[i]) +')">'+ page_range[i] +'</span></li>'
+        for(var i=0; i<page_range.length;i++){
+            page_li += '<li class="'+ (page_range[i]==page?'active':'') +'"><span onclick="get_log_content('+ (page_range[i]) +')">'+ page_range[i] +'</span></li>'
+        }
+
+        page_li += '<li class="'+ (page==total_pages?'disabled':'') +'"><span onclick="get_log_content('+ (page+1) +')">下一页</span></li>' +
+            '<li class="'+ (page==total_pages?'disabled':'') +'"><span onclick="get_log_content('+ total_pages +')">尾页</span></li>'
+
+        var page_html = '<ul class="pagination" style="margin-top: 0px">' + page_li + '</ul>' +
+            '<div style="clear: both">' +
+                '<div class="form-group" style="display:inline; clear: both">' +
+                    '<div style="display:inline-block">' +
+                    '<span class="text-primary" style="font-size: 14px; height: 25px">第 ' + page +' 页, 共 ' + total_pages +' 页 &nbsp;</span>' +
+                    '</div>' +
+                    '<div style="display:inline-block">' +
+                        '<input type="text" class="form-control input-sm" id="skip_page" style="padding:5px; width:50px;" autocomplete="off"/>' +
+                    '</div>' +
+                    '<div style="display:inline-block">' +
+                        '<button type="button" class="text-primary" onclick="get_log_content($(\'#skip_page\').val())" style="border: 0px; background: none; font-size: 14px; height: 25px">跳转</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>'
+    }else{
+        var page_li = '<li class="'+ (page==1?'disabled':'') +'"><span onclick="get_log_content(1)">&laquo;</span></li>' +
+                    '<li class="'+ (page==1?'disabled':'') +'"><span onclick="get_log_content('+ (page-1) +')">&lsaquo;</span></li>'
+
+        for(var i=0; i<page_range.length;i++){
+            page_li += '<li class="'+ (page_range[i]==page?'active':'') +'"><span onclick="get_log_content('+ (page_range[i]) +')">'+ page_range[i] +'</span></li>'
+        }
+
+        page_li += '<li class="'+ (page==total_pages?'disabled':'') +'"><span onclick="get_log_content('+ (page+1) +')">&rsaquo;</span></li>' +
+            '<li class="'+ (page==total_pages?'disabled':'') +'"><span onclick="get_log_content('+ total_pages +')">&raquo;</span></li>'
+
+        var page_html = '<ul class="pagination" style="margin-top: 0px">' + page_li + '</ul>' +
+            '<div style="clear: both">' +
+                '<div class="form-group" style="display:inline; clear: both">' +
+                    '<div style="display:inline-block">' +
+                    '<span class="text-primary" style="font-size: 14px; height: 25px">Showing ' + page +' pages, total ' + total_pages +' pages &nbsp;</span>' +
+                    '</div>' +
+                    '<div style="display:inline-block">' +
+                        '<input type="text" class="form-control input-sm" id="skip_page" style="padding:5px; width:50px;" autocomplete="off"/>' +
+                    '</div>' +
+                    '<div style="display:inline-block">' +
+                        '<button type="button" class="text-primary" onclick="get_log_content($(\'#skip_page\').val())" style="border: 0px; background: none; font-size: 14px; height: 25px">skip</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>'
     }
 
-    page_li += '<li class="'+ (page==total_pages?'disabled':'') +'"><span onclick="get_log_content('+ (page+1) +')">下一页</span></li>' +
-        '<li class="'+ (page==total_pages?'disabled':'') +'"><span onclick="get_log_content('+ total_pages +')">尾页</span></li>'
-
-    var page_html = '<ul class="pagination" style="margin-top: 0px">' + page_li + '</ul>' +
-        '<div style="clear: both">' +
-            '<div class="form-group" style="display:inline; clear: both">' +
-                '<div style="display:inline-block">' +
-                '<span class="text-primary" style="font-size: 14px; height: 25px">第 ' + page +' 页, 共 ' + total_pages +' 页 &nbsp;</span>' +
-                '</div>' +
-                '<div style="display:inline-block">' +
-                    '<input type="text" class="form-control input-sm" id="skip_page" style="padding:5px; width:50px;" autocomplete="off"/>' +
-                '</div>' +
-                '<div style="display:inline-block">' +
-                    '<button type="button" class="text-primary" onclick="get_log_content($(\'#skip_page\').val())" style="border: 0px; background: none; font-size: 14px; height: 25px">跳转</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>'
     return page_html
 }

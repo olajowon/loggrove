@@ -14,9 +14,9 @@ def login_valid(func):
         self.password = self.get_argument('password', '')
         error = {}
         if not self.username:
-            error['username'] = '用户名是必填项'
+            error['username'] = 'Required'
         if not self.password:
-            error['password'] = '密码是必填项'
+            error['password'] = 'Required'
         if error:
             self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})
         else:
@@ -29,15 +29,15 @@ class Handler(BaseRequestHandler):
 
     @login_valid
     def post(self):
-        self.logout()   #退出登录
+        self.logout()   # logout
         if self.application.settings.get('ldap').get('auth') != True or self.username == 'admin':
             response_data = self.base_auth_login()
         else:
             response_data = self.ldap_auth_login()
 
-        self.reqdata = {            # 用于存储操作记录
+        self.reqdata = {            # record request
             'username': self.username,
-            'password': '*' * 6     # 隐藏密码
+            'password': '*' * 6
         }
         self._write(response_data)
 
@@ -66,7 +66,7 @@ class Handler(BaseRequestHandler):
                     response_data = {'code': 401, 'msg': 'Username or password incorrect'}
                 else:
                     self.ldap_user = result_data[0][1]
-                    user = self.base_user()     # loggrove 基本用户
+                    user = self.base_user()     # loggrove base user
                     if not user:
                         response_data = {'code': 500, 'msg': 'Login failed'}
                     elif user.get('status') != 1:
@@ -87,7 +87,7 @@ class Handler(BaseRequestHandler):
         elif user.get('status') != 1:
             response_data = {'code': 403, 'msg': 'User disabled'}
         else:
-            response_data = self.login(user)  # 登录用户
+            response_data = self.login(user)  # login & session
         return response_data
 
 

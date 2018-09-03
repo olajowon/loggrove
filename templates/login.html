@@ -12,6 +12,12 @@
 
     <!-- Custom Fonts -->
     <link href="{{ static_url('sb-admin-2/vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
+
+    <script src="{{ static_url('js/base.js') }}"></script>
+    <script src="{{ static_url('js/locale.js') }}"></script>
+    <script>
+        language = get_language()
+    </script>
 </head>
 
 <body class="login" style="background-color: #F8F8F8;margin: 0;padding: 0;">
@@ -49,7 +55,7 @@
                     </div>
                     <div class="form-group" style="padding-top: 10px">
                         <div class="col-xs-12 col-sm-12">
-                            <button type="submit" class="btn btn-default btn-block border_radius">登 录</button>
+                            <button type="submit" class="btn btn-default btn-block border_radius"><script>document.write(_("Login"))</script></button>
                         </div>
                     </div>
                 </form>
@@ -87,20 +93,20 @@
                                 form_obj.find("[name='" + k + "']").parent().next().text(response_data["error"][k])
                             }
                         }else if(response_data["code"] == 401){
-                            form_obj.find("[name='password']").parent().next().text('用户名或密码不正确')
+                            form_obj.find("[name='password']").parent().next().text(_("Username or password incorrect"))
                         }else if(response_data["code"] == 403){
-                            form_obj.find("[name='username']").parent().next().text('用户已禁用')
+                            form_obj.find("[name='username']").parent().next().text(_("User disabled"))
                         }else{
                             form_obj.children().first().html(
                                 '<div class="alert alert-danger">' +
-                                '<i class="fa fa-times"></i> 登录失败，请联系管理员' +
+                                '<i class="fa fa-times"></i> ' + _("Login failed") +
                                 '</div>'
                             )
                         }
                     }else{
                         form_obj.children().first().html(
                             '<div class="alert alert-danger">' +
-                            '<i class="fa fa-times"></i>  登录失败，请联系管理员' +
+                            '<i class="fa fa-times"></i> ' + + _("Login failed") +
                             '</div>'
                         )
                     }

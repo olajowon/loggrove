@@ -12,7 +12,7 @@
 <script src="{{ static_url('js/user.js') }}"></script>
 {% end %}
 {% block breadcrumb %}
-<li><i class="fa fa-users fa-fw"></i> 用户</li>
+<li><i class="fa fa-users fa-fw"></i> <script>document.write(_("Users"))</script></li>
 {% end %}
 {% block content %}
 
@@ -20,9 +20,9 @@
     <div class="col-sm-12 col-lg-10" style="clear: both">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-table fa-fw"></i> 用户列表
+                <i class="fa fa-table fa-fw"></i> <script>document.write(_("User list"))</script>
                 <div class="pull-right">
-                    <button class="btn btn-xs btn-success role1" data-toggle="modal" data-target="#addModal"> <i class="fa fa-plus fa-fw" style=""></i> 添加 </button>
+                    <button class="btn btn-xs btn-success role1" data-toggle="modal" data-target="#addModal"> <i class="fa fa-plus fa-fw" style=""></i> <script>document.write(_("Add"))</script> </button>
                 </div>
             </div>
             <div class="panel-body">
@@ -45,7 +45,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="addModalLabel">
-                    <i class="fa fa-plus fa-fw" style=""></i> 添加用户
+                    <i class="fa fa-plus fa-fw" style=""></i> <script>document.write(_("Add user"))</script>
                 </h4>
             </div>
             <div class="modal-body">
@@ -56,56 +56,56 @@
                             {% raw xsrf_form_html() %}
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>用户名 *</label>
+                                    <label><script>document.write(_("Username"))</script> *</label>
                                     <input class="form-control" name="username" placeholder="Username">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>密码 *</label>
+                                    <label><script>document.write(_("Password"))</script> *</label>
                                     <input class="form-control" type="password" name="password" placeholder="Password">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>确认密码 *</label>
+                                    <label><script>document.write(_("Confirm password"))</script> *</label>
                                     <input class="form-control" type="password" name="confirm_password" placeholder="Confirm password">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>姓名</label>
+                                    <label><script>document.write(_("Fullname"))</script></label>
                                     <input class="form-control" name="fullname" placeholder="Fullname">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>邮箱 *</label>
+                                    <label><script>document.write(_("Email"))</script> *</label>
                                     <input class="form-control" name="email" placeholder="Email">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>状态 *</label>
+                                    <label><script>document.write(_("Status"))</script> *</label>
                                     <select class="form-control" name="status">
-                                        <option value="1">活动</option>
-                                        <option value="2">禁用</option>
+                                        <option value="1"><script>document.write(_("Active"))</script></option>
+                                        <option value="2"><script>document.write(_("Disabled"))</script></option>
                                     </select>
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>角色 *</label>
+                                    <label><script>document.write(_("Role"))</script> *</label>
                                     <select class="form-control" name="role">
-                                        <option value="3">普通用户</option>
-                                        <option value="2">管理员</option>
-                                        <option value="1">超级管理员</option>
+                                        <option value="3"><script>document.write(_("Ordinaryuser"))</script></option>
+                                        <option value="2"><script>document.write(_("Admin"))</script></option>
+                                        <option value="1"><script>document.write(_("Superadmin"))</script></option>
                                     </select>
                                     <span class="error_text"></span>
                                 </div>
@@ -115,10 +115,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="add_user()">
-                    提交
+                    <script>document.write(_("Submit"))</script>
                 </button>
             </div>
         </div>
@@ -134,7 +134,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="updateLabel">
-                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑用户
+                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> <script>document.write(_("Update user"))</script>
                 </h4>
             </div>
             <div class="modal-body">
@@ -145,42 +145,42 @@
                             {% raw xsrf_form_html() %}
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>用户名 *</label>
+                                    <label><script>document.write(_("Username"))</script> *</label>
                                     <input class="form-control" name="username" placeholder="Username">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>姓名</label>
+                                    <label><script>document.write(_("Fullname"))</script></label>
                                     <input class="form-control" name="fullname" placeholder="Fullname">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>邮箱 *</label>
+                                    <label><script>document.write(_("Email"))</script> *</label>
                                     <input class="form-control" name="email" placeholder="Email">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>状态 *</label>
+                                    <label><script>document.write(_("Status"))</script> *</label>
                                     <select class="form-control" name="status">
-                                        <option value="1">活动</option>
-                                        <option value="2">禁用</option>
+                                        <option value="1"><script>document.write(_("Active"))</script></option>
+                                        <option value="2"><script>document.write(_("Disabled"))</script></option>
                                     </select>
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>角色 *</label>
+                                    <label><script>document.write(_("Update user"))</script> *</label>
                                     <select class="form-control" name="role">
-                                        <option value="3">普通用户</option>
-                                        <option value="2">管理员</option>
-                                        <option value="1">超级管理员</option>
+                                        <option value="3"><script>document.write(_("Ordinaryuser"))</script></option>
+                                        <option value="2"><script>document.write(_("Admin"))</script></option>
+                                        <option value="1"><script>document.write(_("Superadmin"))</script></option>
                                     </select>
                                     <span class="error_text"></span>
                                 </div>
@@ -190,10 +190,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="update_user()">
-                    提交
+                    <script>document.write(_("Submit"))</script>
                 </button>
             </div>
         </div>
@@ -210,7 +210,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="resetPasswordLabel">
-                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> 重置密码
+                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> <script>document.write(_("Reset password"))</script>
                 </h4>
             </div>
             <div class="modal-body">
@@ -221,14 +221,14 @@
                             {% raw xsrf_form_html() %}
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>密码 *</label>
+                                    <label><script>document.write(_("Password"))</script> *</label>
                                     <input class="form-control" type="password" name="password" placeholder="Password">
                                     <span class="error_text"></span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <label>确认密码 *</label>
+                                    <label><script>document.write(_("Confirm password"))</script> *</label>
                                     <input class="form-control" type="password" name="confirm_password" placeholder="Confirm password">
                                     <span class="error_text"></span>
                                 </div>
@@ -238,10 +238,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="reset_password()">
-                    提交
+                    <script>document.write(_("Submit"))</script>
                 </button>
             </div>
         </div>
@@ -252,48 +252,49 @@
 {% block body_js %}
 <script>
     function role_formatter(value, row) {
-        return (value == 1 ? "超级管理员" : (value==2 ? "管理员" : "普通用户"))
+        return (value == 1 ? _("Superadmin") : (value==2 ? _("Admin") : _("Ordinaryuser")))
     }
 
     function status_formatter(value, row) {
-        return (value == 1 ? "活动" : "禁用")
+        return (value == 1 ? _("Active") : _("Disabled"))
     }
 
     $(function(){
         $('#user_table').bootstrapTable({
+            locale: language,
             columns: [{
                 field: 'id',
                 title: 'ID',
                 sortable: true
             }, {
                 field: 'username',
-                title: '用户名',
+                title: _("Username"),
                 sortable: true,
             }, {
                 field: 'fullname',
-                title: '姓名',
+                title: _("Fullname"),
                 sortable: true
             }, {
                 field: 'email',
-                title: '邮箱',
+                title: _("Email"),
                 sortable: true
             }, {
                 field: 'join_time',
-                title: '加入时间',
+                title: _("Join time"),
                 sortable: true
             }, {
                 field: 'role',
-                title: '角色',
+                title: _("Role"),
                 sortable: true,
                 formatter: role_formatter,
             }, {
                 field: 'status',
-                title: '状态',
+                title: _("Status"),
                 sortable: true,
                 formatter: status_formatter,
             }, {
                 field: 'option',
-                title: '选项',
+                title: _("Option"),
             },],
             uniqueId: "id",
             toggle: "table",
@@ -306,11 +307,11 @@
                 var rows = []
                 for(var i=0;i<data["data"].length;i++){
                     data["data"][i]["option"] = "<button class='btn btn-xs btn-danger role1' " +
-                                "onclick='delete_user(" + data["data"][i]["id"] + ")'>删除</button>&nbsp;" +
+                                "onclick='delete_user(" + data["data"][i]["id"] + ")'>"+ _("Delete") +"</button>&nbsp;" +
                             "<button class='btn btn-xs btn-warning role1' " +
-                                "onclick='open_update_modal(" + data["data"][i]["id"] + ")'>编辑</button>&nbsp;" +
+                                "onclick='open_update_modal(" + data["data"][i]["id"] + ")'>"+ _("Update") +"</button>&nbsp;" +
                             "<button class='btn btn-xs btn-primary role1' " +
-                                "onclick='open_reset_password_modal(" + data["data"][i]["id"] + ")'>重置密码</button>"
+                                "onclick='open_reset_password_modal(" + data["data"][i]["id"] + ")'>"+ _("Reset password") +"</button>"
                     rows.push(data["data"][i])
                 }
                 return {"total": data["total"], "rows": rows}

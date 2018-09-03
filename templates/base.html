@@ -75,6 +75,10 @@
     <script src="{{ static_url('sb-admin-2/vendor/jquery/jquery.min.js') }}"></script>
 
     <script src="{{ static_url('js/base.js') }}"></script>
+    <script src="{{ static_url('js/locale.js') }}"></script>
+    <script>
+        language = get_language()
+    </script>
     {% block head_js %}
     {% end %}
 </head>
@@ -99,15 +103,27 @@
             <ul class="nav navbar-top-links navbar-right">
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="background-color: #303030">
+                        <i class="fa fa-flag fa-fw" style="color: #fff"></i> <i class="fa fa-caret-down" style="color: #fff"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="#" onclick="document.cookie='language=cn; path=/'; location.reload()"> 中文</a>
+                        </li>
+                        <li><a href="#" onclick="document.cookie='language=en; path=/'; location.reload()"> English</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="background-color: #303030">
                         <i class="fa fa-user fa-fw" style="color: #fff"></i> <i class="fa fa-caret-down" style="color: #fff"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-                        <li><a href="#" onclick="open_show_profile_modal()"><i class="fa fa-user fa-fw"></i> 用户信息</a>
+                        <li><a href="#" onclick="open_show_profile_modal()"><i class="fa fa-user fa-fw"></i> <script>document.write(_("Profile"))</script></a>
                         </li>
-                        <li><a href="#" data-toggle="modal" data-target="#changePasswordModal"><i class="fa fa-gear fa-fw"></i> 修改密码</a>
+                        <li><a href="#" data-toggle="modal" data-target="#changePasswordModal"><i class="fa fa-gear fa-fw"></i> <script>document.write(_("Change password"))</script></a>
                         </li>
                         <li class="divider"></li>
-                        <li><a href="#" onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> 退出登录</a>
+                        <li><a href="#" onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> <script>document.write(_("Logout"))</script></a>
                         </li>
                     </ul>
                 </li>
@@ -158,7 +174,7 @@
                         &times;
                     </button>
                     <h4 class="modal-title" id="qqLabel">
-                        <i class="fa fa-qq fa-fw" style=""></i> 加入群聊
+                        <i class="fa fa-qq fa-fw" style=""></i> <script>document.write(_("Join chat"))</script>
                     </h4>
                 </div>
                 <div class="modal-body">
@@ -177,14 +193,14 @@
                         &times;
                     </button>
                     <h4 class="modal-title" id="profileLabel">
-                        <i class="fa fa-user fa-fw" style=""></i> 用户信息
+                        <i class="fa fa-user fa-fw" style=""></i> <script>document.write(_("Profile"))</script>
                     </h4>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-sm-12 col-lg-12">
                             <blockquote>
-                                <span>用户名</span>
+                                <span><script>document.write(_("Username"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
@@ -192,27 +208,27 @@
                                 <small>
                                     <cite></cite>
                                 </small>
-                                <span>姓名</span>
+                                <span><script>document.write(_("Fullname"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
-                                <span>邮箱</span>
+                                <span><script>document.write(_("Email"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
-                                <span>角色</span>
+                                <span><script>document.write(_("Role"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
-                                <span>加入时间</span>
+                                <span><script>document.write(_("Join time"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
-                                <span>登录时间</span>
+                                <span><script>document.write(_("Login time"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
-                                <span>过期时间</span>
+                                <span><script>document.write(_("Expire time"))</script></span>
                                 <small>
                                     <cite></cite>
                                 </small>
@@ -221,7 +237,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                     </button>
                 </div>
             </div>
@@ -237,7 +253,7 @@
                         &times;
                     </button>
                     <h4 class="modal-title" id="changePasswordLabel">
-                        <i class="fa fa-pencil-square-o fa-fw" style=""></i> 修改密码
+                        <i class="fa fa-pencil-square-o fa-fw" style=""></i> <script>document.write(_("Change password"))</script>
                     </h4>
                 </div>
                 <div class="modal-body">
@@ -248,21 +264,21 @@
                                 {% raw xsrf_form_html() %}
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label>旧密码 *</label>
+                                        <label><script>document.write(_("Old password"))</script> *</label>
                                         <input class="form-control" type="password" name="old_password" placeholder="Old password">
                                         <span class="error_text"></span>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label>新密码 *</label>
+                                        <label><script>document.write(_("New password"))</script> *</label>
                                         <input class="form-control" type="password" name="new_password" placeholder="New password">
                                         <span class="error_text"></span>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <label>确认密码 *</label>
+                                        <label><script>document.write(_("Confirm password"))</script> *</label>
                                         <input class="form-control" type="password" name="confirm_password" placeholder="Confirm password">
                                         <span class="error_text"></span>
                                     </div>
@@ -272,7 +288,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                     </button>
                     <button type="button" class="btn btn-primary" onclick="change_password()">
                         提交
@@ -326,14 +342,14 @@
                 }
                 if(password_obj2.val() && password_obj1.val()){
                     if(password_obj2.val() != password_obj1.val()){
-                        password_obj2.next().html('错误的确认密码').css('color', '#FFCC33');
+                        password_obj2.next().html(_("Confirm password is incorrect")).css('color', '#FFCC33');
                     }else{
                         password_obj2.next().empty()
                     }
                 }else if (password_obj1.val() && !password_obj2.val()){
                     password_obj2.next().empty()
                 }else if (!password_obj1.val() && password_obj2.val()){
-                    password_obj2.next().html('无效的确认密码').css('color', '#FFCC33');
+                    password_obj2.next().html(_("Invalid password confirmation")).css('color', '#FFCC33');
                 }else if (!password_obj1.val() && !password_obj2.val()){
                     password_obj2.next().empty()
                 }

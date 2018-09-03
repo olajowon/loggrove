@@ -16,42 +16,42 @@ def argements_valid(handler, pk=None):
     trigger_format = handler.get_argument('trigger_format', '')
     dingding_webhook = handler.get_argument('dingding_webhook', '')
     if not logfile_id:
-        error['logfile_id'] = '日志文件是必填项'
+        error['logfile_id'] = 'Required'
 
     if not search_pattern:
-        error['search_pattern'] = '匹配模式是必填项'
+        error['search_pattern'] = 'Required'
     else:
         try:
             re.search(r'%s' % search_pattern, '')
         except:
-            error['search_pattern'] = '不正确的正则表达式'
+            error['search_pattern'] = 'Incorrect regular expression'
         else:
             select_sql = 'SELECT id FROM monitor_item WHERE search_pattern="%s" and logfile_id="%s" %s' % \
                          (search_pattern, logfile_id, 'and id!="%d"' % pk if pk else '')
             count = handler.mysqldb_cursor.execute(select_sql)
             if count:
-                error['search_pattern'] = '匹配模式已存在'
+                error['search_pattern'] = 'Already existed'
 
     if not comment:
-        error['comment'] = '备注为必填项'
+        error['comment'] = 'Required'
 
     if alert != '1' and alert != '2':
-        error['alert'] = '告警选择不正确'
+        error['alert'] = 'Invalid'
     elif alert == '1':
         if not check_interval:
-            error['check_interval'] = '检查间隔是必填项'
+            error['check_interval'] = 'Required'
         elif not check_interval.isnumeric():
-            error['check_interval'] = '必须为正整数'
+            error['check_interval'] = 'Must be integer'
         elif int(check_interval) < 1:
-            error['check_interval'] = '检查间隔必须大于0'
+            error['check_interval'] = 'Must be greater than 0'
 
         if not trigger_format:
-            error['trigger_format'] = '触发公式是必填项'
+            error['trigger_format'] = 'Required'
         elif not (re.match(r'^([0-9]+[<=])?{}([<=][1-9][0-9]*)?$', trigger_format) and (trigger_format.strip()!='{}')):
-            error['trigger_format'] = '触发公式格式不正确'
+            error['trigger_format'] = 'Incorrect format'
 
         if not dingding_webhook:
-            error['dingding_webhook'] = '钉钉webhook是必填项'
+            error['dingding_webhook'] = 'Required'
 
     data = {
         'logfile_id':logfile_id,
@@ -82,7 +82,7 @@ def query_valid(func):
             query_keys = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle','check_interval',
                           'trigger_format', 'dingding_webhook', 'comment', 'create_time',  'order', 'search',
                           'offset', 'limit', 'sort']
-            error = {key:'参数不可用' for key in argument_keys if key not in query_keys}
+            error = {key:'Bad key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)

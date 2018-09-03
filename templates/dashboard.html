@@ -30,7 +30,7 @@ Dashboard
                                 <div class="huge">
                                     <span id="online_user_count"></span>/<span id="user_count"></span>
                                 </div>
-                                <div>在线/用户</div>
+                                <div><script>document.write(_("Online"))</script>/<script>document.write(_("User"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -54,7 +54,7 @@ Dashboard
                                 <div class="huge">
                                     <span id="local_logfile_count"></span>/<span id="remote_logfile_count"></span>/<span id="logfile_count"></span>
                                 </div>
-                                <div>本地/远程/全部日志</div>
+                                <div><script>document.write(_("Local"))</script>/<script>document.write(_("Remote"))</script>/<script>document.write(_("Log"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -76,7 +76,7 @@ Dashboard
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge" id="host_count">0</div>
-                                <div>日志主机</div>
+                                <div><script>document.write(_("Host"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -98,7 +98,7 @@ Dashboard
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge" id="monitor_item_count">0</div>
-                                <div>监控项</div>
+                                <div><script>document.write(_("Monitor item"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -121,11 +121,11 @@ Dashboard
             <div class="col-lg-4">
                 <div class="panel panel-default" id="myprofile">
                     <div class="panel-heading">
-                        <div class="panel-title"><i class="fa fa-user fa-fw"></i> 我的信息</div>
+                        <div class="panel-title"><i class="fa fa-user fa-fw"></i> <script>document.write(_("My profile"))</script></div>
                     </div>
                     <div class="panel-body">
                         <blockquote>
-                            <span>用户名</span>
+                            <span><script>document.write(_("Username"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
@@ -133,27 +133,27 @@ Dashboard
                             <small>
                                 <cite></cite>
                             </small>
-                            <span>姓名</span>
+                            <span><script>document.write(_("Fullname"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
-                            <span>邮箱</span>
+                            <span><script>document.write(_("Email"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
-                            <span>角色</span>
+                            <span><script>document.write(_("Role"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
-                            <span>加入时间</span>
+                            <span><script>document.write(_("Join time"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
-                            <span>登录时间</span>
+                            <span><script>document.write(_("Login time"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
-                            <span>过期时间</span>
+                            <span><script>document.write(_("Expire time"))</script></span>
                             <small>
                                 <cite></cite>
                             </small>
@@ -165,12 +165,11 @@ Dashboard
             <div class="col-lg-8">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <div class="panel-title"><i class="fa fa-calendar-check-o fa-fw"></i> 最近操作 (前100)</div>
+                        <div class="panel-title"><i class="fa fa-calendar-check-o fa-fw"></i> <script>document.write(_("History"))</script> (<script>document.write(_("Limit 100"))</script>)</div>
                     </div>
                     <div class="panel-body">
                         <div class="table-responsive" style="border: 0">
                             <table width="100%" id="history_table">
-
                             </table>
                         </div>
                     </div>
@@ -214,7 +213,7 @@ Dashboard
             cite_objs.eq(1).text(response_data["data"][0]["id"])
             cite_objs.eq(2).text(response_data["data"][0]["fullname"])
             cite_objs.eq(3).text(response_data["data"][0]["email"])
-            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ? "超级管理员" : (response_data["data"][0]=="2" ? "管理员" : "普通用户")))
+            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ?  _("Superadmin") : (response_data["data"][0]=="2" ? _("Admin") : _("Ordinaryuser"))))
             cite_objs.eq(5).text(response_data["data"][0]["join_time"])
             cite_objs.eq(6).text(response_data["data"][0]["login_time"])
             cite_objs.eq(7).text(response_data["data"][0]["expire_time"])
@@ -224,9 +223,10 @@ Dashboard
 
     $(function(){
         $('#history_table').bootstrapTable({
+            locale: language,
             columns: [ {
                 field: 'record_time',
-                title: '记录时间',
+                title: _("Record time"),
                 sortable: true,
             }, {
                 field: 'uri',

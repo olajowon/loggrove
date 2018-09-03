@@ -23,7 +23,7 @@
 </style>
 {% end %}
 {% block breadcrumb %}
-<li><i class="fa fa-heartbeat fa-fw" ></i> 日志轮询</li>
+<li><i class="fa fa-heartbeat fa-fw" ></i> <script>document.write(_("Keep reading"))</script></li>
 {% end %}
 {% block content %}
 <div class="row">
@@ -33,70 +33,70 @@
                 <div class="row">
                     <div class="col-sm-10 col-lg-10">
                         <ul class="nav nav-pills">
-                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab">本地日志</a>
+                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab"><script>document.write(_("Local log"))</script></a>
                             </li>
-                            <li><a href="#remote_logfile_tabpane" data-toggle="tab">远程日志</a>
+                            <li><a href="#remote_logfile_tabpane" data-toggle="tab"><script>document.write(_("Remote log"))</script></a>
                             </li>
                         </ul>
                         <div class="tab-content">
                             <div class="tab-pane fade in active" id="local_logfile_tabpane" style="padding-top: 15px">
                                 <form role="form">
                                     <div class="form-group">
-                                        <label>日志文件 *</label>
+                                        <label><script>document.write(_("Logfile"))</script> *</label>
                                         <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
                                         <span name="logfile_id_error" class="error_text"></span>
                                     </div>
                                     <div class="form-group">
-                                        <label>匹配模式</label>
+                                        <label><script>document.write(_("Search pattern"))</script></label>
                                         <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式，输入正确的正则表达式并优先匹配">
+                                        <input type="text" class="form-control" name="other_search_pattern">
                                         <span class="error_text" name="search_pattern_error"></span>
                                     </div>
                                     <div class="form-group">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
+                                            <input type="checkbox" name="filter_search_line" checked> <script>document.write(_("Only view and output matching lines"))</script>
                                         </label>
                                     </div>
-                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)">查看</button>
+                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)"><script>document.write(_("View"))</script></button>
                                 </form>
                             </div>
                             <div class="tab-pane fade" id="remote_logfile_tabpane" style="padding-top: 15px">
                                 <form role="form">
                                     <div class="form-group">
-                                        <label>主机地址 *</label>
+                                        <label><script>document.write(_("Host"))</script> *</label>
                                         <select class="form-control selectpicker" name="host" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>日志文件 *</label>
+                                        <label><script>document.write(_("Logfile"))</script> *</label>
                                         <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
                                         <span class="error_text" name="logfile_id_error"></span>
                                     </div>
                                     <div class="form-group">
-                                        <label>匹配模式</label>
+                                        <label><script>document.write(_("Search pattern"))</script></label>
                                         <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
                                             <option value=""> ---- </option>
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <input type="text" class="form-control" name="other_search_pattern" placeholder="自定义匹配模式，输入正确的正则表达式并优先匹配">
+                                        <input type="text" class="form-control" name="other_search_pattern">
                                         <span class="error_text" name="search_pattern_error"></span>
                                     </div>
                                     <div class="form-group">
                                         <label class="checkbox-inline">
-                                            <input type="checkbox" name="filter_search_line" checked> 仅查看和输出匹配的行
+                                            <input type="checkbox" name="filter_search_line" checked> <script>document.write(_("Only view and output matching lines"))</script>
                                         </label>
                                     </div>
-                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)">查看</button>
+                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)"><script>document.write(_("View"))</script></button>
                                 </form>
                             </div>
                         </div>
@@ -119,7 +119,7 @@
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div style="font-size: 23px" id="total_size">0</div>
-                                <div>文件总大小 / KB</div>
+                                <div><script>document.write(_("Total size"))</script> / KB</div>
                             </div>
                         </div>
                     </div>
@@ -135,7 +135,7 @@
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div style="font-size: 23px" id="total_lines">0</div>
-                                <div>文件总行数</div>
+                                <div><script>document.write(_("Total lines"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -151,7 +151,7 @@
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div style="font-size: 23px" id="size">0</div>
-                                <div>输出大小 / KB</div>
+                                <div><script>document.write(_("Output size"))</script> / KB</div>
                             </div>
                         </div>
                     </div>
@@ -168,7 +168,7 @@
                                 <div style="font-size: 23px">
                                     <span id="highlight_lines">0</span>/<span id="lines">0</span>
                                 </div>
-                                <div>高亮/输出行数</div>
+                                <div><script>document.write(_("Highlight"))</script>/<script>document.write(_("Output lines"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -183,10 +183,10 @@
     <div class="col-sm-12 col-lg-10" style="clear: both">
         <div class="panel panel-default">
             <div class="panel-heading">
-                窗口内容行数：<span id="window_lines">0</span>
+                <script>document.write(_("Window lines"))</script>: <span id="window_lines">0</span>
                 <div class="pull-right">
-                    <button class="btn btn-xs btn-primary" onclick="close_websocket()"> <i class="fa fa-stop fa-fw" style=""></i> 关闭 </button>
-                    <button class="btn btn-xs btn-warning" onclick="clear_log_content()"> <i class="fa fa-trash-o fa-fw" style=""></i> 清空 </button>
+                    <button class="btn btn-xs btn-primary" onclick="close_websocket()"> <i class="fa fa-stop fa-fw" style=""></i> <script>document.write(_("Close"))</script> </button>
+                    <button class="btn btn-xs btn-warning" onclick="clear_log_content()"> <i class="fa fa-trash-o fa-fw" style=""></i> <script>document.write(_("Clear"))</script> </button>
                 </div>
             </div>
             <div class="panel-body">
@@ -288,6 +288,8 @@
             form_obj.find("select[name='search_pattern']").selectpicker('refresh');
             form_obj.find("select[name='search_pattern']").selectpicker('render');
         })
+
+        $("input[name='other_search_pattern']").attr("placeholder", _("Custom regular expressions and precedence matching"))
     })
 </script>
 {% end %}

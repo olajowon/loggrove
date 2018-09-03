@@ -22,7 +22,7 @@ def get_valid(func):
             self.dates = [date for date in self.get_arguments('date') if date] or [now.strftime('%Y-%m-%d')]
 
         if not self.logfile_id:
-            error['logfile_id'] = '日志文件是必填项'
+            error['logfile_id'] = 'Required'
         else:
             select_sql = 'SELECT id,path FROM logfile WHERE id="%s"' % self.logfile_id
             count = self.mysqldb_cursor.execute(select_sql)
@@ -41,7 +41,7 @@ def get_valid(func):
                         if '0' in self.monitor_item_ids:
                             self.monitor_items = ((0, 'total'),) + self.monitor_items
                         elif not self.monitor_items:
-                            error['monitor_item_id'] = '监控项无效'
+                            error['monitor_item_id'] = 'Invalid'
                 else:
                     select_sql = 'SELECT id, search_pattern FROM monitor_item WHERE logfile_id="%s"' % \
                                  self.logfile_id
@@ -49,7 +49,7 @@ def get_valid(func):
                     self.monitor_items = ((0, 'total'),) + self.mysqldb_cursor.fetchall()
 
             else:
-                error['logfile_id'] = '日志文件不存在'
+                error['logfile_id'] = 'Not exist'
 
         if error:
             self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})

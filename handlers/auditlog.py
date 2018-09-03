@@ -10,7 +10,7 @@ def query_valid(func):
             argument_keys = self.request.arguments.keys()
             query_keys = ['id', 'uri', 'method', 'record_time', 'username',
                           'order', 'search', 'offset', 'limit', 'sort']
-            error = {key:'参数不可用' for key in argument_keys if key not in query_keys}
+            error = {key:'Invalid key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)

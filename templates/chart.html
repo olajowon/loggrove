@@ -5,7 +5,7 @@
 {% block head_js %}
 {% end %}
 {% block breadcrumb %}
-<li><i class="fa fa-line-chart fa-fw" ></i> 日志图表</li>
+<li><i class="fa fa-line-chart fa-fw" ></i> <script>document.write(_("Charts"))</script></li>
 {% end %}
 {% block content %}
 <div class="row">
@@ -15,9 +15,9 @@
                 <div class="row">
                     <div class="col-sm-10 col-lg-10">
                         <ul class="nav nav-pills">
-                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab">本地日志</a>
+                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab"><script>document.write(_("Local log"))</script></a>
                             </li>
-                            <li><a href="#remote_logfile_tabpane" data-toggle="tab">远程日志</a>
+                            <li><a href="#remote_logfile_tabpane" data-toggle="tab"><script>document.write(_("Remote log"))</script></a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -26,7 +26,7 @@
                                     <div></div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <label>日志文件 *</label>
+                                            <label><script>document.write(_("Logfile"))</script> *</label>
                                             <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
                                                 <option value=""> ---- </option>
                                             </select>
@@ -35,7 +35,7 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <label>监控项</label>
+                                            <label><script>document.write(_("Monitor item"))</script></label>
                                             <select multiple class="form-control selectpicker" name="monitor_item_id" data-live-search="true">
                                                 <option value="0" selected>total</option>
                                             </select>
@@ -44,38 +44,38 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <button type="button" class="btn btn-default" onclick="show_24h_chart(this)">查看24时</button>
+                                            <button type="button" class="btn btn-default" onclick="show_24h_chart(this)"><script>document.write(_("View 24h"))</script></button>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_datetime" name="begin_time" placeholder="开始时间">
+                                            <input type="text" class="form-control form_datetime" name="begin_time">
                                             <span class="error_text" name="begin_time_error"></span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_datetime" name="end_time" placeholder="结束时间">
+                                            <input type="text" class="form-control form_datetime" name="end_time">
                                             <span class="error_text" name="end_time_error"></span>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <button type="button" class="btn btn-default" onclick="show_interval_chart(this)">连续查询</button>
+                                            <button type="button" class="btn btn-default" onclick="show_interval_chart(this)"><script>document.write(_("Interval view"))</script></button>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_date" name="date" placeholder="日期一">
+                                            <input type="text" class="form-control form_date" name="date">
                                             <span class="error_text" name="date_error"></span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_date" name="date" placeholder="日期二">
+                                            <input type="text" class="form-control form_date" name="date">
                                             <span class="error_text" name="date_error"></span>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <button type="button" class="btn btn-default" onclick="show_contrast_chart(this)">日期对比</button>
+                                            <button type="button" class="btn btn-default" onclick="show_contrast_chart(this)"><script>document.write(_("Contrast view"))</script></button>
                                         </div>
                                     </div>
 
@@ -87,7 +87,7 @@
                                     <div></div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <label>主机地址 *</label>
+                                            <label><script>document.write(_("Host"))</script> *</label>
                                             <select class="form-control selectpicker" name="host" data-live-search="true">
                                                 <option value=""> ---- </option>
                                             </select>
@@ -95,7 +95,7 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <label>日志文件 *</label>
+                                            <label><script>document.write(_("Logfile"))</script> *</label>
                                             <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
                                                 <option value=""> ---- </option>
                                             </select>
@@ -104,7 +104,7 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <label>监控项</label>
+                                            <label><script>document.write(_("Monitor item"))</script></label>
                                             <select multiple class="form-control selectpicker" name="monitor_item_id" data-live-search="true">
                                                 <option value="0" selected>total</option>
                                             </select>
@@ -113,38 +113,38 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <button type="button" class="btn btn-default" onclick="show_24h_chart(this)">查看24时</button>
+                                            <button type="button" class="btn btn-default" onclick="show_24h_chart(this)"><script>document.write(_("View 24h"))</script></button>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_datetime" name="begin_time" placeholder="开始时间">
+                                            <input type="text" class="form-control form_datetime" name="begin_time">
                                             <span class="error_text" name="begin_time_error"></span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_datetime" name="end_time" placeholder="结束时间">
+                                            <input type="text" class="form-control form_datetime" name="end_time">
                                             <span class="error_text" name="end_time_error"></span>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <button type="button" class="btn btn-default" onclick="show_interval_chart(this)">连续查询</button>
+                                            <button type="button" class="btn btn-default" onclick="show_interval_chart(this)"><script>document.write(_("Interval view"))</script></button>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_date" name="date" placeholder="日期一">
+                                            <input type="text" class="form-control form_date" name="date">
                                             <span class="error_text" name="date_error"></span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <input type="text" class="form-control form_date" name="date" placeholder="日期二">
+                                            <input type="text" class="form-control form_date" name="date">
                                             <span class="error_text" name="date_error"></span>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <button type="button" class="btn btn-default" onclick="show_contrast_chart(this)">日期对比</button>
+                                            <button type="button" class="btn btn-default" onclick="show_contrast_chart(this)"><script>document.write(_("Contrast view"))</script></button>
                                         </div>
                                     </div>
                                 </form>
@@ -257,6 +257,11 @@
             form_obj.find("select[name='monitor_item_id']").selectpicker('refresh');
             form_obj.find("select[name='monitor_item_id']").selectpicker('render');
         })
+
+
+        $("input[name='begin_time']").attr('placeholder', _("Begin time"))
+        $("input[name='end_time']").attr('placeholder', _("End time"))
+        $("input[name='date']").attr('placeholder', _("Date"))
     })
 
 

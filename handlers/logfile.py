@@ -15,27 +15,27 @@ def argements_valid(handler, pk=None):
     location = handler.get_argument('location', '1')
     host = handler.get_argument('host', 'localhost')
     if not path:
-        error['path'] = '文件路径是必填项'
+        error['path'] = 'Required'
     elif location == '1' and not os.path.isfile(path):
-        error['path'] = '本地文件不存在'
+        error['path'] = 'Path not exist'
     else:
         select_sql = 'SELECT id FROM logfile WHERE host="%s" and path="%s" %s' % \
                      (host, path, 'and id!="%d"' % pk if pk else '')
         count = handler.mysqldb_cursor.execute(select_sql)
         if count:
-            error['path'] = '日志文件已存在'
+            error['path'] = 'Already existed'
 
     if location not in ['1', '2']:
-        error['location'] = '位置不正确'
+        error['location'] = 'Invalid'
 
     if location == '1' and host != 'localhost':
         host = 'localhost'
     elif location == '2' and not \
         re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', host):
-        error['host'] = 'IP地址格式不正确'
+        error['host'] = 'Incorrect format'
 
     if not comment:
-        error['comment'] = '备注是必填项'
+        error['comment'] = 'Required'
     request_data = {
         'path': path,
         'comment': comment,
@@ -62,7 +62,7 @@ def query_valid(func):
             argument_keys = self.request.arguments.keys()
             query_keys = ['id', 'location', 'host', 'path', 'comment', 'create_time',
                           'order', 'search', 'offset', 'limit', 'sort']
-            error = {key: '参数不可用' for key in argument_keys if key not in query_keys}
+            error = {key: 'Bad key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)

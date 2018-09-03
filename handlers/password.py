@@ -18,9 +18,9 @@ def reset_valid(func):
         error = {}
         password = self.get_argument('password', '')
         if not password:
-            error['password'] = '密码是必填项'
+            error['password'] = 'Required'
         elif len(password) < 6:
-            error['password'] = '密码不可少于6个字符'
+            error['password'] = 'Must be more than 6 characters'
 
         if error:
             return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
@@ -41,16 +41,16 @@ def change_valid(func):
         old_password = self.get_argument('old_password', '')
         new_password = self.get_argument('new_password', '')
         if not old_password:
-            error['old_password'] = '旧密码是必填项'
+            error['old_password'] = 'Required'
         elif hashlib.md5(old_password.encode('UTF-8')).hexdigest() != self.requser.get('password'):
-            error['old_password'] = '旧密码不正确'
+            error['old_password'] = 'Required'
 
         if not new_password:
-            error['new_password'] = '新密码是必填项'
+            error['new_password'] = 'Required'
         elif len(new_password) < 6:
-            error['new_password'] = '新密码不可少于6个字符'
+            error['new_password'] = 'Must be more than 6 characters'
         elif hashlib.md5(new_password.encode('UTF-8')).hexdigest() == self.requser.get('password'):
-            error['new_password'] = '新密码不可与旧密码相同'
+            error['new_password'] = 'New password cannot be the same as the old'
 
         if error:
             return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
@@ -84,7 +84,7 @@ class ResetHandler(BaseRequestHandler):
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Reset failed, %s' % str(e)}
         else:
-            self.reqdata['password'] = '*' * 6  # 隐藏密码
+            self.reqdata['password'] = '*' * 6
             return {'code': 200, 'msg': 'Reset successful', 'data': {'id': pk}}
 
 
@@ -111,5 +111,5 @@ class Handler(BaseRequestHandler):
             return {'code': 500, 'msg': 'Change failed, %s' % str(e)}
         else:
             self.requser['password'] = self.reqdata['password']
-            self.reqdata['password'] = '*' * 6  # 隐藏密码
+            self.reqdata['password'] = '*' * 6
             return {'code': 200, 'msg': 'Change successful', 'data': {'id': self.requser.get('id')}}

@@ -7,13 +7,20 @@
     在 Loggrove 添加的所有主机都要进行部署这一脚本，并添加执行任务到crontab（loggrove本地主机会在执行build.py的时候程序添加监控任务）；
     部署使用前，请检查该脚本的MYSQL_DB配置是否可以在所有的日志主机上正确连接；
 
+Explain:
+This script is used for real-time statistics, monitoring and alarm of log files entered by Loggroup. The script is
+executed by crontab;
+All hosts added to Loggroup deploy this script and add execution tasks to crontab (the loggroup local host adds
+monitoring tasks while executing build.py);
+Before deploying, check that the script's MYSQL_DB configuration is correctly connected on all log hosts.
+
 crontab:
     * * * * * /usr/bin/python /path/monitor.py <HOST> /tmp/loggrove_monitor.log # loggrove_monitor
 '''
 
-# loggrove 数据库配置
+# loggrove MySQL db
 MYSQL_DB = {
-    'host': '{{ mysqldb.host }}', # 需要保证可以正确连接
+    'host': '{{ mysqldb.host }}',
     'port': {{ mysqldb.port }},
     'user': '{{ mysqldb.user }}',
     'password': '{{ mysqldb.password }}',
@@ -35,7 +42,7 @@ if len(sys.argv) != 2:
     print('Argv is Bad!')
     exit()
 
-# 主机地址，需要与 loggrove 日志文件中配置的主机地址相同
+# HOST @ Loggrove
 HOST = sys.argv[1].strip()
 
 def get_logfiles(cursor):

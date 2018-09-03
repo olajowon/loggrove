@@ -1,12 +1,17 @@
 /**
  * Created by zhouwang on 2018/5/16.
  */
- 
+
 function get_cookie(key) {
-    var c = document.cookie.match("\\b" + key + "=([^;]*)\\b");
-    return c ? c[1] : undefined;
+    var cookie = document.cookie.match("\\b" + key + "=([^;]*)\\b");
+    return cookie ? cookie[1] : undefined;
 }
 
+function get_language(){
+    var language = document.cookie.match("\\b" + 'language' + "=([^;]*)\\b");
+    console.log(language)
+    return language? language[1] : "cn"
+}
 
 function log_content_searching(lines, search_pattern){
     var content_html = ""
@@ -52,23 +57,23 @@ function change_password(){
     var new_password = form_obj.find("input[name='new_password']").val()
     var confirm_password = form_obj.find("input[name='confirm_password']").val()
     if(!old_password){
-        form_obj.find("input[name='old_password']").next().text("请输入旧密码")
+        form_obj.find("input[name='old_password']").next().text("Required")
         return false
     }
     if(!new_password){
-        form_obj.find("input[name='new_password']").next().text("请输入新密码")
+        form_obj.find("input[name='new_password']").next().text("Required")
         return false
     }
     if(!confirm_password){
-        form_obj.find("input[name='confirm_password']").next().text("请输入确认密码")
+        form_obj.find("input[name='confirm_password']").next().text("Required")
         return false
     }
     if(new_password != confirm_password){
-        form_obj.find("input[name='confirm_password']").next().text("错误的确认密码")
+        form_obj.find("input[name='confirm_password']").next().text("Confirm password is incorrect")
         return false
     }
     if(new_password.length < 6){
-        form_obj.find("input[name='confirm_password']").next().text("密码不可少于6个字符")
+        form_obj.find("input[name='new_password']").next().text("Must be more than 6 characters")
         return false
     }
     var data = {
@@ -127,7 +132,7 @@ function open_show_profile_modal(){
             cite_objs.eq(1).text(response_data["data"][0]["id"])
             cite_objs.eq(2).text(response_data["data"][0]["fullname"])
             cite_objs.eq(3).text(response_data["data"][0]["email"])
-            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ? "超级管理员" : (response_data["data"][0]=="2" ? "管理员" : "普通用户")))
+            cite_objs.eq(4).text((response_data["data"][0]["role"]=="1" ? _("Superadmin") : (response_data["data"][0]=="2" ? _("Admin") : _("Ordinaryuser"))))
             cite_objs.eq(5).text(response_data["data"][0]["join_time"])
             cite_objs.eq(6).text(response_data["data"][0]["login_time"])
             cite_objs.eq(7).text(response_data["data"][0]["expire_time"])

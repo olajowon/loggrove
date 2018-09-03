@@ -31,7 +31,7 @@ function show_24h_chart(_this){
             var data = response_data["data"]
 
             var chartdata = {
-                "title": {"text": "24小时日志行数趋势图"},
+                "title": {"text": _("24h log tendency chart")},
                 "subtitle": {"text": local_log_file_path},
                 "series": data[0]["series"],
                 "xAxis": data[0]["xAxis"]
@@ -88,7 +88,7 @@ function open_chart_modal(logfile_id){
             var tr = $("#tr"+logfile_id)
 
             var chartdata = {
-                "title": {"text": "24小时日志行数趋势图"},
+                "title": {"text": _("24h log tendency chart")},
                 "subtitle": {"text": tr.children("td:eq(0)").text()},
                 "series": data[0]["series"],
                 "xAxis": data[0]["xAxis"],
@@ -170,7 +170,7 @@ function show_interval_chart(_this){
             var response_data = jQuery.parseJSON(result)
             var data = response_data["data"]
             var chartdata = {
-                "title": {"text": "日志行数趋势图"},
+                "title": {"text": _("Log tendency chart")},
                 "subtitle": {"text": local_log_file_path},
                 "series": data[0]["series"],
                 "xAxis": data[0]["xAxis"]
@@ -234,7 +234,7 @@ function show_contrast_chart(_this){
                     type: 'spline',
                     zoomType: 'x'
                 },
-                title: {"text": "日志行数对比图"},
+                title: {"text": _("Log contrast chart")},
                 subtitle: {"text": local_log_file_path},
                 xAxis: {
                     type: 'datetime',
@@ -251,7 +251,7 @@ function show_contrast_chart(_this){
                 },
                 yAxis: {
                     title: {
-                        text: '行数'
+                        text: 'line number'
                     },
                     min: 0
                 },
@@ -322,14 +322,14 @@ function write_interval_chart(chartdata){
         xAxis: {
             type: 'datetime',
             title: {
-                text: '时间'
+                text: 'time'
             },
             min: chartdata['xAxis']["min"],
             max: chartdata['xAxis']["max"]
         },
         yAxis: {
             title: {
-                text: '行数'
+                text: 'line number'
             },
             min: 0
         },

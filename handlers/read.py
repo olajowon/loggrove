@@ -15,19 +15,19 @@ def get_valid(func):
         page = self.get_argument('page', '0') or '0'
 
         if not logfile_id:
-            error['logfile_id'] = '日志文件是必选项'
+            error['logfile_id'] = 'Required'
         else:
             select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile_id))
             self.mysqldb_cursor.execute(select_sql)
             self.logfile = self.mysqldb_cursor.fetchone()
             if not self.logfile:
-                error['logfile_id'] = '日志文件不存在'
+                error['logfile_id'] = 'Not exist'
 
         if search_pattern:
             try:
                 re.search(r'%s' % search_pattern, '')
             except:
-                error['search_pattern'] = '不正确的正则表达式'
+                error['search_pattern'] = 'Incorrect regular expression'
 
         if not page.isnumeric():
             page = 0

@@ -12,7 +12,7 @@
 {% block head_js %}
 {% end %}
 {% block breadcrumb %}
-<li><i class="fa fa-calendar-check-o fa-fw"></i> 审计</li>
+<li><i class="fa fa-calendar-check-o fa-fw"></i> <script>document.write(_("Auditlogs"))</script></li>
 {% end %}
 {% block content %}
 
@@ -20,22 +20,11 @@
     <div class="col-sm-12 col-lg-10" style="clear: both">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-table fa-fw"></i> 审计列表
+                <i class="fa fa-table fa-fw"></i> <script>document.write(_("Auditlog list"))</script>
             </div>
             <div class="panel-body">
                 <div class="table-responsive" style="border: 0">
                     <table width="100%" id="auditlog_table">
-                        <thead>
-                        <tr>
-                            <th width="120px">时间</th>
-                            <th>用户</th>
-                            <th>Uri</th>
-                            <th>Method</th>
-                            <th>Request Data</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
                     </table>
                 </div>
             </div>
@@ -46,16 +35,16 @@
 {% end %}
 {% block body_js %}
 <script>
-
     $(function(){
         $('#auditlog_table').bootstrapTable({
+            locale: language,
             columns: [ {
                 field: 'record_time',
-                title: '记录时间',
+                title: _("Record time"),
                 sortable: true,
             }, {
                 field: 'username',
-                title: '用户',
+                title: _("User"),
                 sortable: true
             }, {
                 field: 'uri',

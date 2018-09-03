@@ -21,22 +21,22 @@ def open_valid(func):
         search_pattern = self.get_argument('search_pattern', '')
 
         if not logfile_id:
-            error['logfile_id'] = '日志文件是必选项'
+            error['logfile_id'] = 'Required'
         else:
             with self.mysqldb_conn.cursor(cursor=pymysql.cursors.DictCursor) as mysqldb_cursor:
                 select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile_id))
                 mysqldb_cursor.execute(select_sql)
                 self.logfile = mysqldb_cursor.fetchone()
                 if not self.logfile:
-                    error['logfile_id'] = '日志文件不存在'
+                    error['logfile_id'] = 'Not exist'
                 elif self.logfile.get('location')=='1' and not os.path.isfile(self.logfile.get('path')):
-                    error['logfile_id'] = '日志文件[本地]不存在'
+                    error['logfile_id'] = 'Path not exist'
 
         if search_pattern:
             try:
                 re.search(r'%s' % search_pattern, '')
             except:
-                error['search_pattern'] = '不正确的正则表达式'
+                error['search_pattern'] = 'Incorrect format'
         if error:
             message = {'code': 400, 'msg': 'Bad Param', 'error': error}
             self.write_message(message)

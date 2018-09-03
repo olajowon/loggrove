@@ -12,9 +12,11 @@
 {% end %}
 {% block head_js %}
 <script src="{{ static_url('js/logfile.js') }}"></script>
+<script>
+</script>
 {% end %}
 {% block breadcrumb %}
-<li><i class="fa fa-file fa-fw"></i> 日志文件</li>
+<li><i class="fa fa-file fa-fw"></i> <script>document.write(_("Logfiles"))</script> </li>
 {% end %}
 {% block content %}
 
@@ -22,10 +24,10 @@
     <div class="col-sm-12 col-lg-10" style="clear: both">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-table fa-fw"></i> 日志列表
+                <i class="fa fa-table fa-fw"></i> <script>document.write(_("Logfile list"))</script>
                 <div class="pull-right">
                     <button class="btn btn-xs btn-success role2" data-toggle="modal" data-target="#addModal">
-                        <i class="fa fa-plus fa-fw" style=""></i> 添加
+                        <i class="fa fa-plus fa-fw" style=""></i> <script>document.write(_("Add"))</script>
                     </button>
                 </div>
             </div>
@@ -52,7 +54,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="addModalLabel">
-                    <i class="fa fa-plus fa-fw" style=""></i> 添加文件
+                    <i class="fa fa-plus fa-fw" style=""></i> <script>document.write(_("Add logfile"))</script>
                 </h4>
             </div>
             <div class="modal-body">
@@ -62,32 +64,32 @@
                         <form role="form" id="add_logfile_form">
                             {% raw xsrf_form_html() %}
                             <div class="form-group">
-                                <label>位置 *</label>
+                                <label><script>document.write(_("Location"))</script> *</label>
                                 <div>
                                     <div class="radio-inline">
                                         <label>
-                                            <input type="radio" name="location" value="1" checked>本地
+                                            <input type="radio" name="location" value="1" checked><script>document.write(_("Local"))</script>
                                         </label>
                                     </div>
                                     <div class="radio-inline">
                                         <label>
-                                            <input type="radio" name="location" value="2">远程
+                                            <input type="radio" name="location" value="2"><script>document.write(_("Remote"))</script>
                                         </label>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>主机地址 *</label>
+                                <label><script>document.write(_("Host"))</script> *</label>
                                 <input class="form-control" name="host" placeholder="Host" value="localhost">
                                 <span class="error_text"></span>
                             </div>
                             <div class="form-group">
-                                <label>文件路径 *</label>
+                                <label><script>document.write(_("Path"))</script> *</label>
                                 <input class="form-control" name="path" placeholder="Path">
                                 <span class="error_text"></span>
                             </div>
                             <div class="form-group">
-                                <label>备注 *</label>
+                                <label><script>document.write(_("comment"))</script> *</label>
                                 <input class="form-control" name="comment" placeholder="Comment">
                                 <span class="error_text"></span>
                             </div>
@@ -96,10 +98,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="add_logfile()">
-                    提交
+                    <script>document.write(_("Submit"))</script>
                 </button>
             </div>
         </div>
@@ -116,7 +118,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="updateModalLabel">
-                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> 编辑文件
+                    <i class="fa fa-pencil-square-o fa-fw" style=""></i> <script>document.write(_("Update logfile"))</script>
                 </h4>
             </div>
             <div class="modal-body">
@@ -126,32 +128,32 @@
                         <form role="form" id="update_logfile_form">
                             {% raw xsrf_form_html() %}
                             <div class="form-group">
-                                <label>位置 *</label>
+                                <label><script>document.write(_("Location"))</script> *</label>
                                 <div>
                                     <div class="radio-inline">
                                         <label>
-                                            <input type="radio" name="location" value="1" checked>本地
+                                            <input type="radio" name="location" value="1" checked><script>document.write(_("Local"))</script>
                                         </label>
                                     </div>
                                     <div class="radio-inline">
                                         <label>
-                                            <input type="radio" name="location" value="2">远程
+                                            <input type="radio" name="location" value="2"><script>document.write(_("Remote"))</script>
                                         </label>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>主机地址 *</label>
+                                <label><script>document.write(_("Host"))</script> *</label>
                                 <input class="form-control" name="host" placeholder="Host" value="localhost">
                                 <span class="error_text"></span>
                             </div>
                             <div class="form-group">
-                                <label>文件路径 *</label>
+                                <label><script>document.write(_("Path"))</script> *</label>
                                 <input class="form-control" name="path" placeholder="Path">
                                 <span class="error_text"></span>
                             </div>
                             <div class="form-group">
-                                <label>备注 *</label>
+                                <label><script>document.write(_("Comment"))</script> *</label>
                                 <input class="form-control" name="comment" placeholder="Comment">
                                 <span class="error_text"></span>
                             </div>
@@ -160,10 +162,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="update_logfile()">
-                    提交
+                    <script>document.write(_("Submit"))</script>
                 </button>
             </div>
         </div>
@@ -180,14 +182,14 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="monitorItemModalLabel">
-                    <i class="fa fa-cogs fa-fw" style=""></i> 监控项
-                    <a href="#" onclick="open_monitor_item_explain_modal()" title="监控项说明"><i class="fa fa-question"></i></a>
+                    <i class="fa fa-cogs fa-fw" style=""></i> <script>document.write(_("Monitor item"))</script>
+                    <a href="#" onclick="open_monitor_item_explain_modal()" title="监控项说明（Monitor item description）"><i class="fa fa-question"></i></a>
                 </h4>
             </div>
             <div class="modal-body">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
             </div>
         </div>
@@ -205,14 +207,14 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="chartModalLabel">
-                    <i class="fa fa-line-chart fa-fw" style=""></i> 图表
+                    <i class="fa fa-line-chart fa-fw" style=""></i> <script>document.write(_("Chart"))</script>
                 </h4>
             </div>
             <div class="modal-body">
                 <div id="log_chart"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
             </div>
         </div>
@@ -229,7 +231,7 @@
                     &times;
                 </button>
                 <h4 class="modal-title" id="monitorItemExplainModalLabel">
-                    <i class="fa fa-question fa-fw" style=""></i> 监控项说明
+                    <i class="fa fa-question fa-fw" style=""></i> <script>document.write(_("Monitor item explain"))</script>
                 </h4>
             </div>
             <div class="modal-body">
@@ -288,7 +290,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                <button type="button" class="btn btn-default" data-dismiss="modal"><script>document.write(_("Close"))</script>
                 </button>
             </div>
         </div>
@@ -302,39 +304,40 @@
 <script src="{{ static_url('js/chart.js') }}"></script>
 <script>
     function location_formatter(value, row) {
-        return (value==1?"本地":"远程")
+        return (value==1 ? _("Local") : _("Remote"))
     }
 
     $(function(){
         $('#logfile_table').bootstrapTable({
+            locale: language,
             columns: [{
                 field: 'id',
                 title: 'ID',
                 sortable: true
             }, {
                 field: 'location',
-                title: '位置',
+                title: _("Location"),
                 sortable: true,
                 formatter: location_formatter,
             }, {
                 field: 'host',
-                title: '主机',
+                title: _("Host"),
                 sortable: true
             }, {
                 field: 'path',
-                title: '文件路径',
+                title: _("Path"),
                 sortable: true
             }, {
                 field: 'comment',
-                title: '备注',
+                title: _("Comment"),
                 sortable: true
             }, {
                 field: 'create_time',
-                title: '录入时间',
+                title: _("Create time"),
                 sortable: true
             }, {
                 field: 'option',
-                title: '选项',
+                title: _("Option"),
             },],
             uniqueId: "id",
             toggle: "table",
@@ -347,13 +350,13 @@
                 var rows = []
                 for(var i=0;i<data["data"].length;i++){
                     data["data"][i]["option"] = "<button class='btn btn-xs btn-danger role2' " +
-                                "onclick='delete_logfile(" + data["data"][i]["id"] + ")'>删除</button>&nbsp;" +
+                                "onclick='delete_logfile(" + data["data"][i]["id"] + ")'>"+ _("Delete") +"</button>&nbsp;" +
                             "<button class='btn btn-xs btn-warning role2' " +
-                                "onclick='open_update_modal(" + data["data"][i]["id"] + ")'>编辑</button>&nbsp;" +
+                                "onclick='open_update_modal(" + data["data"][i]["id"] + ")'>"+ _("Update") +"</button>&nbsp;" +
                             "<button class='btn btn-xs btn-info' " +
-                                "onclick='open_chart_modal(" + data["data"][i]["id"] + ")'>图表</button>&nbsp;" +
+                                "onclick='open_chart_modal(" + data["data"][i]["id"] + ")'>"+ _("Chart") +"</button>&nbsp;" +
                             "<button class='btn btn-xs btn-primary' " +
-                                "onclick='open_monitor_item_modal(" + data["data"][i]["id"] + ")'>监控项</button>"
+                                "onclick='open_monitor_item_modal(" + data["data"][i]["id"] + ")'>"+ _("Monitor item") +"</button>"
                     rows.push(data["data"][i])
                 }
                 return {"total": data["total"], "rows": rows}

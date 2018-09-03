@@ -16,25 +16,25 @@ def argements_valid(handler, pk=None):
     fullname = handler.get_argument('fullname', '')
 
     if not username:
-        error['username'] = '用户名是必填项'
+        error['username'] = 'Required'
     else:
         select_sql = 'SELECT id FROM user WHERE username="%s" %s' % (username, 'and id!="%d"' % pk if pk else '')
         count = handler.mysqldb_cursor.execute(select_sql)
         if count:
-            error['username'] = '用户名已存在'
+            error['username'] = 'Already existed'
 
-    if handler.request.method == 'POST':    #添加用户时，需要判断密码
+    if handler.request.method == 'POST':
         if not password:
-            error['password'] = '密码是必填项'
+            error['password'] = 'Required'
         else:
             password = hashlib.md5(password.encode('UTF-8')).hexdigest()
 
     if not email:
-        error['email'] = '邮箱是必填项'
+        error['email'] = 'Required'
     if status not in ['1', '2']:
-        error['status'] = '状态选择不正确'
+        error['status'] = 'Invalid'
     if role not in ['1', '2', '3']:
-        error['role'] = '角色选择不正确'
+        error['role'] = 'Invalid'
 
     request_data = {
         'username':username,
@@ -62,7 +62,7 @@ def query_valid(func):
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
             query_keys = ['id', 'username', 'email', 'fullname', 'order', 'search', 'offset', 'limit', 'sort']
-            error = {key:'参数不可用' for key in argument_keys if key not in query_keys}
+            error = {key:'Bad key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)
