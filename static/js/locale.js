@@ -109,5 +109,6 @@ function _(key){
         "Date": "日期",
         "Custom regular expressions and precedence matching": "自定义正则表达式并优先匹配"
     }
-    return map[key]
+    var value = map[key]
+    return value ? value : key
 }
