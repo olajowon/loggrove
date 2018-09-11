@@ -3,6 +3,9 @@
 import os
 from settings import MYSQL_DB
 import subprocess
+import random
+import string
+import hashlib
 import time
 
 NEW_SUPERADMIN = False
@@ -86,10 +89,12 @@ def loggrove_admin():
         exit()
 
     if output.find('Existence of superadmin') < 0:
+        salt = ''.join(random.sample(string.ascii_letters, 8))
+        password = '%s%s' % (salt, hashlib.md5((salt + 'loggrove').encode('UTF-8')).hexdigest())
         sqltext = '''
         INSERT INTO user (username, password, fullname, email, join_time, status, role) 
-        VALUES ("admin", md5("loggrove"), "Admin", "admin@loggrove.com", now(), "1", "1");
-        '''
+        VALUES ("admin", "%s", "Admin", "admin@loggrove.com", now(), "1", "1");
+        ''' % password
         command = 'mysql -h%s -P%d -u%s -p%s loggrove -e \'%s\'' % \
                   (MYSQL_DB['host'], MYSQL_DB['port'], MYSQL_DB['user'], MYSQL_DB['password'], sqltext)
         print('-->', command)

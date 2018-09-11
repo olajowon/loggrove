@@ -1,8 +1,7 @@
 # Created by zhouwang on 2018/5/17.
 
-from .base import BaseRequestHandler, permission
+from .base import BaseRequestHandler, permission, make_password
 import datetime
-import hashlib
 import logging
 logger = logging.getLogger()
 
@@ -26,8 +25,6 @@ def argements_valid(handler, pk=None):
     if handler.request.method == 'POST':
         if not password:
             error['password'] = 'Required'
-        else:
-            password = hashlib.md5(password.encode('UTF-8')).hexdigest()
 
     if not email:
         error['email'] = 'Required'
@@ -154,7 +151,7 @@ class Handler(BaseRequestHandler):
                 role) 
             VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s")
         ''' % (self.reqdata['username'],
-               self.reqdata['password'],
+               make_password(self.reqdata['password']),
                self.reqdata['fullname'],
                self.reqdata['email'],
                datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),

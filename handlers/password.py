@@ -1,7 +1,6 @@
 # Created by zhouwang on 2018/6/6.
 
-from .base import BaseRequestHandler, permission
-import hashlib
+from .base import BaseRequestHandler, permission, validate_password, make_password
 
 def reset_valid(func):
     def _wrapper(self, pk):
@@ -26,7 +25,7 @@ def reset_valid(func):
             return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
 
         self.reqdata = {
-            'password': hashlib.md5(password.encode('UTF-8')).hexdigest()
+            'password': password
         }
         return func(self, pk)
     return _wrapper
@@ -42,21 +41,20 @@ def change_valid(func):
         new_password = self.get_argument('new_password', '')
         if not old_password:
             error['old_password'] = 'Required'
-        elif hashlib.md5(old_password.encode('UTF-8')).hexdigest() != self.requser.get('password'):
-            error['old_password'] = 'Required'
-
+        elif not validate_password(old_password, self.requser.get('password')):
+            error['old_password'] = 'Invalid password'
         if not new_password:
             error['new_password'] = 'Required'
         elif len(new_password) < 6:
             error['new_password'] = 'Must be more than 6 characters'
-        elif hashlib.md5(new_password.encode('UTF-8')).hexdigest() == self.requser.get('password'):
+        elif validate_password(new_password, self.requser.get('password')):
             error['new_password'] = 'New password cannot be the same as the old'
 
         if error:
             return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
 
         self.reqdata = {
-            'password': hashlib.md5(new_password.encode('UTF-8')).hexdigest()
+            'password': new_password
         }
         return func(self)
     return _wrapper
@@ -77,14 +75,13 @@ class ResetHandler(BaseRequestHandler):
               password="%s"
             WHERE 
               id="%d"
-        ''' % (self.reqdata['password'], pk)
+        ''' % (make_password(self.reqdata['password']), pk)
         try:
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Reset failed, %s' % str(e)}
         else:
-            self.reqdata['password'] = '*' * 6
             return {'code': 200, 'msg': 'Reset successful', 'data': {'id': pk}}
 
 
@@ -103,13 +100,12 @@ class Handler(BaseRequestHandler):
               password="%s"
             WHERE 
               id="%d"
-        ''' % (self.reqdata['password'], self.requser.get('id'))
+        ''' % (make_password(self.reqdata['password']), self.requser.get('id'))
         try:
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
             return {'code': 500, 'msg': 'Change failed, %s' % str(e)}
         else:
-            self.requser['password'] = self.reqdata['password']
-            self.reqdata['password'] = '*' * 6
+            self.requser['password'] = make_password(self.reqdata['password'])
             return {'code': 200, 'msg': 'Change successful', 'data': {'id': self.requser.get('id')}}

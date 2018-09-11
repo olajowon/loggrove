@@ -9,7 +9,6 @@ function get_cookie(key) {
 
 function get_language(){
     var language = document.cookie.match("\\b" + 'language' + "=([^;]*)\\b");
-    console.log(language)
     return language? language[1] : "cn"
 }
 

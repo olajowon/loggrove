@@ -4,6 +4,9 @@ import tornado.web
 import tornado.websocket
 import pymysql
 import pymysql.cursors
+import random
+import string
+import hashlib
 import json
 import time
 import urllib
@@ -162,11 +165,14 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         self.set_status(response_data.get('code'))
         self.write(json.dumps(response_data))
 
-        if self.get_status()==200 and (self.request.method != 'GET'):
+        if self.requser and self.get_status()==200 and (self.request.method != 'GET'):
             self.add_auditlog()
 
 
     def add_auditlog(self):
+        if self.reqdata.get('password'):
+            self.reqdata['password'] = '*' * 6
+
         insert_sql = '''
             INSERT INTO 
               auditlog (
@@ -184,6 +190,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         try:
             self.mysqldb_cursor.execute(insert_sql)
         except Exception as e:
+            logger.error('Add auditlog failed: %s' % str(e))
             self.mysqldb_conn.rollback()
 
 
@@ -232,17 +239,21 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             if not self.get_argument('search', None):
                 where_fields = [field for field in fields if self.get_argument(field, None) != None]
                 if where_fields:
-                    where = ' WHERE %s' % \
-                        ' and '.join(['%s in (%s)' % (field, ','.join(['"%s"' % v for v in self.get_arguments(field)]))
+                    where = ' WHERE %s' % ' and '.join(
+                        ['%s in (%s)' % (field, ','.join(
+                            ['"%s"' % pymysql.escape_string(v) for v in self.get_arguments(field)]))
                                       for field in where_fields])
             else:
-                where = 'WHERE concat(%s) like "%%%s%%"' % (','.join(search_fields), self.get_argument('search'))
+                where = 'WHERE concat(%s) like "%%%s%%"' % (','.join(search_fields),
+                                                            pymysql.escape_string(self.get_argument('search')))
 
             if self.get_argument('offset', None) and self.get_argument('limit', None):
-                limit = 'LIMIT %s, %s' % (self.get_argument('offset'), self.get_argument('limit'))
+                limit = 'LIMIT %s, %s' % (pymysql.escape_string(self.get_argument('offset')),
+                                          pymysql.escape_string(self.get_argument('limit')))
 
             if self.get_argument('order', None) and self.get_argument('sort', None):
-                order = 'ORDER BY %s %s' % (self.get_argument('sort'), self.get_argument('order'))
+                order = 'ORDER BY %s %s' % (pymysql.escape_string(self.get_argument('sort')),
+                                            pymysql.escape_string(self.get_argument('order')))
         return where, order, limit
 
 
@@ -274,3 +285,13 @@ class BaseWebsocketHandler(tornado.websocket.WebSocketHandler):
             self.is_authenticated = False
             if self.requser:
                 self.is_authenticated = True
+
+
+def make_password(password):
+    salt = ''.join(random.sample(string.ascii_letters, 8))
+    return '%s%s' % (salt, hashlib.md5((salt+password).encode('UTF-8')).hexdigest())
+
+
+def validate_password(password, encrypted_password):
+    salt, salt_password = encrypted_password[:8], encrypted_password[8:]
+    return hashlib.md5((salt+password).encode('UTF-8')).hexdigest() == salt_password

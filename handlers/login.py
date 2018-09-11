@@ -1,6 +1,6 @@
 # Created by zhouwang on 2018/5/16.
 
-from .base import BaseRequestHandler
+from .base import BaseRequestHandler, validate_password, make_password
 import hashlib
 import ldap
 import datetime
@@ -20,6 +20,10 @@ def login_valid(func):
         if error:
             self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})
         else:
+            self.reqdata = {
+                'username': self.username,
+                'password': self.password
+            }
             return func(self)
     return _wrapper
 
@@ -34,11 +38,6 @@ class Handler(BaseRequestHandler):
             response_data = self.base_auth_login()
         else:
             response_data = self.ldap_auth_login()
-
-        self.reqdata = {            # record request
-            'username': self.username,
-            'password': '*' * 6
-        }
         self._write(response_data)
 
 
@@ -73,19 +72,22 @@ class Handler(BaseRequestHandler):
                         response_data = {'code': 403, 'msg': 'User disabled'}
                     else:
                         response_data = self.login(user)
+            conn.unbind_s()
         return response_data
 
 
     def base_auth_login(self):
-        select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s" and password="%s"' % \
-                     (self.username, hashlib.md5(self.password.encode('UTF-8')).hexdigest())
+        select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s"' % \
+                     (self.username)
         self.mysqldb_cursor.execute(select_sql)
         user = self.mysqldb_cursor.fetchone()
 
         if not user:
-            response_data = {'code': 401, 'msg': 'Username or password incorrect'}
+            response_data = {'code': 401, 'msg': 'User does not exist'}
         elif user.get('status') != 1:
             response_data = {'code': 403, 'msg': 'User disabled'}
+        elif not validate_password(self.password, user.get('password')):
+            response_data = {'code': 403, 'msg': 'Invalid password'}
         else:
             response_data = self.login(user)  # login & session
         return response_data
@@ -132,7 +134,7 @@ class Handler(BaseRequestHandler):
                 WHERE 
                   id="%d"
             ''' % (self.username,
-                   hashlib.md5(self.password.encode('UTF-8')).hexdigest(),
+                   make_password(self.password),
                    self.ldap_user.get('mail')[0].decode('UTF-8') if self.ldap_user.get('mail') else user['email'],
                    user['id'])
 

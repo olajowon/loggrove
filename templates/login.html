@@ -93,9 +93,13 @@
                                 form_obj.find("[name='" + k + "']").parent().next().text(response_data["error"][k])
                             }
                         }else if(response_data["code"] == 401){
-                            form_obj.find("[name='password']").parent().next().text(_("Username or password incorrect"))
+                            form_obj.find("[name='password']").parent().next().text(response_data["msg"])
                         }else if(response_data["code"] == 403){
-                            form_obj.find("[name='username']").parent().next().text(_("User disabled"))
+                            if(response_data["msg"].indexOf("password") >= 0 ) {
+                                form_obj.find("[name='password']").parent().next().text(response_data["msg"])
+                            }else{
+                                form_obj.find("[name='username']").parent().next().text(response_data["msg"])
+                            }
                         }else{
                             form_obj.children().first().html(
                                 '<div class="alert alert-danger">' +
