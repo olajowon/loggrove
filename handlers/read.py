@@ -5,7 +5,9 @@ import tornado
 import re
 import paramiko
 import logging
+
 logger = logging.getLogger()
+
 
 def get_valid(func):
     def _wrapper(self):
@@ -38,6 +40,7 @@ def get_valid(func):
         self.search_pattern = search_pattern
         self.page = int(page)
         return func(self)
+
     return _wrapper
 
 
@@ -50,11 +53,12 @@ def ssh_conn(func):
                 self.ssh_client.connect(self.logfile.get('host'), **self.application.settings.get('ssh'))
             except Exception as e:
                 logger.error('Read logfile failed: %s' % str(e))
-                return {'code': 500, 'msg': 'Read logfile failed', 'detail':str(e)}
+                return {'code': 500, 'msg': 'Read logfile failed', 'detail': str(e)}
         response = func(self)
         if self.ssh_client:
             self.ssh_client.close()
         return response
+
     return _wrapper
 
 
@@ -66,7 +70,6 @@ class Handler(BaseRequestHandler):
         self.search_pattern = None
         self.ssh_client = None
 
-
     @permission()
     @get_valid
     @tornado.web.asynchronous
@@ -74,7 +77,6 @@ class Handler(BaseRequestHandler):
     def get(self):
         response = yield tornado.gen.Task(self.read_local_logfile)
         self._write(response)
-
 
     def command(self, cmd):
         if self.logfile.get('location') == 1:
@@ -84,7 +86,6 @@ class Handler(BaseRequestHandler):
             status = stdout.channel.recv_exit_status()
             output = str(stdout.read(), encoding='utf-8') if status == 0 else str(stderr.read(), encoding='utf-8')
         return status, output
-
 
     @tornado.gen.coroutine
     @ssh_conn
@@ -105,8 +106,8 @@ class Handler(BaseRequestHandler):
 
             page = total_pages if self.page == 0 or self.page > total_pages else self.page
             grep = '| grep -E "%s"' % self.search_pattern if self.search_pattern else ''
-            read_cmd = 'head -n %d %s | tail -n 1000 %s' % (page * 1000, path, grep) if page < (total_pages/2) \
-                else 'tail -n +%d %s | head -n 1000 %s' % (((page-1) * 1000) + 1, path, grep)
+            read_cmd = 'head -n %d %s | tail -n 1000 %s' % (page * 1000, path, grep) if page < (total_pages / 2) \
+                else 'tail -n +%d %s | head -n 1000 %s' % (((page - 1) * 1000) + 1, path, grep)
 
             status, output = self.command(read_cmd)
             if status > 0 and output:
@@ -118,5 +119,7 @@ class Handler(BaseRequestHandler):
         size = len(output)
         contents = output.splitlines()
         return {'code': 200, 'msg': 'Read logfile successful', 'data': {'contents': contents, 'page': page,
-            'total_pages': total_pages, 'total_size': total_size, 'total_lines': total_lines, 'size': size,
-            'lines': len(contents)}}
+                                                                        'total_pages': total_pages,
+                                                                        'total_size': total_size,
+                                                                        'total_lines': total_lines, 'size': size,
+                                                                        'lines': len(contents)}}

@@ -3,6 +3,7 @@
 from .base import BaseRequestHandler, permission
 import tornado
 
+
 def query_valid(func):
     def _wrapper(self, pk):
         error = {}
@@ -10,10 +11,11 @@ def query_valid(func):
             argument_keys = self.request.arguments.keys()
             query_keys = ['id', 'uri', 'method', 'record_time', 'username',
                           'order', 'search', 'offset', 'limit', 'sort']
-            error = {key:'Invalid key' for key in argument_keys if key not in query_keys}
+            error = {key: 'Invalid key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)
+
     return _wrapper
 
 
@@ -61,5 +63,5 @@ class Handler(BaseRequestHandler):
         return {'code': 200, 'msg': 'Query Successful', 'data': results}
 
     def _replace(self, param):
-        return param.replace('id', 't1.id').replace('uri', 't1.uri').replace('method', 't1.method').\
+        return param.replace('id', 't1.id').replace('uri', 't1.uri').replace('method', 't1.method'). \
             replace('record_time', 't1.record_time').replace('username', 't2.username')

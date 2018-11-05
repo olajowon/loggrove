@@ -5,6 +5,7 @@ import datetime
 import os
 import re
 import logging
+
 logger = logging.getLogger()
 
 
@@ -31,7 +32,8 @@ def argements_valid(handler, pk=None):
     if location == '1' and host != 'localhost':
         host = 'localhost'
     elif location == '2' and not \
-        re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', host):
+            re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
+                     host):
         error['host'] = 'Incorrect format'
 
     if not comment:
@@ -66,6 +68,7 @@ def query_valid(func):
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)
+
     return _wrapper
 
 
@@ -94,7 +97,6 @@ def del_valid(func):
     return _wrapper
 
 
-
 class Handler(BaseRequestHandler):
     @permission()
     def get(self, pk=0):
@@ -102,13 +104,11 @@ class Handler(BaseRequestHandler):
         response_data = self._query(int(pk))
         self._write(response_data)
 
-
     @permission(role=2)
     def post(self):
         ''' Add logfile '''
         response_data = self._add()
         self._write(response_data)
-
 
     @permission(role=2)
     def put(self, pk=0):
@@ -116,13 +116,11 @@ class Handler(BaseRequestHandler):
         response_data = self._update(int(pk))
         self._write(response_data)
 
-
     @permission(role=2)
     def delete(self, pk=0):
         ''' Delete logfile '''
         response_data = self._del(int(pk))
         self._write(response_data)
-
 
     @query_valid
     def _query(self, pk):
@@ -144,8 +142,6 @@ class Handler(BaseRequestHandler):
             return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query Successful', 'data': results}
 
-
-
     @add_valid
     def _add(self):
         insert_sql = '''
@@ -165,11 +161,10 @@ class Handler(BaseRequestHandler):
             self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
             return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
 
-
     @update_valid
     def _update(self, pk):
         update_sql = 'UPDATE logfile SET location="%d", host="%s", path="%s", comment="%s" WHERE id="%d"' % \
-                 (self.reqdata['location'], self.reqdata['host'], self.reqdata['path'], self.reqdata['comment'], pk)
+                     (self.reqdata['location'], self.reqdata['host'], self.reqdata['path'], self.reqdata['comment'], pk)
         try:
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
@@ -178,7 +173,6 @@ class Handler(BaseRequestHandler):
             return {'code': 500, 'msg': 'Update failed'}
         else:
             return {'code': 200, 'msg': 'Update successful', 'data': {'id': pk}}
-
 
     @del_valid
     def _del(self, pk):

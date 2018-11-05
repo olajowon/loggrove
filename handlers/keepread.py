@@ -11,6 +11,7 @@ import pymysql
 import subprocess
 from .base import BaseWebsocketHandler, permission
 import logging
+
 logger = logging.getLogger()
 
 
@@ -29,7 +30,7 @@ def open_valid(func):
                 self.logfile = mysqldb_cursor.fetchone()
                 if not self.logfile:
                     error['logfile_id'] = 'Not exist'
-                elif self.logfile.get('location')=='1' and not os.path.isfile(self.logfile.get('path')):
+                elif self.logfile.get('location') == '1' and not os.path.isfile(self.logfile.get('path')):
                     error['logfile_id'] = 'Path not exist'
 
         if search_pattern:
@@ -51,6 +52,7 @@ def open_valid(func):
             self.registers.append(self)
             self.search_pattern = search_pattern
             return func(self)
+
     return _wrapper
 
 
@@ -64,7 +66,7 @@ class Handler(BaseWebsocketHandler):
         self.session = None
         self.transport = None
         self.lock = None
-
+        self.loop = None
 
     registers = []
 
@@ -95,7 +97,6 @@ class Handler(BaseWebsocketHandler):
                 rthread.start()
                 sthread.start()
 
-
     def on_close(self):
         if self.ssh_client:
             if self.session:
@@ -105,7 +106,6 @@ class Handler(BaseWebsocketHandler):
             self.ssh_client.close()
         self.registers.remove(self)
         logger.info('Keepread logfile connection closed, %s' % self)
-
 
     def kpread_local_logfile(self):
         asyncio.set_event_loop(self.loop)
@@ -126,7 +126,7 @@ class Handler(BaseWebsocketHandler):
 
                         if self.search_pattern:
                             contents = [line for line in contents if re.search(self.search_pattern, line)]
-                    data = {'contents': contents, 'total_size': total_size, 'total_lines':total_lines,
+                    data = {'contents': contents, 'total_size': total_size, 'total_lines': total_lines,
                             'lines': len(contents), 'size': len(''.join(contents))}
                     message = {'code': 0, 'msg': 'Read lines successful', 'data': data}
                     if self.ws_connection:
@@ -141,7 +141,6 @@ class Handler(BaseWebsocketHandler):
                 if self.ws_connection:
                     self.close()
         logger.info('Keepread logfile end')
-
 
     def kpread_remote_logfile(self):
         asyncio.set_event_loop(self.loop)
@@ -173,7 +172,6 @@ class Handler(BaseWebsocketHandler):
             if self.ws_connection:
                 self.close()
         logger.info('Keepread logfile end')
-
 
     def kpsend_remote_logfile(self):
         asyncio.set_event_loop(self.loop)
@@ -213,7 +211,6 @@ class Handler(BaseWebsocketHandler):
             if self.ws_connection:
                 self.close()
         logger.info('Keepsend logfile end')
-
 
     def command(self, cmd):
         if self.logfile.get('location') == 1:

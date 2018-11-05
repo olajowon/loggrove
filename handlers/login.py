@@ -5,6 +5,7 @@ import hashlib
 import ldap
 import datetime
 import logging
+
 logger = logging.getLogger()
 
 
@@ -25,6 +26,7 @@ def login_valid(func):
                 'password': self.password
             }
             return func(self)
+
     return _wrapper
 
 
@@ -33,13 +35,12 @@ class Handler(BaseRequestHandler):
 
     @login_valid
     def post(self):
-        self.logout()   # logout
+        self.logout()  # logout
         if self.application.settings.get('ldap').get('auth') != True or self.username == 'admin':
             response_data = self.base_auth_login()
         else:
             response_data = self.ldap_auth_login()
         self._write(response_data)
-
 
     def ldap_auth_login(self):
         _ldap = self.application.settings.get('ldap')
@@ -65,7 +66,7 @@ class Handler(BaseRequestHandler):
                     response_data = {'code': 401, 'msg': 'Username or password incorrect'}
                 else:
                     self.ldap_user = result_data[0][1]
-                    user = self.base_user()     # loggrove base user
+                    user = self.base_user()  # loggrove base user
                     if not user:
                         response_data = {'code': 500, 'msg': 'Login failed'}
                     elif user.get('status') != 1:
@@ -74,7 +75,6 @@ class Handler(BaseRequestHandler):
                         response_data = self.login(user)
             conn.unbind_s()
         return response_data
-
 
     def base_auth_login(self):
         select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s"' % \
@@ -91,7 +91,6 @@ class Handler(BaseRequestHandler):
         else:
             response_data = self.login(user)  # login & session
         return response_data
-
 
     def base_user(self):
         select_sql = 'SELECT * FROM user WHERE username="%s"' % self.username

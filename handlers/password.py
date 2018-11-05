@@ -2,13 +2,14 @@
 
 from .base import BaseRequestHandler, permission, validate_password, make_password
 
+
 def reset_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id, username FROM user WHERE id="%d"' % int(pk)
         count = self.mysqldb_cursor.execute(select_sql)
 
         if not count:
-            return  {'code': 404, 'msg': 'Reset user not found'}
+            return {'code': 404, 'msg': 'Reset user not found'}
         else:
             username = self.mysqldb_cursor.fetchone().get('username')
             if username != 'admin' and self.application.settings.get('ldap').get('auth') == True:
@@ -28,6 +29,7 @@ def reset_valid(func):
             'password': password
         }
         return func(self, pk)
+
     return _wrapper
 
 
@@ -57,6 +59,7 @@ def change_valid(func):
             'password': new_password
         }
         return func(self)
+
     return _wrapper
 
 

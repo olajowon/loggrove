@@ -5,6 +5,7 @@ import datetime
 import logging
 logger = logging.getLogger()
 
+
 def argements_valid(handler, pk=None):
     error = {}
     username = handler.get_argument('username', '')
@@ -34,12 +35,12 @@ def argements_valid(handler, pk=None):
         error['role'] = 'Invalid'
 
     request_data = {
-        'username':username,
-        'password':password,
-        'email':email,
-        'status':status,
-        'role':role,
-        'fullname':fullname
+        'username': username,
+        'password': password,
+        'email': email,
+        'status': status,
+        'role': role,
+        'fullname': fullname
     }
     return error, request_data
 
@@ -59,7 +60,7 @@ def query_valid(func):
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
             query_keys = ['id', 'username', 'email', 'fullname', 'order', 'search', 'offset', 'limit', 'sort']
-            error = {key:'Bad key' for key in argument_keys if key not in query_keys}
+            error = {key: 'Bad key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)
@@ -92,7 +93,6 @@ def del_valid(func):
 class Handler(BaseRequestHandler):
     @permission(role=1)
     def get(self, pk=0):
-        ''' Query '''
         response_data = self._query(int(pk))
         return self._write(response_data)
 
@@ -110,7 +110,6 @@ class Handler(BaseRequestHandler):
     def delete(self, pk=0):
         response_data = self._del(int(pk))
         self._write(response_data, audit=True)
-
 
     @query_valid
     def _query(self, pk):

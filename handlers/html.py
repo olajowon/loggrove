@@ -2,6 +2,7 @@
 
 from .base import permission, BaseRequestHandler
 
+
 class Handler(BaseRequestHandler):
     @permission()
     def get(self, uri=None):
@@ -14,6 +15,7 @@ class Handler(BaseRequestHandler):
             'auditlogs': 'auditlog.html'
         }
         self.render(htmls.get(uri) if uri else 'dashboard.html', **{'requser': self.requser})
+
 
 class LoginHander(BaseRequestHandler):
     def get(self):

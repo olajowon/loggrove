@@ -14,7 +14,9 @@ import uuid
 import datetime
 import settings
 import logging
+
 logger = logging.getLogger()
+
 
 def permission(role=3):
     def _decorator(func):
@@ -40,12 +42,15 @@ def permission(role=3):
                 self.redirect('/login/html/?next=%s' % urllib.parse.quote(self.request.uri))
             else:
                 self._write({'code': 401, 'msg': 'Unauthorized'})
+
         return _wrapper
+
     return _decorator
 
 
 def mysqldb_conn_valid(func):
     ''' ping mysql connect '''
+
     def _wrapper(self):
         self.mysqldb_conn = self.application.settings.get('mysqldb_conn')
         try:
@@ -61,11 +66,12 @@ def mysqldb_conn_valid(func):
                     self.set_status(500)
                     self.write('HTTP 500: Internal Server Error')
                 else:
-                    self._write({'code':500, 'msg':'Connect MySQL failed', 'detail': str(e)})
+                    self._write({'code': 500, 'msg': 'Connect MySQL failed', 'detail': str(e)})
                 return
             else:
                 self.application.settings['mysqldb_conn'] = self.mysqldb_conn
         return func(self)
+
     return _wrapper
 
 
@@ -96,7 +102,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         if self.requser:
             self.is_authenticated = True
 
-
     def logout(self):
         if self.session:
             delete_sql = 'DELETE FROM session WHERE session_id="%s"' % self.session.get('session_id')
@@ -109,8 +114,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             self.clear_cookie('session_id')
         return {'code': 200, 'msg': 'Logout successful'}
 
-
-    def login(self, user, active=60*60*24):
+    def login(self, user, active=60 * 60 * 24):
         session_id = str(uuid.uuid4()).replace('-', '')
         user_id = user.get('id')
         create_time = time.time()
@@ -141,15 +145,12 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             response_data = {'code': 200, 'msg': 'Login successful', 'cookies': {'session_id': session_id}}
         return response_data
 
-
     def get_current_user(self):
         user_id = None
         return user_id
 
-
     def on_finish(self):
         self.mysqldb_cursor.close()
-
 
     def write_error(self, status_code, **kwargs):
         exc_info = kwargs['exc_info']
@@ -160,14 +161,12 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             self.write(json.dumps({'code': status_code,
                                    'msg': exc_info[1].__str__()}))
 
-
     def _write(self, response_data, audit=False):
         self.set_status(response_data.get('code'))
         self.write(json.dumps(response_data))
 
-        if self.requser and self.get_status()==200 and (self.request.method != 'GET'):
+        if self.requser and self.get_status() == 200 and (self.request.method != 'GET'):
             self.add_auditlog()
-
 
     def add_auditlog(self):
         if self.reqdata.get('password'):
@@ -193,7 +192,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             logger.error('Add auditlog failed: %s' % str(e))
             self.mysqldb_conn.rollback()
 
-
     def _update_row(self, update_sql, pk=0):
         try:
             self.mysqldb_cursor.execute(update_sql)
@@ -203,12 +201,10 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         else:
             return {'code': 200, 'msg': 'Successful', 'data': {'id': int(pk)}}
 
-
     def _select_row(self, select_sql):
         self.mysqldb_cursor.execute(select_sql)
         results = self.mysqldb_cursor.fetchall()
         return {'code': 200, 'msg': 'Successful', 'data': results}
-
 
     def _insert_row(self, insert_sql):
         try:
@@ -220,7 +216,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
             return {'code': 200, 'msg': 'Successful', 'data': self.mysqldb_cursor.fetchall()}
 
-
     def _delete_row(self, delete_sql):
         try:
             self.mysqldb_cursor.execute(delete_sql)
@@ -229,7 +224,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             return {'code': 500, 'msg': 'Failed, %s' % str(e)}
         else:
             return {'code': 200, 'msg': 'Successful'}
-
 
     def select_sql_params(self, pk=0, fields=[], search_fields=[]):
         where = limit = order = ''
@@ -242,7 +236,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                     where = ' WHERE %s' % ' and '.join(
                         ['%s in (%s)' % (field, ','.join(
                             ['"%s"' % pymysql.escape_string(v) for v in self.get_arguments(field)]))
-                                      for field in where_fields])
+                         for field in where_fields])
             else:
                 where = 'WHERE concat(%s) like "%%%s%%"' % (','.join(search_fields),
                                                             pymysql.escape_string(self.get_argument('search')))
@@ -255,7 +249,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                 order = 'ORDER BY %s %s' % (pymysql.escape_string(self.get_argument('sort')),
                                             pymysql.escape_string(self.get_argument('order')))
         return where, order, limit
-
 
 
 class BaseWebsocketHandler(tornado.websocket.WebSocketHandler):
@@ -289,9 +282,9 @@ class BaseWebsocketHandler(tornado.websocket.WebSocketHandler):
 
 def make_password(password):
     salt = ''.join(random.sample(string.ascii_letters, 8))
-    return '%s%s' % (salt, hashlib.md5((salt+password).encode('UTF-8')).hexdigest())
+    return '%s%s' % (salt, hashlib.md5((salt + password).encode('UTF-8')).hexdigest())
 
 
 def validate_password(password, encrypted_password):
     salt, salt_password = encrypted_password[:8], encrypted_password[8:]
-    return hashlib.md5((salt+password).encode('UTF-8')).hexdigest() == salt_password
+    return hashlib.md5((salt + password).encode('UTF-8')).hexdigest() == salt_password

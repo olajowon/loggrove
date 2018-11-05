@@ -4,7 +4,9 @@ from .base import BaseRequestHandler, permission
 import datetime
 import re
 import logging
+
 logger = logging.getLogger()
+
 
 def argements_valid(handler, pk=None):
     error = {}
@@ -47,20 +49,21 @@ def argements_valid(handler, pk=None):
 
         if not trigger_format:
             error['trigger_format'] = 'Required'
-        elif not (re.match(r'^([0-9]+[<=])?{}([<=][1-9][0-9]*)?$', trigger_format) and (trigger_format.strip()!='{}')):
+        elif not (
+            re.match(r'^([0-9]+[<=])?{}([<=][1-9][0-9]*)?$', trigger_format) and (trigger_format.strip() != '{}')):
             error['trigger_format'] = 'Incorrect format'
 
         if not dingding_webhook:
             error['dingding_webhook'] = 'Required'
 
     data = {
-        'logfile_id':logfile_id,
-        'search_pattern':search_pattern,
-        'comment':comment,
-        'alert':alert or '2',
-        'check_interval':check_interval or '0',
-        'trigger_format':trigger_format,
-        'dingding_webhook':dingding_webhook
+        'logfile_id': logfile_id,
+        'search_pattern': search_pattern,
+        'comment': comment,
+        'alert': alert or '2',
+        'check_interval': check_interval or '0',
+        'trigger_format': trigger_format,
+        'dingding_webhook': dingding_webhook
     }
     return error, data
 
@@ -71,6 +74,7 @@ def add_valid(func):
         if error:
             return {'code': 400, 'msg': 'Bad POST data', 'error': error}
         return func(self)
+
     return _wrapper
 
 
@@ -79,13 +83,14 @@ def query_valid(func):
         error = {}
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
-            query_keys = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle','check_interval',
-                          'trigger_format', 'dingding_webhook', 'comment', 'create_time',  'order', 'search',
+            query_keys = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle', 'check_interval',
+                          'trigger_format', 'dingding_webhook', 'comment', 'create_time', 'order', 'search',
                           'offset', 'limit', 'sort']
-            error = {key:'Bad key' for key in argument_keys if key not in query_keys}
+            error = {key: 'Bad key' for key in argument_keys if key not in query_keys}
         if error:
             return {'code': 400, 'msg': 'Bad GET param', 'error': error}
         return func(self, pk)
+
     return _wrapper
 
 
@@ -99,6 +104,7 @@ def update_valid(func):
         if error:
             return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
         return func(self, pk)
+
     return _wrapper
 
 
@@ -109,8 +115,8 @@ def del_valid(func):
         if not count:
             return {'code': 404, 'msg': 'Delete row not found'}
         return func(self, pk)
-    return _wrapper
 
+    return _wrapper
 
 
 class Handler(BaseRequestHandler):
@@ -133,7 +139,6 @@ class Handler(BaseRequestHandler):
     def delete(self, pk=0):
         response_data = self._del(int(pk))
         self._write(response_data)
-
 
     @add_valid
     def _add(self):
@@ -162,7 +167,6 @@ class Handler(BaseRequestHandler):
             self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
             return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
 
-
     @update_valid
     def _update(self, pk):
         update_sql = '''
@@ -189,11 +193,10 @@ class Handler(BaseRequestHandler):
         else:
             return {'code': 200, 'msg': 'Update successful', 'data': {'id': pk}}
 
-
     @query_valid
     def _query(self, pk):
-        fields = search_fields = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle','check_interval',
-                          'trigger_format', 'dingding_webhook', 'comment', 'create_time']
+        fields = search_fields = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle', 'check_interval',
+                                  'trigger_format', 'dingding_webhook', 'comment', 'create_time']
         where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
         select_sql = '''
             SELECT
@@ -217,7 +220,6 @@ class Handler(BaseRequestHandler):
             total = self.mysqldb_cursor.fetchone().get('total')
             return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query successful', 'data': results}
-
 
     @del_valid
     def _del(self, pk):

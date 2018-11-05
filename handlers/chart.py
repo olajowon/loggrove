@@ -4,6 +4,7 @@ from .base import BaseRequestHandler, permission
 import datetime
 import time
 
+
 def get_valid(func):
     def _wrapper(self):
         error = {}
@@ -29,7 +30,7 @@ def get_valid(func):
             if count:
                 self.logfile_id, self.logfile_path = self.mysqldb_cursor.fetchone()
                 if self.monitor_item_ids:
-                    if '0' in self.monitor_item_ids and len(self.monitor_item_ids)==1:
+                    if '0' in self.monitor_item_ids and len(self.monitor_item_ids) == 1:
                         self.monitor_items = ((0, 'total'),)
                     else:
                         select_sql = 'SELECT id, search_pattern FROM monitor_item ' \
@@ -93,7 +94,7 @@ class Handler(BaseRequestHandler):
                 ''' % (self.begin_time, self.end_time, item_id, self.logfile_id)
                 self.mysqldb_cursor.execute(select_sql)
                 results = self.mysqldb_cursor.fetchall()
-                series.append({'name': search_pattern, 'data': results,})
+                series.append({'name': search_pattern, 'data': results})
         elif self.mode == 'contrast':
             min_mktime = time.mktime(time.strptime('2000-1-1 00:00', '%Y-%m-%d %H:%M')) * 1000
             max_mktime = time.mktime(time.strptime('2000-1-1 23:59', '%Y-%m-%d %H:%M')) * 1000
@@ -113,7 +114,5 @@ class Handler(BaseRequestHandler):
                     results = self.mysqldb_cursor.fetchall()
                     series.append({'name': '%s %s' % (date, search_pattern), 'data': results})
 
-        data.append({'series' : series, 'xAxis':{'min':min_mktime, 'max':max_mktime}})
+        data.append({'series': series, 'xAxis': {'min': min_mktime, 'max': max_mktime}})
         self._write({'code': 200, 'msg': 'Query successful', 'data': data})
-
-

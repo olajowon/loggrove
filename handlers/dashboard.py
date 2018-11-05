@@ -13,7 +13,6 @@ class Handler(BaseRequestHandler):
         response_data = yield tornado.gen.Task(self._summary)
         self._write(response_data)
 
-
     @tornado.gen.coroutine
     def _summary(self):
         now_str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
