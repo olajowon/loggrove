@@ -99,17 +99,17 @@ class Handler(BaseRequestHandler):
     @permission(role=1)
     def post(self):
         response_data = self._add()
-        self._write(response_data, audit=True)
+        self._write(response_data)
 
     @permission(role=1)
     def put(self, pk=0):
         response_data = self._update(int(pk))
-        self._write(response_data, audit=True)
+        self._write(response_data)
 
     @permission(role=1)
     def delete(self, pk=0):
         response_data = self._del(int(pk))
-        self._write(response_data, audit=True)
+        self._write(response_data)
 
     @query_valid
     def _query(self, pk):
@@ -161,7 +161,7 @@ class Handler(BaseRequestHandler):
         except Exception as e:
             self.mysqldb_conn.rollback()
             logger.error('Add user failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Add failed', 'detail': str(e)}
+            return {'code': 500, 'msg': 'Add failed'}
         else:
             self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
             return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
@@ -190,7 +190,7 @@ class Handler(BaseRequestHandler):
         except Exception as e:
             self.mysqldb_conn.rollback()
             logger.error('Update user failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Update failed', 'detail': str(e)}
+            return {'code': 500, 'msg': 'Update failed'}
         else:
             return {'code': 200, 'msg': 'Update successful', 'data': {'id': pk}}
 
@@ -202,6 +202,6 @@ class Handler(BaseRequestHandler):
         except Exception as e:
             self.mysqldb_conn.rollback()
             logger.error('Delete user failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Delete failed', 'detail': str(e)}
+            return {'code': 500, 'msg': 'Delete failed'}
         else:
             return {'code': 200, 'msg': 'Delete successful'}

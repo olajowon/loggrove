@@ -66,7 +66,7 @@ def mysqldb_conn_valid(func):
                     self.set_status(500)
                     self.write('HTTP 500: Internal Server Error')
                 else:
-                    self._write({'code': 500, 'msg': 'Connect MySQL failed', 'detail': str(e)})
+                    self._write({'code': 500, 'msg': 'Internal Server Error'})
                 return
             else:
                 self.application.settings['mysqldb_conn'] = self.mysqldb_conn
@@ -86,7 +86,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             self.session_id = self.session_id.decode('utf-8')
             select_sql = '''
                 SELECT * FROM session WHERE session_id="%s" and expire_time>="%s"
-            ''' % (self.session_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+            ''' % (pymysql.escape_string(self.session_id), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
             self.mysqldb_cursor.execute(select_sql)
             self.session = self.mysqldb_cursor.fetchone()
 
@@ -109,7 +109,8 @@ class BaseRequestHandler(tornado.web.RequestHandler):
                 self.mysqldb_cursor.execute(delete_sql)
             except Exception as e:
                 self.mysqldb_conn.rollback()
-                return {'code': 500, 'msg': 'Logout failed, %s' % str(e)}
+                logger.error('Logout failed: %s' % str(e))
+                return {'code': 500, 'msg': 'Logout failed'}
         if self.session_id:
             self.clear_cookie('session_id')
         return {'code': 200, 'msg': 'Logout successful'}
@@ -138,7 +139,8 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             self.mysqldb_cursor.execute(insert_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
-            response_data = {'code': 500, 'msg': 'Login failed, %s' % str(e)}
+            logger.error('Login failed: %s' % str(e))
+            response_data = {'code': 500, 'msg': 'Login failed'}
         else:
             self.set_secure_cookie('session_id', session_id, expires=expire_time)
             self.requser = user
@@ -156,12 +158,12 @@ class BaseRequestHandler(tornado.web.RequestHandler):
         exc_info = kwargs['exc_info']
         if status_code == 500:
             self.write(json.dumps({'code': status_code,
-                                   'msg': 'HTTP 500: Internal Server Error', 'detail': exc_info[1].__str__()}))
+                                   'msg': 'HTTP 500: Internal Server Error'}))
         else:
             self.write(json.dumps({'code': status_code,
                                    'msg': exc_info[1].__str__()}))
 
-    def _write(self, response_data, audit=False):
+    def _write(self, response_data):
         self.set_status(response_data.get('code'))
         self.write(json.dumps(response_data))
 
@@ -192,38 +194,6 @@ class BaseRequestHandler(tornado.web.RequestHandler):
             logger.error('Add auditlog failed: %s' % str(e))
             self.mysqldb_conn.rollback()
 
-    def _update_row(self, update_sql, pk=0):
-        try:
-            self.mysqldb_cursor.execute(update_sql)
-        except Exception as e:
-            self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Failed, %s' % str(e)}
-        else:
-            return {'code': 200, 'msg': 'Successful', 'data': {'id': int(pk)}}
-
-    def _select_row(self, select_sql):
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
-        return {'code': 200, 'msg': 'Successful', 'data': results}
-
-    def _insert_row(self, insert_sql):
-        try:
-            self.mysqldb_cursor.execute(insert_sql)
-        except Exception as e:
-            self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Failed, %s' % str(e)}
-        else:
-            self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
-            return {'code': 200, 'msg': 'Successful', 'data': self.mysqldb_cursor.fetchall()}
-
-    def _delete_row(self, delete_sql):
-        try:
-            self.mysqldb_cursor.execute(delete_sql)
-        except Exception as e:
-            self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Failed, %s' % str(e)}
-        else:
-            return {'code': 200, 'msg': 'Successful'}
 
     def select_sql_params(self, pk=0, fields=[], search_fields=[]):
         where = limit = order = ''
@@ -263,7 +233,7 @@ class BaseWebsocketHandler(tornado.websocket.WebSocketHandler):
                 self.session_id = self.session_id.decode('utf-8')
                 select_sql = '''
                     SELECT * FROM session WHERE session_id="%s" and expire_time>="%s"
-                ''' % (self.session_id, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+                ''' % (pymysql.escape_string(self.session_id), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
                 self.mysqldb_cursor.execute(select_sql)
                 self.session = self.mysqldb_cursor.fetchone()
 

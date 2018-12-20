@@ -77,6 +77,7 @@ class Handler(BaseRequestHandler):
     def get(self):
         data = []
         series = []
+        min_mktime, min_mktime = None, None
         if self.mode == 'interval':
             min_mktime = time.mktime(time.strptime(self.begin_time, '%Y-%m-%d %H:%M')) * 1000
             max_mktime = time.mktime(time.strptime(self.end_time, '%Y-%m-%d %H:%M')) * 1000

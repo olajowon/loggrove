@@ -1,7 +1,9 @@
 # Created by zhouwang on 2018/6/6.
 
 from .base import BaseRequestHandler, permission, validate_password, make_password
+import logging
 
+logger = logging.getLogger()
 
 def reset_valid(func):
     def _wrapper(self, pk):
@@ -83,7 +85,8 @@ class ResetHandler(BaseRequestHandler):
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Reset failed, %s' % str(e)}
+            logger.error('Reset password failed: %s' % str(e))
+            return {'code': 500, 'msg': 'Reset failed'}
         else:
             return {'code': 200, 'msg': 'Reset successful', 'data': {'id': pk}}
 
@@ -108,7 +111,8 @@ class Handler(BaseRequestHandler):
             self.mysqldb_cursor.execute(update_sql)
         except Exception as e:
             self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Change failed, %s' % str(e)}
+            logger.error('Change password failed: %s' % str(e))
+            return {'code': 500, 'msg': 'Change failed'}
         else:
             self.requser['password'] = make_password(self.reqdata['password'])
             return {'code': 200, 'msg': 'Change successful', 'data': {'id': self.requser.get('id')}}
