@@ -196,7 +196,7 @@ class BaseRequestHandler(tornado.web.RequestHandler):
 
 
     def select_sql_params(self, pk=0, fields=[], search_fields=[]):
-        where = limit = order = ''
+        where, limit, order = '', '', ''
         if pk:
             where = 'WHERE id="%d"' % pk
         elif self.request.arguments:
