@@ -31,13 +31,20 @@
         <div class="panel panel-default">
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-sm-10 col-lg-10">
+                    <div class="col-sm-6 col-lg-4">
                         <ul class="nav nav-pills">
-                            <li class="active"><a href="#local_logfile_tabpane" data-toggle="tab"><script>document.write(_("Local log"))</script></a>
+                            <li class="active" id="local_logfile_navpill"><a href="#local_logfile_tabpane" data-toggle="tab"><script>document.write(_("Local log"))</script></a>
                             </li>
-                            <li><a href="#remote_logfile_tabpane" data-toggle="tab"><script>document.write(_("Remote log"))</script></a>
+                            <li id="remote_logfile_navpill"><a href="#remote_logfile_tabpane" data-toggle="tab"><script>document.write(_("Remote log"))</script></a>
                             </li>
                         </ul>
+                    </div>
+                    <div class="col-sm-6 col-lg-6">
+                        <input type="text" name="search" class="form-control" placeholder="快速查找..." autocomplete="off" data-provide="typeahead" style="margin-top: 3px">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-lg-10">
                         <div class="tab-content">
                             <div class="tab-pane fade in active" id="local_logfile_tabpane" style="padding-top: 15px">
                                 <form role="form">
@@ -202,6 +209,35 @@
 {% end %}
 {% block body_js %}
 <script>
+    $("input[name='search']").typeahead({
+        delay: 500,
+        autoSelect: false,
+        showHintOnFocus: true,
+        selectOnBlur: true,
+        changeInputOnSelect: false,
+        source: function (search, process) {
+            var param = {search: search, order: "asc", sort: "path", offset: 0, limit: 100};
+            $.get('/logfiles/', param, function (response_data) {
+                var data = jQuery.parseJSON(response_data).data
+                process(data);
+            });
+        },
+        matcher: function (items) {
+            return items;
+        },
+        updater: function (item) {
+            select_logfile(item)
+            return item
+        },
+        displayText: function (item) {
+            if($.isPlainObject(item)){
+                return item["path"] +" @ "+item["host"] + " : " + item["comment"]
+            }else{
+                return item;
+            }
+        }
+    });
+
     $.ajax({
         url: "/logfiles/",
         type: "GET",

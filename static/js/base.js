@@ -149,3 +149,24 @@ $(function(){
         $(".error_text").empty()
     })
 })
+
+
+function select_logfile(logfile) {
+    var host = logfile["host"],
+        id = logfile["id"],
+        location = logfile["location"]
+    if(location == 1){
+        $("#local_logfile_navpill").addClass("active")
+        $("#remote_logfile_navpill").removeClass("active")
+        $("#local_logfile_tabpane").addClass("in active")
+        $("#remote_logfile_tabpane").removeClass("in active")
+        $("#local_logfile_tabpane").find("[name='logfile_id']").selectpicker('val', id);
+    }else{
+        $("#local_logfile_navpill").removeClass("active")
+        $("#remote_logfile_navpill").addClass("active")
+        $("#remote_logfile_tabpane").addClass("in active")
+        $("#local_logfile_tabpane").removeClass("in active")
+        $("#remote_logfile_tabpane").find("[name='host']").selectpicker('val', host);
+        $("#remote_logfile_tabpane").find("[name='logfile_id']").selectpicker('val', id);
+    }
+}
