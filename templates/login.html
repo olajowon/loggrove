@@ -13,6 +13,9 @@
     <!-- Custom Fonts -->
     <link href="{{ static_url('sb-admin-2/vendor/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
 
+    <!-- jQuery -->
+    <script src="{{ static_url('sb-admin-2/vendor/jquery/jquery.min.js') }}"></script>
+
     <script src="{{ static_url('js/base.js') }}"></script>
     <script src="{{ static_url('js/locale.js') }}"></script>
     <script>
@@ -21,104 +24,120 @@
 </head>
 
 <body class="login" style="background-color: #F8F8F8;margin: 0;padding: 0;">
-    <div class="login-panel panel panel-default" style=" max-width:380px;margin:0 auto; margin-top: 50px; border-color: #D0D0D0">
-        <div class="panel-body">
-            <!-- BEGIN LOGO -->
-            <div class="logo" style="position: relative; padding-top: 10px">
-                <img src="/static/img/logo.png" style="width:45px; margin-left: 15px; margin-right: 40px;" alt=""/>
-                <span style="font-family:Verdana, Geneva, sans-serif;font-size: 32px;  position: absolute;  bottom:15px; color: #282828; text-shadow:#C8C8C8"> Loggrove</span>
-                <div style="margin-top:15px; border-bottom: 1px solid #C8C8C8;"></div>
-            </div><!-- END LOGO -->
-            <!-- BEGIN LOGIN -->
-            <div class="content">
-                <!-- BEGIN LOGIN FORM -->
-                <form id="login_form" style="padding: 30px 15px 5px 15px" class="login-form form-horizontal" action="/login/" method="POST" onsubmit="return login()">
-                    <div></div>
-                    {% raw xsrf_form_html() %}
-                    <div class="form-group">
-                        <div class="col-sm-12">
-                            <div class="input-group">
-                                <span class="input-group-addon border_radius" style="background-color: #fff"><i class="fa fa-user" style="width:12px"></i></span>
-                                <input class="form-control border_radius" type="text" autocomplete="off" placeholder="Username" name="username" />
-                            </div>
-                            <span style="color: #FFCC00" class="error_text"></span>
+<div class="login-panel panel panel-default"
+     style=" max-width:380px;margin:0 auto; margin-top: 50px; border-color: #D0D0D0">
+    <div class="panel-body">
+        <!-- BEGIN LOGO -->
+        <div class="logo" style="position: relative; padding-top: 10px">
+            <img src="/static/img/logo.png" style="width:45px; margin-left: 15px; margin-right: 40px;" alt=""/>
+            <span style="font-family:Verdana, Geneva, sans-serif;font-size: 32px;  position: absolute;  bottom:15px; color: #282828; text-shadow:#C8C8C8"> Loggrove</span>
+            <div style="margin-top:15px; border-bottom: 1px solid #C8C8C8;"></div>
+        </div><!-- END LOGO -->
+        <!-- BEGIN LOGIN -->
+        <div class="content">
+            <!-- BEGIN LOGIN FORM -->
+            <form id="login_form" style="padding: 30px 15px 5px 15px" class="login-form form-horizontal"
+                  action="/login/" method="POST" onsubmit="return login()">
+                <div></div>
+                {% raw xsrf_form_html() %}
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <div class="input-group">
+                            <span class="input-group-addon border_radius" style="background-color: #fff"><i
+                                    class="fa fa-user" style="width:12px"></i></span>
+                            <input class="form-control border_radius" type="text" autocomplete="off"
+                                   placeholder="Username" name="username"/>
                         </div>
+                        <span style="color: #FFCC00" class="error_text"></span>
                     </div>
-                    <div class="form-group">
-                        <div class="col-sm-12">
-                            <div class="input-group">
-                                <span class="input-group-addon border_radius" style="background-color: #fff;"><i class="fa fa-key" style="width:12px"></i></span>
-                                <input class="form-control border_radius" type="password" autocomplete="off" placeholder="Password" name="password"  />
-                            </div>
-                            <span style="color: #FFCC00" class="error_text"></span>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <div class="input-group">
+                            <span class="input-group-addon border_radius" style="background-color: #fff;"><i
+                                    class="fa fa-key" style="width:12px"></i></span>
+                            <input class="form-control border_radius" type="password" autocomplete="off"
+                                   placeholder="Password" name="password"/>
                         </div>
+                        <span style="color: #FFCC00" class="error_text"></span>
                     </div>
-                    <div class="form-group" style="padding-top: 10px">
-                        <div class="col-xs-12 col-sm-12">
-                            <button type="submit" class="btn btn-default btn-block border_radius"><script>document.write(_("Login"))</script></button>
-                        </div>
+                </div>
+                <div class="form-group" style="padding-top: 10px">
+                    <div class="col-xs-12 col-sm-12">
+                        <button type="submit" class="btn btn-default btn-block border_radius">
+                            <script>document.write(_("Login"))</script>
+                        </button>
                     </div>
-                </form>
-            </div><!-- END LOGIN -->
-        </div>
+                </div>
+            </form>
+        </div><!-- END LOGIN -->
     </div>
+</div>
 
-    <!-- jQuery -->
-    <script src="{{ static_url('sb-admin-2/vendor/jquery/jquery.min.js') }}"></script>
+<!-- jQuery -->
+<script src="{{ static_url('sb-admin-2/vendor/jquery/jquery.min.js') }}"></script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="{{ static_url('sb-admin-2/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="{{ static_url('sb-admin-2/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 
-    <script>
-        function login(){
-            $(".error_text").empty()
-            var form_obj = $("#login_form")
-            form_obj.children().first().empty()
+<script>
+    function login() {
+        $(".error_text").empty()
+        var form_obj = $("#login_form")
+        form_obj.children().first().empty()
 
-            var form_data = form_obj.serialize()
-            var next = "{{ next }}"
-            $.ajax({
-                url:"/login/",
-                type:"POST",
-                data:form_data,
-                success:function(result){
-                    var response_data = jQuery.parseJSON(result)
-                    window.location.href = next
-                },
-                error:function(result){
-                    if (result.status != 0) {
-                        var response_data = jQuery.parseJSON(result.responseText)
-                        if (response_data["code"] == 400) {
-                            for (var k in response_data["error"]) {
-                                form_obj.find("[name='" + k + "']").parent().next().text(response_data["error"][k])
-                            }
-                        }else if(response_data["code"] == 401){
+        var form_data = form_obj.serialize()
+        var next = "{{ next }}"
+        $.ajax({
+            url: "/login/",
+            type: "POST",
+            data: form_data,
+            success: function (result) {
+                var response_data = jQuery.parseJSON(result)
+                window.location.href = next
+            },
+            error: function (result) {
+                if (result.status != 0) {
+                    var response_data = jQuery.parseJSON(result.responseText)
+                    if (response_data["code"] == 400) {
+                        for (var k in response_data["error"]) {
+                            form_obj.find("[name='" + k + "']").parent().next().text(response_data["error"][k])
+                        }
+                    } else if (response_data["code"] == 401) {
+                        form_obj.find("[name='password']").parent().next().text(response_data["msg"])
+                    } else if (response_data["code"] == 403) {
+                        if (response_data["msg"].indexOf("password") >= 0) {
                             form_obj.find("[name='password']").parent().next().text(response_data["msg"])
-                        }else if(response_data["code"] == 403){
-                            if(response_data["msg"].indexOf("password") >= 0 ) {
-                                form_obj.find("[name='password']").parent().next().text(response_data["msg"])
-                            }else{
-                                form_obj.find("[name='username']").parent().next().text(response_data["msg"])
-                            }
-                        }else{
-                            form_obj.children().first().html(
+                        } else {
+                            form_obj.find("[name='username']").parent().next().text(response_data["msg"])
+                        }
+                    } else {
+                        form_obj.children().first().html(
                                 '<div class="alert alert-danger">' +
                                 '<i class="fa fa-times"></i> ' + _("Login failed") +
                                 '</div>'
-                            )
-                        }
-                    }else{
-                        form_obj.children().first().html(
-                            '<div class="alert alert-danger">' +
-                            '<i class="fa fa-times"></i> ' + + _("Login failed") +
-                            '</div>'
                         )
                     }
+                } else {
+                    form_obj.children().first().html(
+                            '<div class="alert alert-danger">' +
+                            '<i class="fa fa-times"></i> ' + +_("Login failed") +
+                            '</div>'
+                    )
                 }
-            })
-            return false
+            }
+        })
+        return false
+    }
+
+    $(function () {
+        var host = window.location.host;
+        if (host == '39.105.81.124:6218') {
+            $("input[name='username']").val('guest')
+            $("input[name='password']").val('guest123')
         }
-    </script>
+    })
+</script>
 </body>
 </html>
 
