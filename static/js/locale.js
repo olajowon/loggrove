@@ -15,6 +15,7 @@ function _(key){
         "Add": "添加",
         "Add logfile": "添加日志",
         "Location": "位置",
+        "Name": "名称",
         "Local": "本地",
         "Remote": "远程",
         "Host": "主机地址",
@@ -34,7 +35,7 @@ function _(key){
         "Delete successful": "删除成功",
         "Delete failed": "删除失败",
         "Do you want to delete it": "确定删除吗",
-        "Search pattern": "匹配模式",
+        "Search pattern": "正则匹配",
         "Alert": "告警",
         "Open": "开启",
         "Check interval": "检查区间",
@@ -107,7 +108,11 @@ function _(key){
         "Begin time": "开始时间",
         "End time": "开始时间",
         "Date": "日期",
-        "Custom regular expressions and precedence matching": "自定义正则表达式并优先匹配"
+        "Match": "正则匹配",
+        "Custom regular expressions and precedence matching": "自定义正则表达式并优先匹配",
+        "Positive Sort First File": "正排序第一个文件",
+        "Positive Sort Last File": "正排序最后一个文件",
+        "Monitor_choice": "监控选择"
     }
     var value = map[key]
     return value ? value : key

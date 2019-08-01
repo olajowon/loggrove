@@ -19,7 +19,7 @@ function add_logfile(){
                 '<i class="fa fa-check"></i> ' + response_data["msg"] +
                 '</div>'
             )
-            var id = response_data["data"][0]["id"]
+            var id = response_data["data"]["id"]
             add_new_row(id)
         },
         error:function (result) {
@@ -100,16 +100,18 @@ function delete_logfile(id){
 function open_update_modal(id){
     var form_obj = $("#update_logfile_form")
     form_obj.prev().empty()
+    form_obj.find('[name="host"]').tagsinput('removeAll')
     $(".error_text").empty()
 
     var row = $("#logfile_table").bootstrapTable('getRowByUniqueId', id)
-    var location = row["location"]
-    form_obj.find("input[name='location']").each(function(){
-        if($(this).val() == location){
+    var monitor_choice = row["monitor_choice"]
+    form_obj.find("input[name='monitor_choice']").each(function(){
+        if($(this).val() == monitor_choice){
             $(this).prop("checked", true)
         }
     })
-    form_obj.find("input[name='host']").val(row["host"])
+    form_obj.find("input[name='name']").val(row["name"])
+    form_obj.find("input[name='host']").tagsinput('add', row["host"])
     form_obj.find("input[name='path']").val(row["path"])
     form_obj.find("input[name='comment']").val(row["comment"])
     $("#updateModal .modal-footer").children("button:eq(1)").attr("onclick", "update_logfile(" +id+ ")")
@@ -123,10 +125,11 @@ function update_logfile(id){
     $(".error_text").empty()
 
     var form_data = {
-        'location':form_obj.find("input[name='location']:checked").val(),
+        'name':form_obj.find("input[name='name']").val(),
         'host':form_obj.find("input[name='host']").val(),
         'path':form_obj.find("input[name='path']").val(),
         'comment':form_obj.find("input[name='comment']").val(),
+        'monitor_choice':form_obj.find("input[name='monitor_choice']:checked").val(),
         '_xsrf':get_cookie('_xsrf')
     }
 
@@ -145,10 +148,11 @@ function update_logfile(id){
             $("#logfile_table").bootstrapTable('updateByUniqueId', {
                 id: id,
                 row: {
-                    location: form_data["location"],
-                    host: form_data["host"] ? form_data["host"] : "localhost",
+                    name: form_data["name"],
+                    host: form_data["host"],
                     path: form_data["path"],
                     comment: form_data["comment"],
+                    monitor_choice: form_data["monitor_choice"],
                 }
             })
         },
@@ -334,7 +338,6 @@ function new_monitor_item_form(logfile_id){
         '<div class="row">' +
             '<div class="col-sm-12">' +
                 '<div class="panel panel-default">' +
-                    '<div class="panel-heading"></div>' +
                     '<div class="panel-body">' +
                         '<div></div>' +
                         '<form role="form" class="form-horizontal">' +
@@ -402,21 +405,10 @@ function open_monitor_item_explain_modal() {
 }
 
 $(function(){
-    $("[name=location]").change(function(){
-        console.log("change")
-        var form_obj = $(this).parents("form")
-        if(form_obj.find("input[name=location]:checked").val() == "1"){
-            form_obj.find("input[name=host]").val("localhost")
-        }else{
-            if(form_obj.find("input[name=host]").val() == "localhost"){
-                form_obj.find("input[name=host]").val("")
-            }
-        }
-    })
-
     $('#addModal').on('show.bs.modal', function (){
         $("#add_logfile_form").prev().empty()
         $("#add_logfile_form")[0].reset()
+        $("#add_logfile_form").find('[name="host"]').tagsinput('removeAll')
         $(".error_text").empty()
     })
 })

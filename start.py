@@ -13,7 +13,7 @@ import pymysql.cursors
 
 tornado.options.define('port', default=8800, help='Run on the given port', type=int)
 
-# logging options
+#logging options
 for key, value in settings.LOGGING['options'].items():
     tornado.options.options.__setattr__(key, value)
 
@@ -26,20 +26,19 @@ for loghandler in logger.handlers:
     loghandler.setFormatter(formatter)
 
 # mysqldb connect
-mysqldb = settings.MYSQL_DB
-mysqldb_conn = pymysql.connect(**mysqldb)
+db = pymysql.connect(**settings.MYSQL_DB)
 
 application = tornado.web.Application(
     ssh = settings.SSH,
     ldap = settings.LDAP,
-    mysqldb_conn = mysqldb_conn,
+    db = db,
     handlers = urls.urlpatterns,
     template_path = settings.TEMPLATE_PATH,
     static_path = settings.STATIC_PATH,
     cookie_secret = 'qsefthukoplijygrdwa',
     login_url = settings.LOGIN_URL,
-    #debug = True,
-    xsrf_cookies = True,
+    debug = True,
+    #xsrf_cookies = True,
     #websocket_ping_interval = settings.WEBSOCKET_PING_INTERVAL,
     #websocket_ping_timeout = settings.WEBSOCKET_PING_TIMEOUT,
 )
@@ -52,4 +51,4 @@ try:
 except Exception as e:
     print(e)
 finally:
-    mysqldb_conn.close()
+    db.close()

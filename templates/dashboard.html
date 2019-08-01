@@ -52,9 +52,9 @@ Dashboard
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge">
-                                    <span id="local_logfile_count"></span>/<span id="remote_logfile_count"></span>/<span id="logfile_count"></span>
+                                    <span id="logfile_count"></span>
                                 </div>
-                                <div><script>document.write(_("Local"))</script>/<script>document.write(_("Remote"))</script>/<script>document.write(_("Log"))</script></div>
+                                <div><script>document.write(_("Log"))</script></div>
                             </div>
                         </div>
                     </div>
@@ -192,8 +192,6 @@ Dashboard
         success:function (result) {
             var response_data = jQuery.parseJSON(result)
             $("#logfile_count").text(response_data["data"][0]["logfile_count"])
-            $("#local_logfile_count").text(response_data["data"][0]["local_logfile_count"])
-            $("#remote_logfile_count").text(response_data["data"][0]["remote_logfile_count"])
             $("#host_count").text(response_data["data"][0]["host_count"])
             $("#monitor_item_count").text(response_data["data"][0]["monitor_item_count"])
             $("#user_count").text(response_data["data"][0]["user_count"])

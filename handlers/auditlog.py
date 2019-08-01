@@ -13,7 +13,7 @@ def query_valid(func):
                           'order', 'search', 'offset', 'limit', 'sort']
             error = {key: 'Invalid key' for key in argument_keys if key not in query_keys}
         if error:
-            return {'code': 400, 'msg': 'Bad GET param', 'error': error}
+            return dict(code=400, msg='Bad GET param', error=error)
         return func(self, pk)
 
     return _wrapper
@@ -53,14 +53,14 @@ class Handler(BaseRequestHandler):
             %s %s %s  
         ''' % (where, order, limit)
 
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
+        self.cursor.execute(select_sql)
+        results = self.cursor.dictfetchall()
         if limit:
             total_sql = 'SELECT count(*) as total FROM auditlog t1 INNER JOIN user t2 ON t1.user_id = t2.id %s' % where
-            self.mysqldb_cursor.execute(total_sql)
-            total = self.mysqldb_cursor.fetchone().get('total')
-            return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
-        return {'code': 200, 'msg': 'Query Successful', 'data': results}
+            self.cursor.execute(total_sql)
+            total = self.cursor.dictfetchone().get('total')
+            return dict(code=200, msg='Query Successful', data=results, total=total)
+        return dict(code=200, msg='Query Successful', data=results)
 
     def _replace(self, param):
         return param.replace('id', 't1.id').replace('uri', 't1.uri').replace('method', 't1.method'). \

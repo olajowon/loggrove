@@ -5,6 +5,10 @@ import tornado
 import re
 import paramiko
 import logging
+import copy
+import gevent
+from gevent import monkey
+monkey.patch_all()
 
 logger = logging.getLogger()
 
@@ -12,33 +16,61 @@ logger = logging.getLogger()
 def get_valid(func):
     def _wrapper(self):
         error = {}
-        logfile_id = self.get_argument('logfile_id', '')
-        search_pattern = self.get_argument('search_pattern', '')
-        page = self.get_argument('page', '0') or '0'
+        logfile = self.get_argument('logfile', '')
+        path = self.get_argument('path', '')
+        host = self.get_argument('host', '')
+        match = self.get_argument('match', '')
+        clean = self.get_argument('clean', 'false')
+        page = self.get_argument('page', 1)
+        posit = self.get_argument('posit', 'head')
 
-        if not logfile_id:
-            error['logfile_id'] = 'Required'
+        logfile_row = None
+        if not logfile:
+            error['logfile'] = 'Required'
         else:
-            select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile_id))
-            self.mysqldb_cursor.execute(select_sql)
-            self.logfile = self.mysqldb_cursor.fetchone()
-            if not self.logfile:
-                error['logfile_id'] = 'Not exist'
+            if logfile.isnumeric():
+                select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile))
+            else:
+                select_sql = 'SELECT * FROM logfile WHERE name="%s"' % logfile
 
-        if search_pattern:
+            self.cursor.execute(select_sql)
+            logfile_row = self.cursor.dictfetchone()
+            if not logfile_row:
+                error['logfile'] = 'Not exist'
+
+        if not path:
+            error['path'] = 'Required'
+        elif logfile_row and not re.search(logfile_row['path'], path):
+            error['path'] = 'Invalid path'
+
+        if not host:
+            error['host'] = 'Required'
+        elif logfile_row and host not in logfile_row['host'].split(','):
+            error['host'] = 'Invalid host'
+
+        if match:
             try:
-                re.search(r'%s' % search_pattern, '')
+                re.search(r'%s' % match, '')
             except:
-                error['search_pattern'] = 'Incorrect regular expression'
+                error['match'] = 'Incorrect regular expression'
 
-        if not page.isnumeric():
-            page = 0
+        if not isinstance(page, int) and not page.isnumeric():
+            error['page'] = 'Invalid page'
+
+        if posit not in ('head', 'tail'):
+            error['posit'] = 'Invalid posit'
 
         if error:
             self._write({'code': 400, 'msg': 'Bad GET param', 'error': error})
             return
-        self.search_pattern = search_pattern
+
+        self.match = match
         self.page = int(page)
+        self.path = path
+        self.host = host
+        self.logfile = logfile
+        self.clean = clean
+        self.posit = posit
         return func(self)
 
     return _wrapper
@@ -46,11 +78,11 @@ def get_valid(func):
 
 def ssh_conn(func):
     def _wrapper(self):
-        if self.logfile.get('location') == 2:
+        if self.host not in ('localhost', '127.0.0.1'):
             try:
                 self.ssh_client = paramiko.SSHClient()
                 self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self.ssh_client.connect(self.logfile.get('host'), **self.application.settings.get('ssh'))
+                self.ssh_client.connect(self.host, **self.application.settings.get('ssh'))
             except Exception as e:
                 logger.error('Read logfile failed: %s' % str(e))
                 return {'code': 500, 'msg': 'Read logfile failed', 'detail': str(e)}
@@ -67,19 +99,28 @@ class Handler(BaseRequestHandler):
         super(Handler, self).__init__(*args, **kwargs)
         self.logfile = None
         self.page = None
-        self.search_pattern = None
+        self.match = None
+        self.path = None
+        self.host = None
         self.ssh_client = None
+        self.clean = None
+        self.posit = None
+        self.total_lines = None
+        self.match_lines = None
+        self.contents = []
+        self.total_pages = None
+        self.tasks = []
 
     @permission()
     @get_valid
     @tornado.web.asynchronous
     @tornado.gen.coroutine
     def get(self):
-        response = yield tornado.gen.Task(self.read_local_logfile)
+        response = yield tornado.gen.Task(self.read_logfile)
         self._write(response)
 
     def command(self, cmd):
-        if self.logfile.get('location') == 1:
+        if self.host in ('localhost', '127.0.0.1'):
             status, output = subprocess.getstatusoutput(cmd)
         else:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
@@ -89,37 +130,64 @@ class Handler(BaseRequestHandler):
 
     @tornado.gen.coroutine
     @ssh_conn
-    def read_local_logfile(self):
-        path = self.logfile.get('path')
+    def read_logfile(self):
         try:
-            status, output = self.command('wc -c %s' % path)
-            if status != 0:
-                raise Exception('get size error, %d, %s' % (status, output))
-            total_size = int(output.split()[0].strip())
-
-            status, output = self.command('wc -l %s' % path)
-            if status != 0:
-                raise Exception('get lines error, %d, %s' % (status, output))
-            total_lines = int(output.split()[0].strip())
-
-            total_pages = (total_lines // 1000) + (1 if total_lines % 1000 else 0) if total_lines else 1
-
-            page = total_pages if self.page == 0 or self.page > total_pages else self.page
-            grep = '| grep -E "%s"' % self.search_pattern if self.search_pattern else ''
-            read_cmd = 'head -n %d %s | tail -n 1000 %s' % (page * 1000, path, grep) if page < (total_pages / 2) \
-                else 'tail -n +%d %s | head -n 1000 %s' % (((page - 1) * 1000) + 1, path, grep)
-
-            status, output = self.command(read_cmd)
-            if status > 0 and output:
-                raise Exception('get contents error, %d, %s' % (status, output))
+            self.tasks = [
+                gevent.spawn(self.make_total_lines),
+                gevent.spawn(self.make_match_lines),
+                gevent.spawn(self.make_contents),
+            ]
+            gevent.joinall(self.tasks)
+            self.make_total_pages()
         except Exception as e:
             logger.error('Read logfile failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Read logfile failed', 'detail': str(e)}
+            return dict(code=500, msg='Read failed', detail=str(e))
+        data = dict(
+            contents=self.contents,
+            page=self.page if self.total_pages != 0 else 0,
+            total_pages=self.total_pages,
+            total_lines=self.total_lines,
+            match_lines=self.match_lines,
+            lines=len(self.contents)
+        )
+        return dict(code=200, msg='Read successfule', data=data)
 
-        size = len(output)
-        contents = output.splitlines()
-        return {'code': 200, 'msg': 'Read logfile successful', 'data': {'contents': contents, 'page': page,
-                                                                        'total_pages': total_pages,
-                                                                        'total_size': total_size,
-                                                                        'total_lines': total_lines, 'size': size,
-                                                                        'lines': len(contents)}}
+    def make_contents(self):
+        if self.match and self.clean == 'true':
+            read_cmd = 'grep "%s" %s | head -n %d | tail -n +%d' % \
+                       (self.match, self.path, self.page * 1000, (self.page-1) * 1000 + 1)
+        else:
+            if self.posit == 'head':
+                read_cmd = 'head -n %d %s | tail -n +%d' % (self.page * 1000, self.path, (self.page-1) * 1000 + 1)
+            else:
+                read_cmd = 'tail -n +%d %s | head -n 1000' % (((self.page - 1) * 1000) + 1, self.path)
+        status, output = self.command(read_cmd)
+        if status > 0 and output:
+            raise Exception('get contents error, %d, %s' % (status, output))
+        self.contents = output.splitlines()
+
+    def make_total_lines(self):
+        if self.page == 1:
+            status, output = self.command('wc -l %s' % self.path)
+            if status != 0:
+                raise Exception('get lines error, %d, %s' % (status, output))
+            self.total_lines = int(output.split()[0].strip())
+
+    def make_match_lines(self):
+        if self.page == 1 and not self.match:
+            while self.tasks[0].started:
+                gevent.sleep(0.1)
+            self.match_lines = copy.copy(self.total_lines)
+        elif self.page == 1:
+            status, output = self.command('grep -c "%s" %s' % (self.match, self.path))
+            if status != 0 and status != 1:
+                raise Exception('get grep lines error, %d, %s' % (status, output))
+            self.match_lines = int(output.split()[0].strip()) if status == 0 else 0
+
+    def make_total_pages(self):
+        if self.page == 1 and self.clean == 'true':
+            self.total_pages = (self.match_lines // 1000) + (1 if self.match_lines % 1000 else 0) \
+                if self.match_lines else 0
+        elif self.page == 1:
+            self.total_pages = (self.total_lines // 1000) + (1 if self.total_lines % 1000 else 0) \
+                if self.total_lines else 0

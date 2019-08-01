@@ -30,7 +30,7 @@ def argements_valid(handler, pk=None):
         else:
             select_sql = 'SELECT id FROM monitor_item WHERE search_pattern="%s" and logfile_id="%s" %s' % \
                          (search_pattern, logfile_id, 'and id!="%d"' % pk if pk else '')
-            count = handler.mysqldb_cursor.execute(select_sql)
+            count = handler.cursor.execute(select_sql)
             if count:
                 error['search_pattern'] = 'Already existed'
 
@@ -97,7 +97,7 @@ def query_valid(func):
 def update_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id FROM monitor_item WHERE id="%d"' % pk
-        count = self.mysqldb_cursor.execute(select_sql)
+        count = self.cursor.execute(select_sql)
         if not count:
             return {'code': 404, 'msg': 'Update row not found'}
         error, self.reqdata = argements_valid(self, pk)
@@ -111,7 +111,7 @@ def update_valid(func):
 def del_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id FROM monitor_item WHERE id="%d"' % pk
-        count = self.mysqldb_cursor.execute(select_sql)
+        count = self.cursor.execute(select_sql)
         if not count:
             return {'code': 404, 'msg': 'Delete row not found'}
         return func(self, pk)
@@ -158,14 +158,14 @@ class Handler(BaseRequestHandler):
                self.reqdata['check_interval'], self.reqdata['trigger_format'], self.reqdata['dingding_webhook'],
                datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), self.reqdata['comment'])
         try:
-            self.mysqldb_cursor.execute(insert_sql)
+            self.cursor.execute(insert_sql)
         except Exception as e:
-            self.mysqldb_conn.rollback()
+            self.db.rollback()
             logger.error('Add monitor_item failed: %s' % str(e))
             return {'code': 500, 'msg': 'Add failed'}
         else:
-            self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
-            return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
+            self.cursor.execute('SELECT LAST_INSERT_ID() as id')
+            return {'code': 200, 'msg': 'Add successful', 'data': self.cursor.dictfetchall()}
 
     @update_valid
     def _update(self, pk):
@@ -185,9 +185,9 @@ class Handler(BaseRequestHandler):
                self.reqdata['check_interval'], self.reqdata['trigger_format'], self.reqdata['dingding_webhook'],
                self.get_argument('comment'), pk)
         try:
-            self.mysqldb_cursor.execute(update_sql)
+            self.cursor.execute(update_sql)
         except Exception as e:
-            self.mysqldb_conn.rollback()
+            self.db.rollback()
             logger.error('Update monitor_item failed: %s' % str(e))
             return {'code': 500, 'msg': 'Update failed'}
         else:
@@ -212,12 +212,12 @@ class Handler(BaseRequestHandler):
               monitor_item
             %s %s %s
         ''' % (where, order, limit)
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
+        self.cursor.execute(select_sql)
+        results = self.cursor.dictfetchall()
         if limit:
-            total_sql = 'SELECT count(*) as total FROM monitor %s' % where
-            self.mysqldb_cursor.execute(total_sql)
-            total = self.mysqldb_cursor.fetchone().get('total')
+            total_sql = 'SELECT count(*) as total FROM monitor_item %s' % where
+            self.cursor.execute(total_sql)
+            total = self.cursor.dictfetchone().get('total')
             return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query successful', 'data': results}
 
@@ -225,9 +225,9 @@ class Handler(BaseRequestHandler):
     def _del(self, pk):
         delete_sql = 'DELETE FROM monitor_item WHERE id="%d"' % pk
         try:
-            self.mysqldb_cursor.execute(delete_sql)
+            self.cursor.execute(delete_sql)
         except Exception as e:
-            self.mysqldb_conn.rollback()
+            self.db.rollback()
             logger.error('Delete monitor_item failed: %s' % str(e))
             return {'code': 500, 'msg': 'Delete failed'}
         else:

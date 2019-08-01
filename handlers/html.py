@@ -19,6 +19,5 @@ class Handler(BaseRequestHandler):
 
 class LoginHander(BaseRequestHandler):
     def get(self):
-        self.logout()
         next_uri = self.get_argument('next', '/')
         self.render('login.html', **{'next': next_uri})

@@ -3,61 +3,76 @@
  */
 
 
-function logfile_read(_this){
+function logfile_read(){
     $("#log_content_row").show()
     $(".error_text").empty()
-    form_obj = $(_this).parent()
-    logfile_id = form_obj.find("select[name='logfile_id']").val()
-    other_search_pattern = form_obj.find("input[name='other_search_pattern']").val()
-    if(other_search_pattern){
-        search_pattern = other_search_pattern
-    }else{
-        search_pattern = form_obj.find("select[name='search_pattern']").val()
-    }
+    form_obj = $("#logfile_form")
+    total_pages = null;
+    total_lines = null;
+    match_lines = null;
+    page = null;
+    logfile = form_obj.find("input[name='logfile']").val()
+    match = form_obj.find("input[name='match']").val()
+    path = form_obj.find("select[name='path']").val()
+    host = form_obj.find("select[name='host']").val()
     filter_search_line = form_obj.find("input[name='filter_search_line']:checked").val()
-    get_log_content(0)
+    get_log_content(1)
+    return false;
 }
 
-
 function get_log_content(p){
+    if(p == page){
+        return false;
+    }
     $("#log_content").html("Reading...")
+    $("#paging").empty()
     $(".error_text").empty()
-    $("#total_size").text(0)
-    $("#total_lines").text(0)
-    $("#size").text(0)
-    $("#lines").text(0)
-    $("#highlight_lines").text(0)
+    if(p==1){
+        $("#total_lines").text("--")
+        $("#match_lines").text("--")
+    }
+    $("#page").text("--")
+    $("#total_pages").text("--")
+    $("#highlight_lines").text("--")
+    $("#lines").text("--")
 
     if(filter_search_line){
-        var request_data = {"page":p, "logfile_id":logfile_id, "search_pattern":search_pattern}
+        var request_data = {"page":p, "logfile": logfile, "match": match, "path": path, "host": host, "clean": true}
     }else{
-        var request_data = {"page":p, "logfile_id":logfile_id}
+        var request_data = {"page":p, "logfile": logfile, "match": match, "path": path, "host": host, "clean": false}
     }
+
+    var posit = "head"
+    if (total_pages && total_pages > 0) {
+        posit = p < (total_pages / 2) ? "head" : "tail"
+    }
+    request_data['posit'] = posit
+
     $.ajax({
         url:"/read/",
         type:"GET",
         data: request_data,
         success:function(result){
             var response_data = jQuery.parseJSON(result)
-            var search_result = log_content_searching(response_data["data"]["contents"], search_pattern)
-            $("#log_content").html(search_result["log_content"])
-
-            $("#log_stat_row").show()
-            $("#total_size").text((response_data["data"]["total_size"]/1024).toFixed(2))
-            $("#total_lines").text(response_data["data"]["total_lines"])
-            $("#size").text((response_data["data"]["size"]/1024).toFixed(2))
-            $("#lines").text(response_data["data"]["lines"])
-            $("#highlight_lines").text(search_result["highlight_lines"])
-
+            var search_result = log_content_searching(response_data["data"]["contents"], match)
+            total_lines = response_data["data"]["total_lines"] == null ? total_lines : response_data["data"]["total_lines"];
+            match_lines = response_data["data"]["match_lines"] == null ? match_lines : response_data["data"]["match_lines"];
             page = response_data["data"]["page"]
-            total_pages = response_data["data"]["total_pages"]
+            total_pages = response_data["data"]["total_pages"] == null ? total_pages : response_data["data"]["total_pages"];
+            lines = response_data["data"]["lines"]
 
-            $("#paging").html(log_content_paging())
+            $("#log_content").html(search_result["log_content"])
+            $("#total_lines").text(total_lines)
+            $("#match_lines").text(match_lines)
+            $("#highlight_lines").text(search_result["highlight_lines"])
+            $("#lines").text(lines)
+            $("#page").text(page)
+            $("#total_pages").text(total_pages)
+            if (total_pages > 0){
+                $("#paging").html(log_content_paging())
+            }
         },
         error:function(result){
-            $("#paging").empty()
-            $("#log_stat_row").hide()
-
             if (result.status != 0) {
                 var response_data = jQuery.parseJSON(result.responseText)
                 if (response_data["code"] == 400) {
@@ -158,6 +173,5 @@ function log_content_paging(){
                 '</div>' +
             '</div>'
     }
-
     return page_html
 }

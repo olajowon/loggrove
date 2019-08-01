@@ -14,7 +14,11 @@ from handlers import (
     monitor_item,
     read,
     keepread,
-    chart
+    chart,
+    path,
+    match_pattern,
+    host_logfile,
+    monitor_report
 )
 
 
@@ -40,4 +44,8 @@ urlpatterns = [
     (r'^/read/$', read.Handler),
     (r'^/keepread/$', keepread.Handler),
     (r'^/charts/$', chart.Handler),
+    (r'^/paths/$', path.Handler),
+    (r'^/match_patterns/$', match_pattern.Handler),
+    (r'^/host_logfiles/$', host_logfile.Handler),
+    (r'^/monitor_report/$', monitor_report.Handler),
 ]

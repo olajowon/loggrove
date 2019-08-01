@@ -1,6 +1,7 @@
 # Created by zhouwang on 2018/5/17.
 
-from .base import BaseRequestHandler, permission, make_password
+from .base import BaseRequestHandler, permission
+from utils import utils
 import datetime
 import logging
 logger = logging.getLogger()
@@ -19,7 +20,7 @@ def argements_valid(handler, pk=None):
         error['username'] = 'Required'
     else:
         select_sql = 'SELECT id FROM user WHERE username="%s" %s' % (username, 'and id!="%d"' % pk if pk else '')
-        count = handler.mysqldb_cursor.execute(select_sql)
+        count = handler.cursor.execute(select_sql)
         if count:
             error['username'] = 'Already existed'
 
@@ -70,7 +71,7 @@ def query_valid(func):
 def update_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id FROM user WHERE id="%d"' % pk
-        count = self.mysqldb_cursor.execute(select_sql)
+        count = self.cursor.execute(select_sql)
         if not count:
             return {'code': 404, 'msg': 'Update row not found'}
         error, self.reqdata = argements_valid(self, pk)
@@ -83,7 +84,7 @@ def update_valid(func):
 def del_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id FROM user WHERE id="%d"' % pk
-        count = self.mysqldb_cursor.execute(select_sql)
+        count = self.cursor.execute(select_sql)
         if not count:
             return {'code': 404, 'msg': 'Delete row not found'}
         return func(self, pk)
@@ -127,12 +128,12 @@ class Handler(BaseRequestHandler):
         FROM user
         %s %s %s
         ''' % (where, order, limit)
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
+        self.cursor.execute(select_sql)
+        results = self.cursor.dictfetchall()
         if limit:
             total_sql = 'SELECT count(*) as total FROM user %s' % where
-            self.mysqldb_cursor.execute(total_sql)
-            total = self.mysqldb_cursor.fetchone().get('total')
+            self.cursor.execute(total_sql)
+            total = self.cursor.dictfetchone().get('total')
             return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
         return {'code': 200, 'msg': 'Query successful', 'data': results}
 
@@ -150,21 +151,21 @@ class Handler(BaseRequestHandler):
                 role) 
             VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s")
         ''' % (self.reqdata['username'],
-               make_password(self.reqdata['password']),
+               utils.make_password(self.reqdata['password']),
                self.reqdata['fullname'],
                self.reqdata['email'],
                datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
                self.reqdata['status'],
                self.reqdata['role'])
         try:
-            self.mysqldb_cursor.execute(insert_sql)
+            self.cursor.execute(insert_sql)
         except Exception as e:
-            self.mysqldb_conn.rollback()
+            self.db.rollback()
             logger.error('Add user failed: %s' % str(e))
             return {'code': 500, 'msg': 'Add failed'}
         else:
-            self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
-            return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
+            self.cursor.execute('SELECT LAST_INSERT_ID() as id')
+            return {'code': 200, 'msg': 'Add successful', 'data': self.cursor.dictfetchall()}
 
     @update_valid
     def _update(self, pk):
@@ -186,9 +187,9 @@ class Handler(BaseRequestHandler):
                self.reqdata['role'],
                pk)
         try:
-            self.mysqldb_cursor.execute(update_sql)
+            self.cursor.execute(update_sql)
         except Exception as e:
-            self.mysqldb_conn.rollback()
+            self.db.rollback()
             logger.error('Update user failed: %s' % str(e))
             return {'code': 500, 'msg': 'Update failed'}
         else:
@@ -198,9 +199,9 @@ class Handler(BaseRequestHandler):
     def _del(self, pk):
         delete_sql = 'DELETE FROM user WHERE id="%d"' % pk
         try:
-            self.mysqldb_cursor.execute(delete_sql)
+            self.cursor.execute(delete_sql)
         except Exception as e:
-            self.mysqldb_conn.rollback()
+            self.db.rollback()
             logger.error('Delete user failed: %s' % str(e))
             return {'code': 500, 'msg': 'Delete failed'}
         else:

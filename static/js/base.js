@@ -23,7 +23,7 @@ function log_content_searching(lines, search_pattern){
                 var reg = new RegExp(search_pattern,'g')
                 var match_arr = line.match(reg)
                 if(match_arr){
-                    content_html += (line.replace(new RegExp(match_arr[0]), '<b style="background-color: yellow">' + match_arr[0]+ "</b>") + "<br>")
+                    content_html += (line.replace(match_arr[0], '<b style="background-color: yellow">' + match_arr[0]+ "</b>") + "<br>")
                     highlight_lines += 1
                     continue
                 }
@@ -169,4 +169,16 @@ function select_logfile(logfile) {
         $("#remote_logfile_tabpane").find("[name='host']").selectpicker('val', host);
         $("#remote_logfile_tabpane").find("[name='logfile_id']").selectpicker('val', id);
     }
+}
+
+
+function getNowStrDate() {
+    var date = new Date();
+    var currDate = (date.getFullYear() + "-" +
+            (date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1) + "-" +
+            (date.getDate() < 10 ? "0" + date.getDate() : date.getDate()) + " " +
+            (date.getHours() < 10 ? "0" + date.getHours() : date.getHours()) + ":" +
+            (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()) + ":" +
+            (date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds()))
+    return currDate;
 }

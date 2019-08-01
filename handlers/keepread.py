@@ -18,39 +18,56 @@ logger = logging.getLogger()
 def open_valid(func):
     def _wrapper(self):
         error = {}
-        logfile_id = self.get_argument('logfile_id', '')
-        search_pattern = self.get_argument('search_pattern', '')
+        logfile = self.get_argument('logfile', '')
+        match = self.get_argument('match', '')
+        path = self.get_argument('path', '')
+        host = self.get_argument('host', '')
 
-        if not logfile_id:
-            error['logfile_id'] = 'Required'
+        if not logfile:
+            error['logfile'] = 'Required'
         else:
-            with self.mysqldb_conn.cursor(cursor=pymysql.cursors.DictCursor) as mysqldb_cursor:
-                select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile_id))
-                mysqldb_cursor.execute(select_sql)
-                self.logfile = mysqldb_cursor.fetchone()
-                if not self.logfile:
-                    error['logfile_id'] = 'Not exist'
-                elif self.logfile.get('location') == '1' and not os.path.isfile(self.logfile.get('path')):
-                    error['logfile_id'] = 'Path not exist'
+            if logfile.isnumeric():
+                select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile))
+            else:
+                select_sql = 'SELECT * FROM logfile WHERE name="%s"' % logfile
 
-        if search_pattern:
+            self.cursor.execute(select_sql)
+            logfile_row = self.cursor.dictfetchone()
+            if not logfile_row:
+                error['logfile'] = 'Not exist'
+
+        if match:
             try:
-                re.search(r'%s' % search_pattern, '')
+                re.search(r'%s' % match, '')
             except:
                 error['search_pattern'] = 'Incorrect format'
+
+        if not path:
+            error['path'] = 'Required'
+        elif logfile_row and not re.search(logfile_row['path'], path):
+            error['path'] = 'Invalid path'
+
+        if not host:
+            error['host'] = 'Required'
+        elif logfile_row and host not in logfile_row['host'].split(','):
+            error['host'] = 'Invalid host'
+
         if error:
-            message = {'code': 400, 'msg': 'Bad Param', 'error': error}
+            message = dict(code=400, msg='Bad Param', error=error)
             self.write_message(message)
             self.close()
         else:
             for callback in self.registers:
                 if callback.requser.get('username') == self.requser.get('username'):
-                    message = {'code': 403,
-                               'msg': 'New connection has been opened, and this connection needs to be closed'}
+                    message = dict(code=403,
+                                   msg='New connection has been opened, and this connection needs to be closed')
                     callback.write_message(message)
                     callback.close()
             self.registers.append(self)
-            self.search_pattern = search_pattern
+            self.match = match
+            self.path = path
+            self.host = host
+            self.logfile = logfile
             return func(self)
 
     return _wrapper
@@ -60,13 +77,15 @@ class Handler(BaseWebsocketHandler):
     def __init__(self, *args, **kwargs):
         super(Handler, self).__init__(*args, **kwargs)
         self.logfile = None
-        self.search_pattern = None
-        self.read_contents = []
+        self.path = None
+        self.match = None
+        self.host = None
         self.ssh_client = None
         self.session = None
         self.transport = None
         self.lock = None
         self.loop = None
+        self.read_contents = []
 
     registers = []
 
@@ -74,20 +93,20 @@ class Handler(BaseWebsocketHandler):
     @open_valid
     def open(self):
         self.loop = asyncio.get_event_loop()
-        if self.logfile.get('location') == 1:
+        if self.host in ('localhost', '127.0.0.1'):
             thread = threading.Thread(target=self.kpread_local_logfile, daemon=True)
             thread.start()
         else:
             try:
                 self.ssh_client = paramiko.SSHClient()
                 self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                self.ssh_client.connect(self.logfile.get('host'), **self.application.settings.get('ssh'))
+                self.ssh_client.connect(self.host, **self.application.settings.get('ssh'))
                 self.transport = self.ssh_client.get_transport()
                 self.session = self.transport.open_session()
                 self.session.get_pty('xterm')
             except Exception as e:
                 logging.error('Keepread logfile failed: %s' % str(e))
-                message = {'code': 500, 'msg': 'Keepread logfile failed', 'detail': str(e)}
+                message = dict(code=500, msg='Keepread logfile failed', detail=str(e))
                 self.write_message(json.dumps(message))
                 self.close()
             else:
@@ -111,31 +130,23 @@ class Handler(BaseWebsocketHandler):
         asyncio.set_event_loop(self.loop)
         with open(self.logfile.get('path')) as logfile:
             try:
-                status, output = self.command('wc -l %s' % self.logfile.get('path'))
-                if status != 0:
-                    raise Exception('get total lines error, %d, %s' % (status, output))
-                total_lines = int(output.split()[0].strip())
-
                 logfile.seek(0, 2)
-                total_size = logfile.tell()
+                keep_lines = 0
                 while self.ws_connection:
                     contents = logfile.readlines()
-                    if contents:
-                        total_size = logfile.tell()
-                        total_lines += len(contents)
-
-                        if self.search_pattern:
-                            contents = [line for line in contents if re.search(self.search_pattern, line)]
-                    data = {'contents': contents, 'total_size': total_size, 'total_lines': total_lines,
-                            'lines': len(contents), 'size': len(''.join(contents))}
-                    message = {'code': 0, 'msg': 'Read lines successful', 'data': data}
+                    if contents and self.match:
+                        contents = [line for line in contents if re.search(self.match, line)]
+                    lines = len(contents)
+                    keep_lines += lines
+                    data = dict(contents=contents, lines=lines, keep_lines=keep_lines)
+                    message = dict(code=0, msg='Keepread logfile successful', data=data)
                     if self.ws_connection:
                         self.write_message(json.dumps(message))
                     time.sleep(3)
             except Exception as e:
                 logging.error('Keepread logfile failed: %s' % str(e))
                 if self.ws_connection:
-                    message = {'code': 500, 'msg': 'Keepread logfile failed', 'detail': str(e)}
+                    message = dict(code=500, msg='Keepread logfile failed', detail=str(e))
                     self.write_message(json.dumps(message))
             finally:
                 if self.ws_connection:
@@ -144,12 +155,10 @@ class Handler(BaseWebsocketHandler):
 
     def kpread_remote_logfile(self):
         asyncio.set_event_loop(self.loop)
-        path = self.logfile.get('path')
         try:
-            grep = '| grep -E "%s"' % self.search_pattern if self.search_pattern else ''
-            cmd = 'tail -f %s %s' % (path, grep)
+            grep = '| grep "%s"' % self.match if self.match else ''
+            cmd = 'tail -f %s %s' % (self.path, grep)
             self.session.exec_command(cmd)
-
             leftover = ''
             while self.ws_connection and self.transport.is_active():
                 output = self.session.recv(1024).decode()
@@ -166,7 +175,7 @@ class Handler(BaseWebsocketHandler):
         except Exception as e:
             logging.error('Keepread logfile failed: %s' % str(e))
             if self.ws_connection:
-                message = {'code': 500, 'msg': 'Keepread logfile failed', 'detail': str(e)}
+                message = dict(code=500, msg='Keepread logfile failed', detail=str(e))
                 self.write_message(json.dumps(message))
         finally:
             if self.ws_connection:
@@ -175,48 +184,27 @@ class Handler(BaseWebsocketHandler):
 
     def kpsend_remote_logfile(self):
         asyncio.set_event_loop(self.loop)
-        path = self.logfile.get('path')
         try:
+            keep_lines = 0
             while self.ws_connection:
-                status, output = self.command('wc -c %s' % path)
-                if status != 0:
-                    raise Exception('get size error, %d, %s' % (status, output))
-                total_size = int(output.split()[0].strip())
-
-                status, output = self.command('wc -l %s' % path)
-                if status != 0:
-                    raise Exception('get lines error, %d, %s' % (status, output))
-                total_lines = int(output.split()[0].strip())
-
+                contents, lines = [], 0
                 if self.read_contents:
                     self.lock.acquire()
                     contents, self.read_contents = self.read_contents, []
                     self.lock.release()
-                    data = {'contents': contents, 'total_size': total_size, 'total_lines': total_lines,
-                            'lines': len(contents), 'size': len(''.join(contents))}
-                else:
-                    data = {'contents': [], 'total_size': total_size, 'total_lines': total_lines,
-                            'lines': 0, 'size': 0}
-
-                message = {'code': 0, 'msg': 'Keepread logfile successful', 'data': data}
+                lines = len(contents)
+                keep_lines += lines
+                data = dict(contents=contents, lines=lines, keep_lines=keep_lines)
+                message = dict(code=0, msg='Keepread logfile successful', data=data)
                 if self.ws_connection:
                     self.write_message(message)
                 time.sleep(3)
         except Exception as e:
             logging.error('Keepsend logfile failed: %s' % str(e))
             if self.ws_connection:
-                message = {'code': 500, 'msg': 'Keepread logfile failed', 'detail': str(e)}
+                message = dict(code=500, msg='Keepread logfile failed', detail=str(e))
                 self.write_message(json.dumps(message))
         finally:
             if self.ws_connection:
                 self.close()
         logger.info('Keepsend logfile end')
-
-    def command(self, cmd):
-        if self.logfile.get('location') == 1:
-            status, output = subprocess.getstatusoutput(cmd)
-        else:
-            stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
-            status = stdout.channel.recv_exit_status()
-            output = str(stdout.read(), encoding='utf-8') if status == 0 else str(stderr.read(), encoding='utf-8')
-        return status, output

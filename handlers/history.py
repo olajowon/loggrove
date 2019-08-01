@@ -22,6 +22,6 @@ class Handler(BaseRequestHandler):
           LIMIT 100                 
         ''' % (self.requser['id'])
 
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
+        self.cursor.execute(select_sql)
+        results = self.cursor.dictfetchall()
         return {'code': 200, 'msg': 'Query Successful', 'data': results}

@@ -2,56 +2,50 @@
 
 from .base import BaseRequestHandler, permission
 import datetime
-import os
-import re
+import pymysql
 import logging
 
 logger = logging.getLogger()
 
 
 def argements_valid(handler, pk=None):
-    error = {}
+    error = dict()
+    name = handler.get_argument('name', '')
     path = handler.get_argument('path', '')
     comment = handler.get_argument('comment', '')
-    location = handler.get_argument('location', '1')
-    host = handler.get_argument('host', 'localhost')
+    host = handler.get_argument('host', '')
+    monitor_choice = handler.get_argument('monitor_choice', '0')
+
     if not path:
         error['path'] = 'Required'
-    elif location == '1' and not os.path.isfile(path):
-        error['path'] = 'Path not exist'
     else:
-        select_sql = 'SELECT id FROM logfile WHERE host="%s" and path="%s" %s' % \
-                     (host, path, 'and id!="%d"' % pk if pk else '')
-        count = handler.mysqldb_cursor.execute(select_sql)
+        select_sql = 'SELECT id FROM logfile WHERE name="%s" %s'
+        select_arg = (pymysql.escape_string(name), 'and id!="%d"' % pk if pk else '')
+        count = handler.cursor.execute(select_sql % select_arg)
         if count:
             error['path'] = 'Already existed'
 
-    if location not in ['1', '2']:
-        error['location'] = 'Invalid'
+    for i, j in ((name, 'name'), (host, 'host'), (comment, 'comment')):
+        if not i:
+            error[j] = 'Required'
 
-    if location == '1' and host != 'localhost':
-        host = 'localhost'
-    elif location == '2' and not \
-            re.match(r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
-                     host):
-        error['host'] = 'Incorrect format'
+    if monitor_choice not in ('0', '-1'):
+        error['monitor_choice'] = 'Invalid'
 
-    if not comment:
-        error['comment'] = 'Required'
-    request_data = {
-        'path': path,
-        'comment': comment,
-        'location': int(location),
-        'host': host
-    }
-    return error, request_data
+    data = dict(name=name,
+                path=path,
+                comment=comment,
+                host=host,
+                hosts=host.split(','),
+                monitor_choice=int(monitor_choice))
+    return error, data
 
 
 def add_valid(func):
     def _wrapper(self):
         error, self.reqdata = argements_valid(self)
         if error:
-            return {'code': 400, 'msg': 'Bad POST data', 'error': error}
+            return dict(code=400, msg='Bad POST data', error=error)
         return func(self)
 
     return _wrapper
@@ -59,14 +53,14 @@ def add_valid(func):
 
 def query_valid(func):
     def _wrapper(self, pk):
-        error = {}
+        error = dict()
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
-            query_keys = ['id', 'location', 'host', 'path', 'comment', 'create_time',
+            query_keys = ['id', 'name', 'host', 'path', 'comment', 'create_time',
                           'order', 'search', 'offset', 'limit', 'sort']
             error = {key: 'Bad key' for key in argument_keys if key not in query_keys}
         if error:
-            return {'code': 400, 'msg': 'Bad GET param', 'error': error}
+            return dict(code=400, msg='Bad GET param', error=error)
         return func(self, pk)
 
     return _wrapper
@@ -75,12 +69,12 @@ def query_valid(func):
 def update_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id FROM logfile WHERE id="%d"' % pk
-        count = self.mysqldb_cursor.execute(select_sql)
+        count = self.cursor.execute(select_sql)
         if not count:
             return {'code': 404, 'msg': 'Update row not found'}
         error, self.reqdata = argements_valid(self, pk)
         if error:
-            return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
+            return dict(code=400, msg='Bad PUT param', error=error)
         return func(self, pk)
 
     return _wrapper
@@ -89,9 +83,9 @@ def update_valid(func):
 def del_valid(func):
     def _wrapper(self, pk):
         select_sql = 'SELECT id FROM logfile WHERE id="%d"' % pk
-        count = self.mysqldb_cursor.execute(select_sql)
+        count = self.cursor.execute(select_sql)
         if not count:
-            return {'code': 404, 'msg': 'Delete row not found'}
+            return dict(code=404, msg='Delete row not found')
         return func(self, pk)
 
     return _wrapper
@@ -124,64 +118,88 @@ class Handler(BaseRequestHandler):
 
     @query_valid
     def _query(self, pk):
-        fields = search_fields = ['id', 'location', 'host', 'path', 'comment', 'create_time']
+        fields = search_fields = ['id', 'name', 'host', 'path', 'comment', 'create_time']
         where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
-        select_sql = '''
-            SELECT
-              id, location, host, path, date_format(create_time, "%%Y-%%m-%%d %%H:%%i:%%s") as create_time, comment
-            FROM
-              logfile
-            %s %s %s
-        ''' % (where, order, limit)
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
+        self.cursor.execute(self.select_sql % (where, order, limit))
+        results = self.cursor.dictfetchall()
         if limit:
-            total_sql = 'SELECT count(*) as total FROM logfile %s' % where
-            self.mysqldb_cursor.execute(total_sql)
-            total = self.mysqldb_cursor.fetchone().get('total')
-            return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
-        return {'code': 200, 'msg': 'Query Successful', 'data': results}
+            self.cursor.execute(self.total_sql % where)
+            total = self.cursor.dictfetchone().get('total')
+            return dict(code=200, msg='Query Successful', data=results, total=total)
+        return dict(code=200, msg='Query Successful', data=results)
 
     @add_valid
     def _add(self):
-        insert_sql = '''
-            INSERT INTO 
-              logfile (location, host, path, create_time, comment) 
-            VALUES 
-              ("%s", "%s", "%s", "%s", "%s")
-        ''' % (self.reqdata['location'], self.reqdata['host'], self.reqdata['path'],
-               datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), self.reqdata['comment'],)
         try:
-            self.mysqldb_cursor.execute(insert_sql)
+            with self.transaction(atomic=True):
+                insert_arg = (self.reqdata['name'], self.reqdata['host'], self.reqdata['path'],
+                              datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), self.reqdata['comment'],
+                              self.reqdata['monitor_choice'])
+                self.cursor.execute(self.insert_sql, insert_arg)
+                self.cursor.execute(self.last_insert_id_sql)
+                insert = self.cursor.dictfetchone()
+                insert_host_mp_args = [(insert['id'], host) for host in self.reqdata['hosts']]
+                self.cursor.executemany(self.insert_host_mp_sql, insert_host_mp_args)
         except Exception as e:
             logger.error('Add logfile failed: %s' % str(e))
-            self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Add failed'}
+            return dict(code=500, msg='Add failed')
         else:
-            self.mysqldb_cursor.execute('SELECT LAST_INSERT_ID() as id')
-            return {'code': 200, 'msg': 'Add successful', 'data': self.mysqldb_cursor.fetchall()}
+            return dict(code=200, msg='Add successful', data=insert)
 
     @update_valid
     def _update(self, pk):
-        update_sql = 'UPDATE logfile SET location="%d", host="%s", path="%s", comment="%s" WHERE id="%d"' % \
-                     (self.reqdata['location'], self.reqdata['host'], self.reqdata['path'], self.reqdata['comment'], pk)
         try:
-            self.mysqldb_cursor.execute(update_sql)
+            with self.transaction(atomic=True):
+                update_arg = (self.reqdata['name'], self.reqdata['host'], self.reqdata['path'],
+                              self.reqdata['comment'], self.reqdata['monitor_choice'], pk)
+                self.cursor.execute(self.update_sql, update_arg)
+                delete_host_mp_arg = (pk,)
+                self.cursor.execute(self.delete_host_mp_sql, delete_host_mp_arg)
+                insert_host_mp_args = [(pk, host) for host in self.reqdata['hosts']]
+                self.cursor.executemany(self.insert_host_mp_sql, insert_host_mp_args)
         except Exception as e:
             logger.error('Update logfile failed: %s' % str(e))
-            self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Update failed'}
+            return dict(code=500, msg='Update failed')
         else:
-            return {'code': 200, 'msg': 'Update successful', 'data': {'id': pk}}
+            return dict(code=200, msg='Update successful', data=dict(id=pk))
 
     @del_valid
     def _del(self, pk):
-        delete_sql = 'DELETE FROM logfile WHERE id="%d"' % pk
         try:
-            self.mysqldb_cursor.execute(delete_sql)
+            with self.transaction(atomic=True):
+                delete_arg = (pk,)
+                self.cursor.execute(self.delete_sql, delete_arg)
+                self.cursor.execute(self.delete_host_mp_sql, delete_arg)
+                self.cursor.execute(self.delete_monitor_sql, delete_arg)
         except Exception as e:
             logger.error('Delete logfile failed: %s' % str(e))
-            self.mysqldb_conn.rollback()
-            return {'code': 500, 'msg': 'Delete failed'}
+            return dict(code=500, msg='Delete failed')
         else:
-            return {'code': 200, 'msg': 'Delete successful'}
+            return dict(code=200, msg='Delete successful')
+
+    insert_sql = \
+        'INSERT INTO logfile (name, host, path, create_time, comment, monitor_choice) VALUES (%s, %s, %s, %s, %s, %s)'
+
+    insert_host_mp_sql = 'INSERT INTO logfile_host (logfile_id, host) VALUES (%s, %s)'
+
+    update_sql = 'UPDATE logfile SET name=%s, host=%s, path=%s, comment=%s, monitor_choice=%s WHERE id=%s'
+
+    delete_sql = 'DELETE FROM logfile WHERE id=%s'
+
+    delete_host_mp_sql = 'DELETE FROM logfile_host WHERE logfile_id=%s'
+
+    delete_monitor_sql = 'DELETE FROM monitor_item WHERE logfile_id=%s'
+
+    last_insert_id_sql = 'SELECT LAST_INSERT_ID() as id'
+
+    select_sql = '''
+        SELECT
+          id, name, host, path, 
+          date_format(create_time, "%%Y-%%m-%%d %%H:%%i:%%s") as create_time, 
+          comment, monitor_choice
+        FROM
+          logfile
+        %s %s %s
+    '''
+
+    total_sql = 'SELECT count(*) as total FROM logfile %s'

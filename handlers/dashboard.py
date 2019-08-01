@@ -19,13 +19,11 @@ class Handler(BaseRequestHandler):
         select_sql = '''
           SELECT * FROM
             (SELECT count(id) as logfile_count FROM logfile) t1,
-            (SELECT count(id) as local_logfile_count FROM logfile WHERE location="1") t2,
-            (SELECT count(id) as remote_logfile_count FROM logfile WHERE location="2") t3,
-            (SELECT count(*) as host_count From (SELECT count(id) FROM logfile GROUP BY host) t4) t5,
+            (SELECT count(*) as host_count FROM (SELECT count(id) FROM logfile_host GROUP BY host) t4) t5,
             (SELECT count(id) as monitor_item_count FROM monitor_item) t6,
             (SELECT count(id) as user_count FROM user) t7,
             (SELECT count(DISTINCT user_id) as online_user_count FROM session WHERE expire_time>"%s") t8
         ''' % now_str_time
-        self.mysqldb_cursor.execute(select_sql)
-        results = self.mysqldb_cursor.fetchall()
+        self.cursor.execute(select_sql)
+        results = self.cursor.dictfetchall()
         return {'code': 200, 'msg': 'Query Successful', 'data': results}

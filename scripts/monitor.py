@@ -1,0 +1,228 @@
+# Created by zhouwang on 2018/8/15.
+# Render on 2018/09/11
+
+'''
+说明:
+    这个脚本是用来对 Loggrove 录入的日志文件进行实时统计、监控、告警的，脚本执行采用古典又是最稳定的crontab；
+    在 Loggrove 添加的所有主机都要进行部署这一脚本，并添加执行任务到crontab（loggrove本地主机会在执行build.py的时候程序添加监控任务）；
+    部署使用前，请检查该脚本的MYSQL_DB配置是否可以在所有的日志主机上正确连接；
+
+Explain:
+This script is used for real-time statistics, monitoring and alarm of log files entered by Loggroup. The script is
+executed by crontab;
+All hosts added to Loggroup deploy this script and add execution tasks to crontab (the loggroup local host adds
+monitoring tasks while executing build.py);
+Before deploying, check that the script's MYSQL_DB configuration is correctly connected on all log hosts.
+
+crontab:
+    * * * * * /usr/bin/python /path/monitor.py <HOST> /tmp/loggrove_monitor.log # loggrove_monitor
+'''
+
+# loggrove MySQL db
+MYSQL_DB = {
+    'host': 'localhost',
+    'port': 3306,
+    'user': 'root',
+    'password': '123456',
+    'db': 'loggrove',
+    'charset': 'utf8',
+    'autocommit': True,
+}
+
+import time
+import pymysql
+import threading
+import os
+import re
+import traceback
+import requests
+import json
+import sys
+if len(sys.argv) != 2:
+    print('Argv is Bad!')
+    exit()
+
+# HOST @ Loggrove
+HOST = sys.argv[1].strip()
+
+def get_logfiles(cursor):
+    select_sql = 'SELECT id, path, host FROM logfile WHERE host="%s"' % HOST
+    cursor.execute(select_sql)
+    results = cursor.fetchall()
+    return results
+
+thread_lock = threading.Lock()
+class MonitorCount(threading.Thread):
+    def __init__(self, conn, cursor, file, str_time, mk_time, begin_time):
+        threading.Thread.__init__(self)
+        self.fileid = file[0]
+        self.filepath = file[1]
+        self.host = file[2]
+        self.conn = conn
+        self.cursor = cursor
+        self.str_time = str_time
+        self.mk_time = mk_time
+        self.begin_time = begin_time
+        self.counts = {0: 0}
+        self.alert_items = []
+
+    def run(self):
+        open_position = os.path.getsize(self.filepath)
+        time.sleep(60 - (time.time() - self.begin_time))
+        end_position = os.path.getsize(self.filepath)
+        begin_position = self.get_begin_position(open_position, end_position)
+        monitor_items = self.get_monitor_items()
+        print('%s, %s, Begin positon: %d' % (self.str_time, self.filepath, begin_position))
+        print('%s, %s, End positon: %s' % (self.str_time, self.filepath, end_position))
+        for item in monitor_items:
+            self.counts[item[0]] = 0
+            if item[2] == 1 and (self.mk_time+60)%(item[3]*60) == 0:
+                self.alert_items.append(item)
+
+        with open(self.filepath) as file:
+            file.seek(begin_position)
+            while True:
+                line = file.readline()
+                if line:
+                    self.counts[0] += 1
+                    for item in monitor_items:
+                        if re.search(item[1], line):
+                            self.counts[item[0]] += 1
+                if file.tell() >= end_position:
+                    break
+        print('%s, %s, Counts: %s' % (self.str_time, self.filepath, self.counts))
+        self.insert_monitor_count()
+
+        print('%s, %s, Alert items: %s' % (self.str_time, self.filepath, self.alert_items))
+        if self.alert_items:
+            self.send_alert()
+
+    def get_begin_position(self, open_position, end_position):
+        with open('/tmp/%d_position' % self.fileid, 'a+') as pfile:
+            pfile.seek(0)
+            content = pfile.read()
+            previous_end_position = None
+            if content:
+                previous_end_position = int(content)
+                pfile.seek(0)
+                pfile.truncate()
+            pfile.write(str(end_position))
+
+        if end_position < open_position:
+            begin_position = 0
+        elif previous_end_position == None:
+            begin_position = open_position
+        elif previous_end_position > end_position:
+            begin_position = open_position
+        else:
+            begin_position = previous_end_position
+        return begin_position
+
+
+    def get_monitor_items(self):
+        select_sql = '''
+          SELECT id, search_pattern, alert, check_interval, trigger_format, dingding_webhook
+          FROM monitor_item 
+          WHERE logfile_id="%d"
+        ''' % self.fileid
+        thread_lock.acquire()
+        self.cursor.execute(select_sql)
+        results = self.cursor.fetchall()
+        thread_lock.release()
+        return results
+
+
+    def insert_monitor_count(self):
+        inserts = [(self.fileid, itemid, count, self.str_time) for itemid, count in self.counts.items()]
+        thread_lock.acquire()
+        try:
+            self.cursor.executemany(
+                'INSERT INTO monitor_count (logfile_id, monitor_item_id, count, count_time) '
+                'VALUES(%s, %s, %s, %s)',
+                inserts)
+        except Exception as e:
+            self.conn.rollback()
+            print('%s,  %s, Insert monitor count error, %s' % (self.str_time, self.filepath, str(e)))
+            print(traceback.format_exc())
+        else:
+            print('%s, %s, Insert monitor count success' % (self.str_time, self.filepath))
+        thread_lock.release()
+
+    def send_alert(self):
+        for item in self.alert_items:
+            min_str_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.mk_time-item[3]*60+60))
+            select_sql = '''
+                SELECT SUM(count) as count_sum
+                FROM monitor_count
+                WHERE logfile_id="%d"
+                AND monitor_item_id="%d"
+                AND count_time >="%s"
+            ''' % (self.fileid, item[0], min_str_time)
+            thread_lock.acquire()
+            self.cursor.execute(select_sql)
+            results = self.cursor.fetchall()
+            thread_lock.release()
+
+            if results:
+                alert_content = None
+                if results[0][0] is None:
+                    alert_content = '# Loggrove 告警\n主机: %s\n文件: %s\n匹配: %s\n' \
+                                    '时间: %s:00 至 %s:59\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
+                              (self.host, self.filepath, item[1], min_str_time,
+                               self.str_time, 'None')
+
+                elif eval(item[4].format(results[0][0])):
+                    alert_content = '# Loggrove 告警\n主机: %s\n文件: %s\n匹配: %s\n' \
+                                    '时间: %s:00 至 %s:59\n统计: %d 次\n公式: %s\n\n' % \
+                              (self.host, self.filepath, item[1], min_str_time,
+                               self.str_time, results[0][0], item[4])
+
+                if alert_content:
+                    try:
+                        payload = {
+                            'msgtype': 'text',
+                            'text': {
+                                'content': alert_content
+                            },
+                            'at': {
+                                'isAtAll': True
+                            }
+                        }
+                        requests.post(
+                            item[5],
+                            data=json.dumps(payload),
+                            headers={'content-type': 'application/json'}
+                        )
+                    except Exception as e:
+                        print('%s, %s, Send alert error, %s' % (self.str_time, self.filepath, str(e)))
+                        print(traceback.format_exc())
+                    else:
+                        print('%s, %s, Send alert success' % (self.str_time, self.filepath))
+
+def main():
+    begin_time = time.time()
+    conn = pymysql.connect(**MYSQL_DB)
+    cursor = conn.cursor()
+    try:
+        logfiles = get_logfiles(cursor)
+        str_time = time.strftime('%Y-%m-%d %H:%M', time.localtime())
+        mk_time = time.mktime(time.strptime(str_time, '%Y-%m-%d %H:%M'))
+        theads = []
+        for logfile in logfiles:
+            theads.append(MonitorCount(conn, cursor, logfile, str_time, mk_time, begin_time))
+
+        for thead in theads:
+            thead.start()
+
+        for thead in theads:
+            thead.join()
+    except Exception as e:
+        print('%s, Main error, %s' % (str_time, str(e)))
+        print(traceback.format_exc())
+    finally:
+        cursor.close()
+        conn.close()
+
+
+if __name__ == '__main__':
+    main()

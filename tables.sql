@@ -34,11 +34,19 @@ CREATE TABLE IF NOT EXISTS `auditlog`(
 
 CREATE TABLE IF NOT EXISTS `logfile`(
   `id` INT UNSIGNED AUTO_INCREMENT,
-  `location` TINYINT NOT NULL,
-  `host` VARCHAR(200) NOT NULL,
-  `path` VARCHAR(500) NOT NULL,
+  `name` VARCHAR(200) NOT NULL,
+  `host` LONGTEXT NOT NULL,
+  `path` VARCHAR(1024) NOT NULL,
   `create_time` DATETIME,
   `comment` VARCHAR(200),
+  PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE IF NOT EXISTS `logfile_host`(
+  `id` INT UNSIGNED AUTO_INCREMENT,
+  `logfile_id` TINYINT NOT NULL,
+  `host` VARCHAR(200) NOT NULL,
   PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -60,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `monitor_item`(
 CREATE TABLE IF NOT EXISTS `monitor_count`(
   `id` INT UNSIGNED AUTO_INCREMENT,
   `logfile_id` INT NOT NULL,
+  `host` VARCHAR(200) NOT NULL,
   `monitor_item_id` INT NOT NULL,
   `count` INT NOT NULL,
   `count_time` DATETIME,

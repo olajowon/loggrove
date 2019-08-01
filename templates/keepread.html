@@ -31,157 +31,60 @@
         <div class="panel panel-default">
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-sm-6 col-lg-4">
-                        <ul class="nav nav-pills">
-                            <li class="active" id="local_logfile_navpill"><a href="#local_logfile_tabpane" data-toggle="tab"><script>document.write(_("Local log"))</script></a>
-                            </li>
-                            <li id="remote_logfile_navpill"><a href="#remote_logfile_tabpane" data-toggle="tab"><script>document.write(_("Remote log"))</script></a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="col-sm-6 col-lg-6">
-                        <input type="text" name="search" class="form-control" placeholder="快速查找..." autocomplete="off" data-provide="typeahead" style="margin-top: 3px">
-                    </div>
-                </div>
-                <div class="row">
                     <div class="col-sm-12 col-lg-10">
-                        <div class="tab-content">
-                            <div class="tab-pane fade in active" id="local_logfile_tabpane" style="padding-top: 15px">
-                                <form role="form">
-                                    <div class="form-group">
-                                        <label><script>document.write(_("Logfile"))</script> *</label>
-                                        <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
-                                            <option value=""> ---- </option>
-                                        </select>
-                                        <span name="logfile_id_error" class="error_text"></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label><script>document.write(_("Search pattern"))</script></label>
-                                        <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
-                                            <option value=""> ---- </option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="text" class="form-control" name="other_search_pattern">
-                                        <span class="error_text" name="search_pattern_error"></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="checkbox-inline">
-                                            <input type="checkbox" name="filter_search_line" checked> <script>document.write(_("Only view and output matching lines"))</script>
-                                        </label>
-                                    </div>
-                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)"><script>document.write(_("View"))</script></button>
-                                </form>
-                            </div>
-                            <div class="tab-pane fade" id="remote_logfile_tabpane" style="padding-top: 15px">
-                                <form role="form">
-                                    <div class="form-group">
-                                        <label><script>document.write(_("Host"))</script> *</label>
-                                        <select class="form-control selectpicker" name="host" data-live-search="true">
-                                            <option value=""> ---- </option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label><script>document.write(_("Logfile"))</script> *</label>
-                                        <select class="form-control selectpicker" name="logfile_id" data-live-search="true">
-                                            <option value=""> ---- </option>
-                                        </select>
-                                        <span class="error_text" name="logfile_id_error"></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label><script>document.write(_("Search pattern"))</script></label>
-                                        <select class="form-control selectpicker" name="search_pattern" data-live-search="true">
-                                            <option value=""> ---- </option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="text" class="form-control" name="other_search_pattern">
-                                        <span class="error_text" name="search_pattern_error"></span>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="checkbox-inline">
-                                            <input type="checkbox" name="filter_search_line" checked> <script>document.write(_("Only view and output matching lines"))</script>
-                                        </label>
-                                    </div>
-                                    <button type="button" class="btn btn-default" onclick="logfile_keepread(this)"><script>document.write(_("View"))</script></button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row" id="log_stat_row" style="display: none">
-    <div class="col-sm-12 col-lg-10" style="clear: both; ">
-        <div class="row">
-            <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-xs-3">
-                                <i class="fa fa-flask fa-3x"></i>
-                            </div>
-                            <div class="col-xs-9 text-right">
-                                <div style="font-size: 23px" id="total_size">0</div>
-                                <div><script>document.write(_("Total size"))</script> / KB</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-xs-3">
-                                <i class="fa fa-list-ol fa-3x"></i>
-                            </div>
-                            <div class="col-xs-9 text-right">
-                                <div style="font-size: 23px" id="total_lines">0</div>
-                                <div><script>document.write(_("Total lines"))</script></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-xs-3">
-                                <i class="fa fa-file-o fa-3x"></i>
-                            </div>
-                            <div class="col-xs-9 text-right">
-                                <div style="font-size: 23px" id="size">0</div>
-                                <div><script>document.write(_("Output size"))</script> / KB</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-sm-3">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <div class="row">
-                            <div class="col-xs-3">
-                                <i class="fa fa-list-ol fa-3x"></i>
-                            </div>
-                            <div class="col-xs-9 text-right">
-                                <div style="font-size: 23px">
-                                    <span id="highlight_lines">0</span>/<span id="lines">0</span>
+                        <form role="form" class="form-horizontal" id="logfile_form">
+                            <div class="form-group">
+                                <div class="col-sm-6">
+                                    <label class="control-label">
+                                        <script>document.write(_("Logfile"))</script>
+                                        *</label>
+                                    <input type="text" name="logfile" class="form-control"
+                                           placeholder="日志文件（支持按名称、主机、路径、备注模糊查找）" autocomplete="off"
+                                           data-provide="typeahead">
+                                    <span name="logfile_error" class="error_text"></span>
                                 </div>
-                                <div><script>document.write(_("Highlight"))</script>/<script>document.write(_("Output lines"))</script></div>
+                                <div class="col-sm-6">
+                                    <label class="control-label">
+                                        <script>document.write(_("Host"))</script>
+                                        *</label>
+                                    <select class="form-control selectpicker" name="host" data-live-search="true">
+                                        <option value=""> 请先选择日志文件 </option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                            <div class="form-group">
+                                <div class="col-sm-6">
+                                    <label>
+                                        <script>document.write(_("Path"))</script>
+                                        *</label>
+                                    <select class="form-control selectpicker" name="path" data-live-search="true">
+                                        <option value=""> 请先选择主机地址 </option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label>
+                                        <script>document.write(_("Match"))</script>
+                                    </label>
+                                    <input type="text" class="form-control" name="match" autocomplete="off"
+                                           data-provide="typeahead">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" name="filter_search_line" checked>
+                                        <script>document.write(_("Only view and output matching lines"))</script>
+                                    </label>
+                                    <button style="float: right" type="button" class="btn btn-default"
+                                            onclick="logfile_keepread()">
+                                        <script>document.write(_("View"))</script>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -189,15 +92,40 @@
 <div class="row" id="log_content_row" style="display: none">
     <div class="col-sm-12 col-lg-10" style="clear: both">
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <script>document.write(_("Window lines"))</script>: <span id="window_lines">0</span>
-                <div class="pull-right">
-                    <button class="btn btn-xs btn-primary" onclick="close_websocket()"> <i class="fa fa-stop fa-fw" style=""></i> <script>document.write(_("Close"))</script> </button>
-                    <button class="btn btn-xs btn-warning" onclick="clear_log_content()"> <i class="fa fa-trash-o fa-fw" style=""></i> <script>document.write(_("Clear"))</script> </button>
-                </div>
+            <!--<div class="panel-heading">-->
+                <!--<div class="pull-right">-->
+                    <!--<button class="btn btn-xs btn-primary" onclick="close_websocket()"> <i class="fa fa-stop fa-fw" style=""></i> <script>document.write(_("Close"))</script> </button>-->
+                    <!--<button class="btn btn-xs btn-warning" onclick="clear_log_content()"> <i class="fa fa-trash-o fa-fw" style=""></i> <script>document.write(_("Clear"))</script> </button>-->
+                <!--</div>-->
+            <!--</div>-->
+            <div class="panel-heading" style="background-color: #fff">
+                <table class="table" style="margin-bottom: 0px">
+                    <thead>
+                    <tr>
+                        <th>累计行数</th>
+                        <th>窗口行数</th>
+                        <th>高亮行数</th>
+                        <th>最近一次刷新</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td id="keep_lines"></td>
+                        <td id="window_lines"></td>
+                        <td id="highlight_lines"></td>
+                        <td id="last_update"></td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="panel-body">
                 <div class="row">
+                    <div class="col-lg-12">
+                        <div class="pull-right">
+                            <button class="btn btn-xs btn-primary" onclick="close_websocket()"> <i class="fa fa-stop fa-fw" style=""></i> <script>document.write(_("Close"))</script> </button>
+                            <button class="btn btn-xs btn-warning" onclick="clear_log_content()"> <i class="fa fa-trash-o fa-fw" style=""></i> <script>document.write(_("Clear"))</script> </button>
+                        </div>
+                    </div>
                     <div class="col-lg-12" style="max-height:500px;overflow:auto; clear: both;line-height: 20px" id="log_content">
                     </div>
                 </div>
@@ -209,12 +137,12 @@
 {% end %}
 {% block body_js %}
 <script>
-    $("input[name='search']").typeahead({
+    $("input[name='logfile']").typeahead({
         delay: 500,
         autoSelect: false,
         showHintOnFocus: true,
-        selectOnBlur: true,
-        changeInputOnSelect: false,
+        selectOnBlur: false,
+        changeInputOnSelect: true,
         source: function (search, process) {
             var param = {search: search, order: "asc", sort: "path", offset: 0, limit: 100};
             $.get('/logfiles/', param, function (response_data) {
@@ -225,107 +153,127 @@
         matcher: function (items) {
             return items;
         },
-        updater: function (item) {
-            select_logfile(item)
-            return item
+        updater: function (item) {
+            return item.name;
         },
         displayText: function (item) {
-            if($.isPlainObject(item)){
-                return item["path"] +" @ "+item["host"] + " : " + item["comment"]
-            }else{
-                return item;
-            }
+            return item.name;
         }
     });
 
-    $.ajax({
-        url: "/logfiles/",
-        type: "GET",
-        data: {"location": "1"},
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            var select_obj = $("#local_logfile_tabpane select[name='logfile_id']")
-            for(var i=0; i<data.length; i++){
-                select_obj.append("<option value='"+ data[i]["id"] +"'>"+ data[i]["path"] +"</option>")
-            }
-            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
-            $("#local_logfile_tabpane select[name='logfile_id']").selectpicker('render');
+    $("input[name='match']").typeahead({
+        delay: 500,
+        autoSelect: false,
+        showHintOnFocus: true,
+        selectOnBlur: false,
+        changeInputOnSelect: true,
+        source: function (search, process) {
+            var param = {logfile: $("input[name='logfile']").val(), match: search};
+            $.get('/match_patterns/', param, function (response_data) {
+                var data = jQuery.parseJSON(response_data).data;
+                process(data);
+            });
         },
-        error:function (result) {}
-    })
-
-    remote_logfile_map = {}
-    $.ajax({
-        url:"/logfiles/",
-        type:"GET",
-        data: {"location": "2"},
-        success:function (result) {
-            var response_data = jQuery.parseJSON(result)
-            var data = response_data['data']
-            var select_obj = $("#remote_logfile_tabpane select[name='host']")
-            for(var i=0; i<data.length; i++){
-                if(!remote_logfile_map.hasOwnProperty(data[i]["host"])){
-                    remote_logfile_map[data[i]["host"]] = [data[i]]
-                    select_obj.append("<option value='"+ data[i]["host"] +"'>"+ data[i]["host"] +"</option>")
-                }else{
-                    remote_logfile_map[data[i]["host"]].push(data[i])
-                }
-            }
-            //console.log(remote_logfile_map)
-            $("#remote_logfile_tabpane select[name='host']").selectpicker('refresh');
-            $("#remote_logfile_tabpane select[name='host']").selectpicker('render');
+        matcher: function (items) {
+            return items;
         },
-        error:function (result) {}
-    })
+        updater: function (item) {
+            return item;
+        },
+        displayText: function (item) {
+            return item;
+        }
+    });
 
-    $(function(){
-        $("#remote_logfile_tabpane select[name='host']").change(function(){
-            var host = $(this).val()
-            if(!host){
-                $("#remote_logfile_tabpane select[name='logfile_id']").html('<option value=""> ---- </option>')
-            }else{
-                var logfiles = remote_logfile_map[host]
-                var select_options = '<option value=""> ---- </option>'
-                for(var i=0;i<logfiles.length;i++){
-                    select_options += '<option value="'+ logfiles[i]["id"] +'"> '+ logfiles[i]["path"] +' </option>'
-                }
-                $("#remote_logfile_tabpane select[name='logfile_id']").html(select_options);
+
+    $(function () {
+        curr_logfile = null;
+        $("input[name='logfile']").blur(function () {
+            if ($(this).val() == curr_logfile) {
+                return
+            } else {
+                curr_logfile = $("input[name='logfile']").val()
             }
-            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('refresh');
-            $("#remote_logfile_tabpane select[name='logfile_id']").selectpicker('render');
-            $("#remote_logfile_tabpane select[name='search_pattern']").html('<option value=""> ---- </option>')
-            $("#remote_logfile_tabpane select[name='search_pattern']").selectpicker('refresh');
-            $("#remote_logfile_tabpane select[name='search_pattern']").selectpicker('render');
-        })
 
-        $("select[name='logfile_id']").change(function(){
-            var form_obj = $(this).parents("form")
-            var logfile_id = $(this).find("option:selected").val()
-            form_obj.find("select[name='search_pattern']").html("<option value=''> ---- </option>")
-            if(logfile_id){
+            var logfile = $("input[name='logfile']").val()
+
+            $("#logfile_form select[name='path']").html('<option value=""> 请先选择主机地址 </option>')
+            $("#logfile_form select[name='path']").selectpicker('refresh');
+            $("#logfile_form select[name='path']").selectpicker('render');
+            if (!logfile) {
+                $("#logfile_form select[name='host']").html('<option value=""> 请先选择日志文件 </option>')
+                $("#logfile_form select[name='host']").selectpicker('refresh');
+                $("#logfile_form select[name='host']").selectpicker('render');
+            } else {
+                $("#logfile_form select[name='host']").html('<option value=""> 正在获取主机地址... </option>')
+                $("#logfile_form select[name='host']").selectpicker('refresh');
+                $("#logfile_form select[name='host']").selectpicker('render');
+
                 $.ajax({
-                    url:"/monitor/items/",
-                    type:"GET",
-                    data:{"logfile_id": logfile_id},
-                    success:function (result) {
+                    url: "/logfiles/",
+                    type: "GET",
+                    data: {"name": logfile},
+                    success: function (result) {
                         var response_data = jQuery.parseJSON(result)
-                        var data = response_data['data']
-                        for(var i=0; i<data.length; i++){
-                            form_obj.find("select[name='search_pattern']").append("<option value='"+
-                                data[i]["search_pattern"] +"'>"+ data[i]["search_pattern"] +"</option>")
+                        var data = response_data["data"]
+                        var select_option_html = '<option value=""> ---- </option>'
+                        if (data.length > 0) {
+                            var host = data[0]["host"]
+                            var hosts = host.split(",")
+                            for (var i = 0; i < hosts.length; i++) {
+                                select_option_html += ("<option value='" +
+                                        hosts[i] + "'>" + hosts[i] + "</option>")
+                            }
                         }
-                        form_obj.find("select[name='search_pattern']").selectpicker('refresh');
-                        form_obj.find("select[name='search_pattern']").selectpicker('render');
+
+                        $("#logfile_form select[name='host']").html(select_option_html);
+                        $("#logfile_form select[name='host']").selectpicker('refresh');
+                        $("#logfile_form select[name='host']").selectpicker('render');
                     },
-                    error:function (result) {}
+                    error: function (result) {
+                        $("#logfile_form select[name='host']").html('<option value=""> ---- </option>')
+                        $("#logfile_form select[name='host']").selectpicker('refresh');
+                        $("#logfile_form select[name='host']").selectpicker('render');
+                    }
                 })
             }
-            form_obj.find("select[name='search_pattern']").selectpicker('refresh');
-            form_obj.find("select[name='search_pattern']").selectpicker('render');
-        })
+        });
 
-        $("input[name='other_search_pattern']").attr("placeholder", _("Custom regular expressions and precedence matching"))
+        $("#logfile_form select[name='host']").change(function () {
+            console.log('host change')
+            var host = $(this).val()
+            var logfile = $("input[name='logfile']").val()
+            if (!host) {
+                $("#logfile_form select[name='path']").html('<option value=""> 请先选择主机地址 </option>')
+                $("#logfile_form select[name='path']").selectpicker('refresh');
+                $("#logfile_form select[name='path']").selectpicker('render');
+            } else {
+                $("#logfile_form select[name='path']").html('<option value=""> 正在获取文件路径... </option>')
+                $("#logfile_form select[name='path']").selectpicker('refresh');
+                $("#logfile_form select[name='path']").selectpicker('render');
+
+
+                $.ajax({
+                    url: "/paths/",
+                    type: "GET",
+                    data: {"logfile": logfile, "host": host},
+                    success: function (result) {
+                        var response_data = jQuery.parseJSON(result)
+                        var data = response_data['data']
+                        var select_option_html = '<option value=""> ---- </option>'
+                        for (var i = 0; i < data.length; i++) {
+                            select_option_html += ("<option value='" +
+                                    data[i] + "'>" + data[i] + "</option>")
+                        }
+                        $("#logfile_form select[name='path']").html(select_option_html);
+                        $("#logfile_form select[name='path']").selectpicker('refresh');
+                        $("#logfile_form select[name='path']").selectpicker('render');
+                    },
+                    error: function (result) {
+                    }
+                })
+            }
+        })
     })
 </script>
 {% end %}
