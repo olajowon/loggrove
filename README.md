@@ -5,7 +5,7 @@
 [![Tornado](https://img.shields.io/badge/tornado-5.0.2-brightgreen.svg)](http://www.tornadoweb.org/)
 
 ## Introduction
-Loggrove 是对本地、远程**日志文件**进行 分页阅读、实时阅读（websocket）、关键词匹配、统计、监控、钉钉告警、Highcharts图表展示 的 Web 平台服务，并包含 用户认证、LDAP认证、操作审计 等基础服务。
+Loggrove 是对本地、远程**日志文件**进行 分页阅读、实时阅读（websocket）、关键词匹配、统计、监控、钉钉告警、Highcharts趋势图展示 的 Web 平台服务，并包含 用户认证、LDAP认证、操作审计 等基础服务。
 
 ### DEMO
 地址：<http://39.105.81.124:6218>
@@ -15,7 +15,7 @@ Loggrove 是对本地、远程**日志文件**进行 分页阅读、实时阅读
 密码：guest123
 
 ### Web UI 界面
-简洁大方的 Web UI 界面，进行 日志目录、日志文件、日志图表、日志阅读、日志轮询、日志关键词匹配、用户、审计 等统一管理，提供一系列简单、准确、美观的日志管理、查看、过滤 等服务。
+简洁大方的 Web UI 界面，进行 日志文件、日志图表、日志阅读、日志轮询、日志关键词匹配、用户、审计 等统一管理，提供一系列简单、准确、美观的日志管理、查看、过滤 等服务。
 
 ![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/dashboard.png?raw=true)
 
@@ -118,45 +118,35 @@ Supervisor 文档: <http://demo.pythoner.com/itt2zh/ch8.html#ch8-3>
 #### 监控脚本
 	loggrove/scripts/monitor.py
 	
-#### 本地日志监控（crontab）
-	crontab -e
+#### 进行监控
+在日志真实存储的机器上运行该脚本，使用参考 --help
+
+	python3 monitor.py -s http://<loggrove> -h <host>
+
+注：推荐supervisor进行管理，也可以使用nohup简单运行
 	
-	* * * * * /usr/local/bin/python3 <loggrove path>/scripts/monitor.py localhost >> /tmp/loggrove_monitor.log # loggrove_monitor
-**注：** 构建 build.py 初始化时，程序会向本地crontab添加该任务	 
-	
-#### 远程日志监控（crontab）				
-	crontab -e
-	
-	* * * * * /usr/bin/python <any path>/monitor.py HOST >> /tmp/loggrove_monitor.log # loggrove_monitor
-**注：** 添加远程日志后，需要在远程主机上，部署monitor.py脚本，并添加crontab任务
 
 <a name="Exhibition"></a>
 ## Exhibition
 
 ### dashboard
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/dashboard.png?raw=true)	
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/dashboard2019.png?raw=true)	
 
 ### 日志文件 file
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/logfile.png?raw=true)	
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/logfile2019.png?raw=true)	
 
 ### 监控项 monitor item
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/monitor_item.png?raw=true)
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/monitor_item2019.png?raw=true)
 	
 ### 日志阅读 read
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/read.png?raw=true)
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/read2019.png?raw=true)
 
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/read_content.png?raw=true)
+### 日志轮询 keepread
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/keepread2019.png?raw=true)
 
-### 日志轮询 keepread （websocket）
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/keepread.png?raw=true)
-
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/keepread_content.png?raw=true)
-
-### 用户 user
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/user.png?raw=true)
-
-### 审计 auditlog
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/auditlog.png?raw=true)
+### 日志图表 charts
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/chart2019.png?raw=true)
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/chart_content2019.png?raw=true)
 
 ### 登录 login
 ![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/login.png?raw=true)
