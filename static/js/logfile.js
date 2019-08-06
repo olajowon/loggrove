@@ -60,7 +60,7 @@ function add_new_row(id){
                 data[i]["option"] = "<button class='btn btn-xs btn-danger role2' " +
                                     "onclick='delete_logfile(" + data[i]["id"] + ")'>删除</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-warning role2' " +
-                                    "onclick='open_update_file_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
+                                    "onclick='open_update_modal(" + data[i]["id"] + ")'>编辑</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-info' " +
                                     "onclick='open_chart_modal(" + data[i]["id"] + ")'>图表</button>&nbsp;" +
                                 "<button class='btn btn-xs btn-primary' " +
