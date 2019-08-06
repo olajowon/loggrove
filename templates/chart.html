@@ -193,7 +193,7 @@
             }
 
             var form_group_obj = $(this).parent().parent()
-            var logfile = $("input[name='logfile']").val()
+            var logfile = form_group_obj.find("input[name='logfile']").val()
 
             form_group_obj.find("select[name='monitor_item']").html('')
             form_group_obj.find("select[name='monitor_item']").selectpicker('refresh');
