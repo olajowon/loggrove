@@ -9,7 +9,8 @@ import os
 import glob
 import re
 import json
-import sys, getopt
+import sys
+import getopt
 import logging
 
 logging.basicConfig(
@@ -176,15 +177,15 @@ class Monitor(threading.Thread):
         min_strtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(min_time))
         if counts is []:
             alerting = True
-            content = '- Loggrove 告警 -\n日志: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
+            content = '- Loggrove 告警 -\n日志: %s\n监控: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
                             '时间: %s:00 至 %s:59\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
-                            (item['name'], self.host, self.filepath, item['match_regex'], min_strtime,
+                            (self.filename, item['name'], self.host, self.filepath, item['match_regex'], min_strtime,
                              self.curr_strtime, 'None')
         elif eval(item['expression'].format(sum(counts))):
             alerting = True
-            content = '- Loggrove 告警 -\n日志: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
+            content = '- Loggrove 告警 -\n日志: %s\n监控: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
                             '时间: %s:00 至 %s:59\n统计: %d 次\n公式: %s\n\n' % \
-                            (item['name'], self.host, self.filepath, item['match_regex'], min_strtime,
+                            (self.filename, item['name'], self.host, self.filepath, item['match_regex'], min_strtime,
                              self.curr_strtime, sum(counts), item['expression'])
         return alerting, content
 
@@ -252,15 +253,15 @@ def monitor_basic():
 def main():
     logging.info('Loggrove-Monitor running...')
     print('Loggrove-Monitor running...')
-    make_logfile_thread = threading.Thread(target=make_logfiles, daemon=True)
+    make_logfile_thread = threading.Thread(target=make_logfiles, daemon=True)  # 每60s 获取主机日志及监控项
     make_logfile_thread.start()
-    send_alert_thread = threading.Thread(target=send_alert, daemon=True)
+    send_alert_thread = threading.Thread(target=send_alert, daemon=True)       # 消费报警队列，进行告警
     send_alert_thread.start()
-    monitor_report_thread = threading.Thread(target=monitor_report, daemon=True)
+    monitor_report_thread = threading.Thread(target=monitor_report, daemon=True)    # 消费日志统计队列，上报给loggrove
     monitor_report_thread.start()
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(monitor_basic, 'cron', minute='*/1', max_instances=8)
+    scheduler.add_job(monitor_basic, 'cron', minute='*/1', max_instances=8)  # 监控、统计、检查
     scheduler.start()
 
     while send_alert_thread.is_alive() and make_logfile_thread.is_alive() and monitor_report_thread.is_alive():
