@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS `monitor_item`(
   `logfile_id` INT NOT NULL,
   `match_regex` VARCHAR(200) NOT NULL,
   `name` VARCHAR(200) NOT NULL,
+  `alert` INT,
   `intervals` INT,
   `expression` VARCHAR(100),
   `webhook` VARCHAR(500),

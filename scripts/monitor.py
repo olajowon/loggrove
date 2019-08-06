@@ -178,13 +178,13 @@ class Monitor(threading.Thread):
             alerting = True
             content = '- Loggrove 告警 -\n日志: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
                             '时间: %s:00 至 %s:59\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
-                            (self.host, item['name'], self.filepath, item['match_regex'], min_strtime,
+                            (item['name'], self.host, self.filepath, item['match_regex'], min_strtime,
                              self.curr_strtime, 'None')
         elif eval(item['expression'].format(sum(counts))):
             alerting = True
             content = '- Loggrove 告警 -\n日志: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
                             '时间: %s:00 至 %s:59\n统计: %d 次\n公式: %s\n\n' % \
-                            (self.host, item['name'], self.filepath, item['match_regex'], min_strtime,
+                            (item['name'], self.host, self.filepath, item['match_regex'], min_strtime,
                              self.curr_strtime, sum(counts), item['expression'])
         return alerting, content
 
