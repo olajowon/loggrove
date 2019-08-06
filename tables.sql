@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `logfile`(
   `path` VARCHAR(1024) NOT NULL,
   `create_time` DATETIME,
   `comment` VARCHAR(200),
+  `monitor_choice` INT,
   PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -54,11 +55,11 @@ CREATE TABLE IF NOT EXISTS `logfile_host`(
 CREATE TABLE IF NOT EXISTS `monitor_item`(
   `id` INT UNSIGNED AUTO_INCREMENT,
   `logfile_id` INT NOT NULL,
-  `search_pattern` VARCHAR(200) NOT NULL,
-  `alert` TINYINT NOT NULL,
-  `check_interval` INT,
-  `trigger_format` VARCHAR(100),
-  `dingding_webhook` VARCHAR(500),
+  `match_regex` VARCHAR(200) NOT NULL,
+  `name` VARCHAR(200) NOT NULL,
+  `intervals` INT,
+  `expression` VARCHAR(100),
+  `webhook` VARCHAR(500),
   `create_time` DATETIME,
   `comment` VARCHAR(200),
   PRIMARY KEY ( `id` )

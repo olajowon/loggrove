@@ -83,6 +83,7 @@ function get_log_content(p){
                 $("#log_content").html(
                     '<div class="alert alert-danger">' +
                     '<i class="fa fa-times"></i> ' + response_data["msg"] +
+                    '<p>'+ response_data["detail"] +'</p>' +
                     '</div>'
                 )
             }else{

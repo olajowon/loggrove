@@ -251,7 +251,7 @@
                 <div class="row">
                     <div class="col-sm-12 col-lg-12">
                         <blockquote>
-                            <span>匹配模式</span>
+                            <span>匹配正则</span>
                             <small>
                                 <cite>用于日志阅读、轮询 高亮匹配，日志 监控、图表、告警 匹配的字符；</cite>
                             </small>
@@ -287,13 +287,12 @@
                                 <cite>判断<b>检查区间</b>内的匹配总数是否满足此公式，满足则进行告警</cite>
                             </small>
                             <small>
-                                <cite>格式要求：n1&lt;{}、n1&lt;={}、{}&lt;n1、{}&lt;=n1、n1&lt;{}&lt;n2、n1&lt;={}&lt;n2、
-                                    n1&lt;{}&lt;=n2、n1&lt;={}&lt;=n2 等，其中n1、n2 为自定义正整数
+                                <cite>格式要求：n1&lt;{}、{}&lt;n1、n1&lt;{}&lt;n2 等，其中n1、n2 为自定义正整数
                                 </cite>
                             </small>
-                            <span>钉钉webhook</span>
+                            <span>Webhook</span>
                             <small>
-                                <cite>钉钉小机器人的消息推送https地址，钉钉群组-群机器人-自定义webhook</cite>
+                                <cite>消息推送https地址，默认支持钉钉Webhook，钉钉群组-群机器人-自定义webhook</cite>
                             </small>
                              <small>
                                 <cite>格式要求：https://...</cite>
@@ -317,6 +316,14 @@
 <script src="{{ static_url('js/chart.js') }}"></script>
 <script>
     $(function(){
+        function hostFormatter(value, row) {
+            if(value.length > 20){
+                return value.slice(0, 20) + "..."
+            }else{
+                return value
+            }
+        }
+
         $('#logfile_table').bootstrapTable({
             locale: language,
             columns: [{
@@ -331,6 +338,7 @@
                 field: 'host',
                 title: _("Host"),
                 sortable: true,
+                formatter: hostFormatter
             }, {
                 field: 'path',
                 title: _("Path"),

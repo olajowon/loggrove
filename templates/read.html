@@ -37,7 +37,7 @@
                                         <script>document.write(_("Logfile"))</script>
                                         *</label>
                                     <input type="text" name="logfile" class="form-control"
-                                           placeholder="日志文件（支持按名称、主机、路径、备注模糊查找）" autocomplete="off"
+                                           autocomplete="off"
                                            data-provide="typeahead">
                                     <span name="logfile_error" class="error_text"></span>
                                 </div>
@@ -46,7 +46,6 @@
                                         <script>document.write(_("Host"))</script>
                                         *</label>
                                     <select class="form-control selectpicker" name="host" data-live-search="true">
-                                        <option value=""> 请先选择日志文件 </option>
                                     </select>
                                     <span name="host_error" class="error_text"></span>
                                 </div>
@@ -57,7 +56,6 @@
                                         <script>document.write(_("Path"))</script>
                                         *</label>
                                     <select class="form-control selectpicker" name="path" data-live-search="true">
-                                        <option value=""> 请先选择主机地址 </option>
                                     </select>
                                     <span name="path_error" class="error_text"></span>
                                 </div>
@@ -131,6 +129,10 @@
 {% end %}
 {% block body_js %}
 <script>
+    $("input[name='logfile']").attr("placeholder", _("Logfile: name、path、comment ambiguity search"))
+    $("select[name='host']").html('<option value=""> '+ _('Choose logfile first') +' </option>')
+    $("select[name='path']").html('<option value=""> '+ _('Choose host first') +' </option>')
+
     $("input[name='logfile']").typeahead({
         delay: 500,
         autoSelect: false,
@@ -162,11 +164,14 @@
         selectOnBlur: false,
         changeInputOnSelect: true,
         source: function (search, process) {
-            var param = {logfile: $("input[name='logfile']").val(), match: search};
-            $.get('/match_patterns/', param, function (response_data) {
-                var data = jQuery.parseJSON(response_data).data;
-                process(data);
-            });
+            var logfile = $("input[name='logfile']").val()
+            if (logfile){
+                var param = {logfile: $("input[name='logfile']").val(), match: search};
+                $.get('/match_regexs/', param, function (response_data) {
+                    var data = jQuery.parseJSON(response_data).data;
+                    process(data);
+                });
+            }
         },
         matcher: function (items) {
             return items;
@@ -191,11 +196,11 @@
 
             var logfile = $("input[name='logfile']").val()
 
-            $("#logfile_form select[name='path']").html('<option value=""> 请先选择主机地址 </option>')
+            $("#logfile_form select[name='path']").html('<option value=""> '+ _('Choose host first') +' </option>')
             $("#logfile_form select[name='path']").selectpicker('refresh');
             $("#logfile_form select[name='path']").selectpicker('render');
             if (!logfile) {
-                $("#logfile_form select[name='host']").html('<option value=""> 请先选择日志文件 </option>')
+                $("#logfile_form select[name='host']").html('<option value=""> '+ _('Choose logfile first') +' </option>')
                 $("#logfile_form select[name='host']").selectpicker('refresh');
                 $("#logfile_form select[name='host']").selectpicker('render');
             } else {
@@ -238,7 +243,7 @@
             var host = $(this).val()
             var logfile = $("input[name='logfile']").val()
             if (!host) {
-                $("#logfile_form select[name='path']").html('<option value=""> 请先选择主机地址 </option>')
+                $("#logfile_form select[name='path']").html('<option value=""> '+ _('Choose host first') +' </option>')
                 $("#logfile_form select[name='path']").selectpicker('refresh');
                 $("#logfile_form select[name='path']").selectpicker('render');
             } else {

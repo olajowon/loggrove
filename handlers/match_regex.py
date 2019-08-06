@@ -1,8 +1,7 @@
 # Created by zhouwang on 2019/7/17.
 
 from .base import BaseRequestHandler, permission
-import datetime
-import re
+import pymysql
 import logging
 
 logger = logging.getLogger()
@@ -16,7 +15,10 @@ def get_valid(func):
         if not logfile:
             error['logfile'] = 'Required'
         else:
-            select_sql = 'SELECT * FROM logfile WHERE name="%s"' % logfile
+            if logfile.isnumeric():
+                select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile))
+            else:
+                select_sql = 'SELECT * FROM logfile WHERE name="%s"' % pymysql.escape_string(logfile)
             self.cursor.execute(select_sql)
             logfile = self.cursor.dictfetchone()
             if not logfile:
@@ -26,7 +28,7 @@ def get_valid(func):
             self._write(dict(code=400, msg='Bad GET param', error=error))
             return
 
-        self.cleaned_param = dict(
+        self.reqdata = dict(
             logfile=logfile,
             match=match,
         )
@@ -39,13 +41,13 @@ class Handler(BaseRequestHandler):
     @permission()
     @get_valid
     def get(self, *args, **kwargs):
-        self.select_sql = 'SELECT search_pattern FROM monitor_item WHERE logfile_id=%d' % \
-                          self.cleaned_param['logfile']['id']
-        self.select_sql += (' AND search_pattern like "%%%s%%"' % self.cleaned_param['match']
-                            if self.cleaned_param['match'] else '')
+        self.select_sql = 'SELECT match_regex FROM monitor_item WHERE logfile_id=%d' % \
+                          self.reqdata['logfile']['id']
+        self.select_sql += (' AND search_pattern like "%%%s%%"' % self.reqdata['match']
+                            if self.reqdata['match'] else '')
 
         self.cursor.execute(self.select_sql)
         results = self.cursor.fetchall()
-        match_pattern = [result[0] for result in results]
-        response_data = dict(code=200, msg='Query Successful', data=match_pattern)
+        match_regex = [result[0] for result in results]
+        response_data = dict(code=200, msg='Query Successful', data=match_regex)
         return self._write(response_data)

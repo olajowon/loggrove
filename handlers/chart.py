@@ -1,60 +1,41 @@
 # Created by zhouwang on 2018/6/23.
 
 from .base import BaseRequestHandler, permission
+import tornado
 import datetime
 import time
+import json
+import logging
+
+logger = logging.getLogger()
 
 
-def get_valid(func):
+def query_valid(func):
     def _wrapper(self):
         error = {}
-        self.mode = self.get_argument('mode', 'interval')
-        self.logfile_id = self.get_argument('logfile_id', '')
-        self.monitor_item_ids = [item_id for item_id in self.get_arguments('monitor_item_id') if item_id]
+        self.mode = self.get_argument('mode', '')
+        self.items = self.get_argument('items', '[]')
         now = datetime.datetime.now()
+
         if self.mode == 'interval':
             self.begin_time = self.get_argument('begin_time', '')
             self.end_time = self.get_argument('end_time', '')
-
             if not self.begin_time or not self.end_time:
                 self.end_time = now.strftime('%Y-%m-%d %H:%M')
                 self.begin_time = (now - datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M')
         elif self.mode == 'contrast':
-            self.dates = [date for date in self.get_arguments('date') if date] or [now.strftime('%Y-%m-%d')]
-
-        if not self.logfile_id:
-            error['logfile_id'] = 'Required'
+            self.date = self.get_argument('date', '')
+            self.dates = [date for date in self.date.split(',') if date] or [now.strftime('%Y-%m-%d')]
         else:
-            select_sql = 'SELECT id,path FROM logfile WHERE id="%s"' % self.logfile_id
-            count = self.cursor.execute(select_sql)
-            if count:
-                self.logfile_id, self.logfile_path = self.cursor.fetchone()
-                if self.monitor_item_ids:
-                    if '0' in self.monitor_item_ids and len(self.monitor_item_ids) == 1:
-                        self.monitor_items = ((0, 'total'),)
-                    else:
-                        select_sql = 'SELECT id, search_pattern FROM monitor_item ' \
-                                     'WHERE logfile_id="%s" AND id IN (%s)' % \
-                                     (self.logfile_id, ','.join(self.monitor_item_ids))
-                        self.cursor.execute(select_sql)
-                        self.monitor_items = self.cursor.fetchall()
+            error['mode'] = 'Invalid'
 
-                        if '0' in self.monitor_item_ids:
-                            self.monitor_items = ((0, 'total'),) + self.monitor_items
-                        elif not self.monitor_items:
-                            error['monitor_item_id'] = 'Invalid'
-                else:
-                    select_sql = 'SELECT id, search_pattern FROM monitor_item WHERE logfile_id="%s"' % \
-                                 self.logfile_id
-                    self.cursor.execute(select_sql)
-                    self.monitor_items = ((0, 'total'),) + self.cursor.fetchall()
-
-            else:
-                error['logfile_id'] = 'Not exist'
+        try:
+            self.items = json.loads(self.items)
+        except:
+            error['items'] = 'Must JSON'
 
         if error:
-            self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})
-            return
+            return dict(code=400, msg='Bad POST data', error=error)
         return func(self)
     return _wrapper
 
@@ -63,6 +44,7 @@ class Handler(BaseRequestHandler):
     def __init__(self, *args, **kwargs):
         super(Handler, self).__init__(*args, **kwargs)
         self.mode = None
+        self.items = None
         self.logfile_id = None
         self.logfile_path = None
         self.begin_time = None
@@ -70,48 +52,87 @@ class Handler(BaseRequestHandler):
         self.dates = None
         self.monitor_items = []
 
+    def get_interval_series(self, item):
+        logfile, host, monitor_item = item.get('logfile'), item.get('host'), item.get('monitor_item')
+        try:
+            select_arg = (logfile, monitor_item, host, self.begin_time, self.end_time)
+            self.cursor.execute(self.select_interval_sql, select_arg)
+            name = '%s-%s-%s' % (logfile, host, monitor_item)
+            data = self.cursor.fetchall()
+        except Exception as e:
+            logging.error('Get interval series: %s' % str(e))
+            name = '%s-%s-%s: %s' % (logfile, host, monitor_item, str(e))
+            data = []
+        return dict(name=name, data=data)
+
+    def get_contrast_series(self, item, date):
+        logfile, host, monitor_item = item.get('logfile'), item.get('host'), item.get('monitor_item')
+        try:
+            select_arg = (logfile, monitor_item, host, '%s 00:00' % date, '%s 23:59' % date)
+            self.cursor.execute(self.select_contrast_sql, select_arg)
+            name = '%s-%s-%s-%s' % (date, logfile, host, monitor_item)
+            data = self.cursor.fetchall()
+        except Exception as e:
+            logging.error('Get contrast series: %s' % str(e))
+            name = '%s-%s-%s-%s: %s' % (date, logfile, host, monitor_item, str(e))
+            data = []
+        return dict(name=name, data=data)
+
     @permission()
-    @get_valid
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
     def get(self):
-        data = []
+        response = yield tornado.gen.Task(self.query)
+        self._write(response)
+
+    @tornado.gen.coroutine
+    @query_valid
+    def query(self):
         series = []
         min_mktime, min_mktime = None, None
         if self.mode == 'interval':
             min_mktime = time.mktime(time.strptime(self.begin_time, '%Y-%m-%d %H:%M')) * 1000
             max_mktime = time.mktime(time.strptime(self.end_time, '%Y-%m-%d %H:%M')) * 1000
-
-            for item_id, search_pattern in self.monitor_items:
-                select_sql = '''
-                    SELECT
-                      UNIX_TIMESTAMP(count_time) * 1000,
-                      count
-                    FROM    
-                      monitor_count
-                    WHERE 
-                      count_time>='%s' AND count_time<='%s' AND monitor_item_id='%s' AND logfile_id='%d'
-                    ORDER BY count_time
-                ''' % (self.begin_time, self.end_time, item_id, self.logfile_id)
-                self.cursor.execute(select_sql)
-                results = self.cursor.fetchall()
-                series.append({'name': search_pattern, 'data': results})
+            for item in self.items:
+                series.append(self.get_interval_series(item))
         elif self.mode == 'contrast':
-            min_mktime = time.mktime(time.strptime('2000-1-1 00:00', '%Y-%m-%d %H:%M')) * 1000
-            max_mktime = time.mktime(time.strptime('2000-1-1 23:59', '%Y-%m-%d %H:%M')) * 1000
+            min_mktime = time.mktime(time.strptime('1970-1-1 00:00', '%Y-%m-%d %H:%M')) * 1000
+            max_mktime = time.mktime(time.strptime('1970-1-1 23:59', '%Y-%m-%d %H:%M')) * 1000
             for date in self.dates:
-                for item_id, search_pattern in self.monitor_items:
-                    select_sql = '''
-                        SELECT
-                          UNIX_TIMESTAMP(date_format(count_time, "2000-1-1 %%H:%%i:%%s")) * 1000,
-                          count
-                        FROM    
-                          monitor_count
-                        WHERE 
-                          count_time>='%s' AND count_time<='%s' AND monitor_item_id='%s' AND logfile_id='%d'
-                        ORDER BY count_time
-                    ''' % ('%s 00:00' % date, '%s 23:59' % date, item_id, self.logfile_id)
-                    self.cursor.execute(select_sql)
-                    results = self.cursor.fetchall()
-                    series.append({'name': '%s %s' % (date, search_pattern), 'data': results})
+                for item in self.items:
+                    series.append(self.get_contrast_series(item, date))
 
-        data.append({'series': series, 'xAxis': {'min': min_mktime, 'max': max_mktime}})
-        self._write({'code': 200, 'msg': 'Query successful', 'data': data})
+        data = dict(series=series, xAxis=dict(min=min_mktime, max=max_mktime))
+        return dict(code=200, msg='Query successful', data=data)
+
+    select_interval_sql = '''
+        SELECT
+          UNIX_TIMESTAMP(t3.count_time) * 1000,
+          t3.count
+        FROM
+          logfile as t1, monitor_item as t2, monitor_count as t3
+        WHERE 
+          t1.name=%s AND 
+          t2.logfile_id=t1.id AND 
+          t2.name=%s AND
+          t3.monitor_item_id=t2.id AND 
+          t3.host=%s AND
+          t3.count_time>=%s AND
+          t3.count_time<=%s
+    '''
+
+    select_contrast_sql = '''
+        SELECT
+          UNIX_TIMESTAMP(date_format(t3.count_time, "1970-1-1 %%H:%%i:%%s")) * 1000,
+          t3.count
+        FROM
+          logfile as t1, monitor_item as t2, monitor_count as t3
+        WHERE 
+          t1.name=%s AND 
+          t2.logfile_id=t1.id AND 
+          t2.name=%s AND
+          t3.monitor_item_id=t2.id AND 
+          t3.host=%s AND
+          t3.count_time>=%s AND
+          t3.count_time<=%s
+    '''

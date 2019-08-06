@@ -132,7 +132,8 @@ class InitHandler():
 
     def dictfetchone(self):
         desc = self.cursor.description
-        return dict(zip([col[0] for col in desc], self.cursor.fetchone()))
+        row = self.cursor.fetchone()
+        return dict(zip([col[0] for col in desc], row)) if row else row
 
     def transaction(self, atomic=False):
         return Transaction(self.db, self.cursor, atomic)

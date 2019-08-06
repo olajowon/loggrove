@@ -30,10 +30,10 @@ def get_valid(func):
             error['host'] = 'Not exist'
 
         if error:
-            self._write({'code': 400, 'msg': 'Bad GET param', 'error': error})
+            self._write(dict(code=400, msg='Bad GET param', error=error))
             return
 
-        self.cleaned_param = dict(
+        self.reqdata = dict(
             logfile=logfile,
             path=logfile.get('path'),
             host=host
@@ -42,9 +42,10 @@ def get_valid(func):
         return func(self)
     return _wrapper
 
+
 def ssh_conn(func):
     def _wrapper(self):
-        host = self.cleaned_param.get('host')
+        host = self.reqdata.get('host')
         if host not in ('localhost', '127.0.0.1'):
             try:
                 self.ssh_client = paramiko.SSHClient()
@@ -69,24 +70,30 @@ class Handler(BaseRequestHandler):
     @get_valid
     @ssh_conn
     def get(self):
-        self.host = self.cleaned_param.get('host')
-        self.path = self.cleaned_param.get('path')
+        self.host = self.reqdata.get('host')
+        self.path = self.reqdata.get('path')
 
-        dirname, basename = os.path.dirname(self.path), os.path.basename(self.path)
-        cmd = 'find %s -name "%s" -type f' % (dirname, basename)
+        cmd = 'ls %s | sort' % self.path
 
         if self.host in ('localhost', '127.0.0.1'):
             status, output = subprocess.getstatusoutput(cmd)
         else:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
             status = stdout.channel.recv_exit_status()
-            output = str(stdout.read(), encoding='utf-8') if status == 0 else str(stderr.read(), encoding='utf-8')
+            out, err = str(stdout.read(), encoding='utf-8'), str(stderr.read(), encoding='utf-8')
+            if status == 0:
+                if err and not out:
+                    status, output = 1, err
+                else:
+                    output = out
+            else:
+                output = err
 
         if status == 0:
             paths = output.split('\n')
             paths = sorted(list(set([path for path in paths if path])))
             self._write(dict(code=200, msg='Query successful', data=paths))
         else:
-            self._write(dict(code=500, msg='Query failed', detail=output))
+            self._write(dict(code=500, msg='Query failed', detail='Cmd: %s, Output: %s' % (cmd, output)))
 
 

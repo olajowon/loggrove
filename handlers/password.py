@@ -12,11 +12,11 @@ def reset_valid(func):
         count = self.cursor.execute(select_sql)
 
         if not count:
-            return {'code': 404, 'msg': 'Reset user not found'}
+            return dict(code=404, msg='Reset user not found')
         else:
             username = self.cursor.dictfetchone().get('username')
             if username != 'admin' and self.application.settings.get('ldap').get('auth') == True:
-                return {'code': 403, 'msg': 'Authentication based no LDAP, Prohibit reset password'}
+                return dict(code=403, msg='Authentication based no LDAP, Prohibit reset password')
 
         error = {}
         password = self.get_argument('password', '')
@@ -26,11 +26,9 @@ def reset_valid(func):
             error['password'] = 'Must be more than 6 characters'
 
         if error:
-            return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
+            return dict(code=400, msg='Bad PUT param', error=error)
 
-        self.reqdata = {
-            'password': password
-        }
+        self.reqdata = dict(password=password)
         return func(self, pk)
 
     return _wrapper
@@ -39,7 +37,7 @@ def reset_valid(func):
 def change_valid(func):
     def _wrapper(self):
         if self.application.settings.get('ldap').get('auth') == True and self.requser.get('username') != 'admin':
-            return {'code': 403, 'msg': 'Authentication based no LDAP, Prohibit change password'}
+            return dict(code=403, msg='Authentication based no LDAP, Prohibit change password')
 
         error = {}
         old_password = self.get_argument('old_password', '')
@@ -56,11 +54,10 @@ def change_valid(func):
             error['new_password'] = 'New password cannot be the same as the old'
 
         if error:
-            return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
+            return dict(code=400, msg='Bad PUT param', error=error)
 
-        self.reqdata = {
-            'password': new_password
-        }
+        self.reqdata = dict(password=new_password)
+
         return func(self)
 
     return _wrapper
@@ -74,22 +71,17 @@ class ResetHandler(BaseRequestHandler):
 
     @reset_valid
     def _reset(self, pk):
-        update_sql = '''
-            UPDATE 
-              user 
-            SET 
-              password="%s"
-            WHERE 
-              id="%d"
-        ''' % (utils.make_password(self.reqdata['password']), pk)
         try:
-            self.cursor.execute(update_sql)
+            update_arg = (utils.make_password(self.reqdata['password']), pk)
+            with self.transaction():
+                self.cursor.execute(self.update_sql, update_arg)
         except Exception as e:
-            self.db.rollback()
             logger.error('Reset password failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Reset failed'}
+            return dict(code=500, msg='Reset failed')
         else:
-            return {'code': 200, 'msg': 'Reset successful', 'data': {'id': pk}}
+            return dict(code=200, msg='Reset successful', data={'id': pk})
+
+    update_sql = 'UPDATE user SET password=%s WHERE id=%s'
 
 
 class Handler(BaseRequestHandler):
@@ -100,20 +92,15 @@ class Handler(BaseRequestHandler):
 
     @change_valid
     def _change(self):
-        update_sql = '''
-            UPDATE 
-              user 
-            SET 
-              password="%s"
-            WHERE 
-              id="%d"
-        ''' % (utils.make_password(self.reqdata['password']), self.requser.get('id'))
         try:
-            self.cursor.execute(update_sql)
+            update_arg = (utils.make_password(self.reqdata['password']), self.requser.get('id'))
+            with self.transaction():
+                self.cursor.execute(self.update_sql, update_arg)
         except Exception as e:
-            self.db.rollback()
             logger.error('Change password failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Change failed'}
+            return dict(code=500, msg='Change failed')
         else:
             self.requser['password'] = utils.make_password(self.reqdata['password'])
-            return {'code': 200, 'msg': 'Change successful', 'data': {'id': self.requser.get('id')}}
+            return dict(code=200, msg='Change successful', data={'id': self.requser.get('id')})
+
+    update_sql = 'UPDATE user SET password=%s WHERE id=%s'

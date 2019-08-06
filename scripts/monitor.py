@@ -1,116 +1,233 @@
-# Created by zhouwang on 2018/8/15.
-# Render on 2018/09/11
-
-'''
-说明:
-    这个脚本是用来对 Loggrove 录入的日志文件进行实时统计、监控、告警的，脚本执行采用古典又是最稳定的crontab；
-    在 Loggrove 添加的所有主机都要进行部署这一脚本，并添加执行任务到crontab（loggrove本地主机会在执行build.py的时候程序添加监控任务）；
-    部署使用前，请检查该脚本的MYSQL_DB配置是否可以在所有的日志主机上正确连接；
-
-Explain:
-This script is used for real-time statistics, monitoring and alarm of log files entered by Loggroup. The script is
-executed by crontab;
-All hosts added to Loggroup deploy this script and add execution tasks to crontab (the loggroup local host adds
-monitoring tasks while executing build.py);
-Before deploying, check that the script's MYSQL_DB configuration is correctly connected on all log hosts.
-
-crontab:
-    * * * * * /usr/bin/python /path/monitor.py <HOST> /tmp/loggrove_monitor.log # loggrove_monitor
-'''
-
-# loggrove MySQL db
-MYSQL_DB = {
-    'host': 'localhost',
-    'port': 3306,
-    'user': 'root',
-    'password': '123456',
-    'db': 'loggrove',
-    'charset': 'utf8',
-    'autocommit': True,
-}
-
-import time
-import pymysql
-import threading
-import os
-import re
-import traceback
+# -*- coding: utf-8 -*-
+# Created by zhouwang on 2019/7/26.
+from apscheduler.schedulers.background import BackgroundScheduler
+from queue import Queue
 import requests
+import threading
+import time
+import os
+import glob
+import re
 import json
-import sys
-if len(sys.argv) != 2:
-    print('Argv is Bad!')
-    exit()
+import sys, getopt
+import logging
 
-# HOST @ Loggrove
-HOST = sys.argv[1].strip()
+logging.basicConfig(
+    filename='/tmp/loggrove_monitor.log',
+    filemode='w',
+    format='{"datetime":"%(asctime)s", "lineno":"%(lineno)d", "name":"%(name)s", '
+           '"level":"%(levelname)s", "message":"%(message)s"}',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    level=logging.INFO
+)
 
-def get_logfiles(cursor):
-    select_sql = 'SELECT id, path, host FROM logfile WHERE host="%s"' % HOST
-    cursor.execute(select_sql)
-    results = cursor.fetchall()
-    return results
+HOST = None
+SERVER = None
+LOGFILES = []
+POSITION_MAP = {}
+REPORT_QUEUE = Queue()
+ALERTING_QUEUE = Queue()
 
-thread_lock = threading.Lock()
-class MonitorCount(threading.Thread):
-    def __init__(self, conn, cursor, file, str_time, mk_time, begin_time):
+
+def usage():
+    print('''
+    Usage:
+        -s --server Loggrove服务器HTTP地址， 如：http://loggrove
+        -h --host   主机地址，与Loggrove录入的主机地址一致，如：localhost
+        --help      帮助
+    ''')
+
+
+def make_logfiles():
+    ''' 从loggrove 更新日志 '''
+    global LOGFILES
+    params = {'host': HOST}
+    url = '%shost_logfiles/' % SERVER if SERVER.endswith('/') else '%s/host_logfiles/' % SERVER
+    while True:
+        try:
+            resp = requests.get(url, params=params)
+            resp.raise_for_status()
+            resp_json = resp.json()
+            logfiles = resp_json.get('data')
+            for logfile in logfiles:
+                paths = glob.glob(logfile['path'])
+                paths = [path for path in paths if os.path.isfile(path)]
+                monitor_choice = logfile['monitor_choice']
+                logfile['path'] = sorted(paths)[monitor_choice] if paths else ''
+            LOGFILES = logfiles
+        except Exception as e:
+            logging.error('make_logfiles error, %s' % str(e))
+        else:
+            logging.info('make_logfiles successful')
+        time.sleep(60)
+
+
+def send_alert():
+    ''' 发送报警 '''
+    while True:
+        if ALERTING_QUEUE.empty() is False:
+            webhook, content = ALERTING_QUEUE.get()
+            try:
+                payload = {
+                    'msgtype': 'text',
+                    'text': {
+                        'content': content
+                    },
+                    'at': {
+                        'isAtAll': True
+                    }
+                }
+                requests.post(
+                    webhook,
+                    data=json.dumps(payload),
+                    headers={'content-type': 'application/json'}
+                )
+            except Exception as e:
+                logging.error('send_alert error, %s' % (str(e)))
+            else:
+                logging.info('send_alert successful')
+        else:
+            time.sleep(5)
+
+
+def monitor_report():
+    ''' 上报至loggrove '''
+    url = '%smonitor_report/' % SERVER if SERVER.endswith('/') else '%s/monitor_report/' % SERVER
+    while True:
+        try:
+            counts = []
+            while not REPORT_QUEUE.empty():
+                fileid, count_map, strtime = REPORT_QUEUE.get()
+                for itemid, count in count_map.items():
+                    counts.append([fileid, HOST, itemid, count, strtime])
+            data = dict(host=HOST, counts=json.dumps(counts))
+            resp = requests.post(url, data=data)
+            resp.raise_for_status()
+        except Exception as e:
+            logging.error('monitor_report error, %s' % str(e))
+        else:
+            logging.info('monitor_report successful')
+        time.sleep(30)
+
+
+class Monitor(threading.Thread):
+    def __init__(self, logfile, begin_time):
         threading.Thread.__init__(self)
-        self.fileid = file[0]
-        self.filepath = file[1]
-        self.host = file[2]
-        self.conn = conn
-        self.cursor = cursor
-        self.str_time = str_time
-        self.mk_time = mk_time
-        self.begin_time = begin_time
-        self.counts = {0: 0}
-        self.alert_items = []
+        self.fileid = logfile['id']
+        self.filename = logfile['name']
+        self.filepath = logfile['path']
+        self.monitor_items = logfile['monitor_items']
+        self.curr_time = (begin_time // 60) * 60
+        self.curr_strtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.curr_time))
+        self.host = HOST
 
     def run(self):
-        open_position = os.path.getsize(self.filepath)
-        time.sleep(60 - (time.time() - self.begin_time))
-        end_position = os.path.getsize(self.filepath)
-        begin_position = self.get_begin_position(open_position, end_position)
-        monitor_items = self.get_monitor_items()
-        print('%s, %s, Begin positon: %d' % (self.str_time, self.filepath, begin_position))
-        print('%s, %s, End positon: %s' % (self.str_time, self.filepath, end_position))
-        for item in monitor_items:
-            self.counts[item[0]] = 0
-            if item[2] == 1 and (self.mk_time+60)%(item[3]*60) == 0:
-                self.alert_items.append(item)
+        try:
+            open_position = os.path.getsize(self.filepath)  # 打开时的位置
+            time.sleep(time.time() - self.curr_time)  # 等待日志经过一分钟
+            end_position = os.path.getsize(self.filepath)  # 一分钟后的日志位置
+            begin_position = self.get_begin_position(open_position, end_position)  # 开始读取的位置
 
-        with open(self.filepath) as file:
-            file.seek(begin_position)
-            while True:
-                line = file.readline()
-                if line:
-                    self.counts[0] += 1
-                    for item in monitor_items:
-                        if re.search(item[1], line):
-                            self.counts[item[0]] += 1
-                if file.tell() >= end_position:
-                    break
-        print('%s, %s, Counts: %s' % (self.str_time, self.filepath, self.counts))
-        self.insert_monitor_count()
+            logging.info('Monitor run, %s, %s, %s, [%s-%s]' %
+                         (self.curr_strtime, self.filename, self.filepath, begin_position, end_position))
 
-        print('%s, %s, Alert items: %s' % (self.str_time, self.filepath, self.alert_items))
-        if self.alert_items:
-            self.send_alert()
+            # 统计匹配
+            count_map = self.make_count_map()
+            with open(self.filepath) as file:
+                file.seek(begin_position)
+                while file.tell() < end_position:
+                    line = file.readline()
+                    if line:
+                        for item in self.monitor_items:
+                            if re.search(item['match_regex'], line):
+                                count_map[item['id']] += 1
+
+            # put 到上报队列
+            REPORT_QUEUE.put((self.fileid, count_map, self.curr_strtime))
+
+            # 更新&存储 监控项的最近1500分钟数据
+            monitor_item_counts = {}
+            for itemid, count in count_map.items():
+                counts = self.load_counts(self.fileid, itemid)
+                counts.append([self.curr_time, count])
+                counts = counts[-1500:]
+                monitor_item_counts[itemid] = counts
+                self.save_counts(self.fileid, itemid, counts)
+
+            # 检查报警项 & put到报警队列
+            alert_items = self.make_alert_items()
+            for item in alert_items:
+                min_time = self.curr_time - item['intervals'] * 60 + 60
+                interval_counts = monitor_item_counts[item['id']][-(item['intervals']+5):]
+                counts = [count[1] for count in interval_counts if count[0] >= min_time and count[0] <= self.curr_time]
+                alerting, content = self.check_alerting(item, counts, min_time)
+                if alerting:
+                    ALERTING_QUEUE.put((item['webhook'], content))
+        except Exception as e:
+            logging.error('Monitor error, %s, %s, %s, %s' % (self.curr_strtime, self.filename, self.filepath, str(e)))
+        else:
+            logging.info('Monitor end, %s, %s, %s, [%s-%s]' %
+                         (self.curr_strtime, self.filename, self.filepath, begin_position, end_position))
+
+    def check_alerting(self, item, counts, min_time):
+        ''' 检查报警项 '''
+        alerting = False
+        content = None
+        min_strtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(min_time))
+        if counts is []:
+            alerting = True
+            content = '- Loggrove 告警 -\n日志: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
+                            '时间: %s:00 至 %s:59\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
+                            (self.host, item['name'], self.filepath, item['match_regex'], min_strtime,
+                             self.curr_strtime, 'None')
+        elif eval(item['expression'].format(sum(counts))):
+            alerting = True
+            content = '- Loggrove 告警 -\n日志: %s\n主机: %s\n路径: %s\n匹配: %s\n' \
+                            '时间: %s:00 至 %s:59\n统计: %d 次\n公式: %s\n\n' % \
+                            (self.host, item['name'], self.filepath, item['match_regex'], min_strtime,
+                             self.curr_strtime, sum(counts), item['expression'])
+        return alerting, content
+
+    def make_count_map(self):
+        ''' 生成统计字典 '''
+        count_map = {}
+        for item in self.monitor_items:
+            count_map[item['id']] = 0
+        return count_map
+
+    def make_alert_items(self):
+        ''' 获取当前时间应该判断是否报警的监控项 '''
+        alert_items = []
+        for item in self.monitor_items:
+            if item['alert'] == 1 and (self.curr_time + 60) % (item['intervals'] * 60) == 0:
+                alert_items.append(item)
+        return alert_items
+
+    def load_counts(self, fileid, itemid):
+        ''' 从本地缓存文件获取历史统计 '''
+        with open('/tmp/%s_%s_count' % (fileid, itemid), 'a+') as f:
+            f.seek(0)
+            content = f.read()
+            try:
+                counts = json.loads(content) if content else []
+            except Exception as e:
+                logging.warning('load_counts error, %s' % str(e))
+                counts = []
+        return counts
+
+    def save_counts(self, fileid, itemid, counts):
+        ''' 保存最近统计值 '''
+        with open('/tmp/%s_%s_count' % (fileid, itemid), 'w+') as f:
+            f.write(json.dumps(counts))
 
     def get_begin_position(self, open_position, end_position):
-        with open('/tmp/%d_position' % self.fileid, 'a+') as pfile:
-            pfile.seek(0)
-            content = pfile.read()
-            previous_end_position = None
-            if content:
-                previous_end_position = int(content)
-                pfile.seek(0)
-                pfile.truncate()
-            pfile.write(str(end_position))
+        ''' 综合判断文件开始读取位置 '''
+        previous_end_position = POSITION_MAP.get(self.fileid)
+        POSITION_MAP[self.fileid] = end_position
 
         if end_position < open_position:
             begin_position = 0
-        elif previous_end_position == None:
+        elif previous_end_position is None:
             begin_position = open_position
         elif previous_end_position > end_position:
             begin_position = open_position
@@ -119,110 +236,55 @@ class MonitorCount(threading.Thread):
         return begin_position
 
 
-    def get_monitor_items(self):
-        select_sql = '''
-          SELECT id, search_pattern, alert, check_interval, trigger_format, dingding_webhook
-          FROM monitor_item 
-          WHERE logfile_id="%d"
-        ''' % self.fileid
-        thread_lock.acquire()
-        self.cursor.execute(select_sql)
-        results = self.cursor.fetchall()
-        thread_lock.release()
-        return results
+def monitor_basic():
+    begin_time = time.time()
+    threads = []
+    for logfile in LOGFILES:
+        threads.append(Monitor(logfile, begin_time))
 
+    for thread in threads:
+        thread.start()
 
-    def insert_monitor_count(self):
-        inserts = [(self.fileid, itemid, count, self.str_time) for itemid, count in self.counts.items()]
-        thread_lock.acquire()
-        try:
-            self.cursor.executemany(
-                'INSERT INTO monitor_count (logfile_id, monitor_item_id, count, count_time) '
-                'VALUES(%s, %s, %s, %s)',
-                inserts)
-        except Exception as e:
-            self.conn.rollback()
-            print('%s,  %s, Insert monitor count error, %s' % (self.str_time, self.filepath, str(e)))
-            print(traceback.format_exc())
-        else:
-            print('%s, %s, Insert monitor count success' % (self.str_time, self.filepath))
-        thread_lock.release()
+    for thread in threads:
+        thread.join()
 
-    def send_alert(self):
-        for item in self.alert_items:
-            min_str_time = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.mk_time-item[3]*60+60))
-            select_sql = '''
-                SELECT SUM(count) as count_sum
-                FROM monitor_count
-                WHERE logfile_id="%d"
-                AND monitor_item_id="%d"
-                AND count_time >="%s"
-            ''' % (self.fileid, item[0], min_str_time)
-            thread_lock.acquire()
-            self.cursor.execute(select_sql)
-            results = self.cursor.fetchall()
-            thread_lock.release()
-
-            if results:
-                alert_content = None
-                if results[0][0] is None:
-                    alert_content = '# Loggrove 告警\n主机: %s\n文件: %s\n匹配: %s\n' \
-                                    '时间: %s:00 至 %s:59\n统计: %d 次\n\n 注意: 统计异常 ！！！\n\n' % \
-                              (self.host, self.filepath, item[1], min_str_time,
-                               self.str_time, 'None')
-
-                elif eval(item[4].format(results[0][0])):
-                    alert_content = '# Loggrove 告警\n主机: %s\n文件: %s\n匹配: %s\n' \
-                                    '时间: %s:00 至 %s:59\n统计: %d 次\n公式: %s\n\n' % \
-                              (self.host, self.filepath, item[1], min_str_time,
-                               self.str_time, results[0][0], item[4])
-
-                if alert_content:
-                    try:
-                        payload = {
-                            'msgtype': 'text',
-                            'text': {
-                                'content': alert_content
-                            },
-                            'at': {
-                                'isAtAll': True
-                            }
-                        }
-                        requests.post(
-                            item[5],
-                            data=json.dumps(payload),
-                            headers={'content-type': 'application/json'}
-                        )
-                    except Exception as e:
-                        print('%s, %s, Send alert error, %s' % (self.str_time, self.filepath, str(e)))
-                        print(traceback.format_exc())
-                    else:
-                        print('%s, %s, Send alert success' % (self.str_time, self.filepath))
 
 def main():
-    begin_time = time.time()
-    conn = pymysql.connect(**MYSQL_DB)
-    cursor = conn.cursor()
-    try:
-        logfiles = get_logfiles(cursor)
-        str_time = time.strftime('%Y-%m-%d %H:%M', time.localtime())
-        mk_time = time.mktime(time.strptime(str_time, '%Y-%m-%d %H:%M'))
-        theads = []
-        for logfile in logfiles:
-            theads.append(MonitorCount(conn, cursor, logfile, str_time, mk_time, begin_time))
+    logging.info('Loggrove-Monitor running...')
+    print('Loggrove-Monitor running...')
+    make_logfile_thread = threading.Thread(target=make_logfiles, daemon=True)
+    make_logfile_thread.start()
+    send_alert_thread = threading.Thread(target=send_alert, daemon=True)
+    send_alert_thread.start()
+    monitor_report_thread = threading.Thread(target=monitor_report, daemon=True)
+    monitor_report_thread.start()
 
-        for thead in theads:
-            thead.start()
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(monitor_basic, 'cron', minute='*/1', max_instances=8)
+    scheduler.start()
 
-        for thead in theads:
-            thead.join()
-    except Exception as e:
-        print('%s, Main error, %s' % (str_time, str(e)))
-        print(traceback.format_exc())
-    finally:
-        cursor.close()
-        conn.close()
+    while send_alert_thread.is_alive() and make_logfile_thread.is_alive() and monitor_report_thread.is_alive():
+        time.sleep(5)
+    logging.info('Loggrove-Monitor exit...')
+    print('Loggrove-Monitor exit...')
 
+
+def opt():
+    global HOST, SERVER
+    opts, args = getopt.getopt(sys.argv[1:], 'h:s:', ['host=', 'server=', 'help'])
+    for op, value in opts:
+        if op in ('-h', '--host'):
+            HOST = value
+        elif op in ('-s', '--server'):
+            SERVER = value
+        elif op == "--help":
+            usage()
+            sys.exit()
+
+    if not HOST or not SERVER:
+        usage()
+        sys.exit()
 
 if __name__ == '__main__':
+    opt()
     main()

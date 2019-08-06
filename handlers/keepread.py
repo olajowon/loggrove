@@ -8,7 +8,6 @@ import time
 import json
 import paramiko
 import pymysql
-import subprocess
 from .base import BaseWebsocketHandler, permission
 import logging
 
@@ -29,7 +28,7 @@ def open_valid(func):
             if logfile.isnumeric():
                 select_sql = 'SELECT * FROM logfile WHERE id="%s"' % (int(logfile))
             else:
-                select_sql = 'SELECT * FROM logfile WHERE name="%s"' % logfile
+                select_sql = 'SELECT * FROM logfile WHERE name="%s"' % pymysql.escape_string(logfile)
 
             self.cursor.execute(select_sql)
             logfile_row = self.cursor.dictfetchone()
@@ -83,9 +82,7 @@ class Handler(BaseWebsocketHandler):
         self.ssh_client = None
         self.session = None
         self.transport = None
-        self.lock = None
         self.loop = None
-        self.read_contents = []
 
     registers = []
 
@@ -110,11 +107,8 @@ class Handler(BaseWebsocketHandler):
                 self.write_message(json.dumps(message))
                 self.close()
             else:
-                self.lock = threading.Lock()
-                rthread = threading.Thread(target=self.kpread_remote_logfile, daemon=True)
-                sthread = threading.Thread(target=self.kpsend_remote_logfile, daemon=True)
-                rthread.start()
-                sthread.start()
+                thread = threading.Thread(target=self.kpread_remote_logfile, daemon=True)
+                thread.start()
 
     def on_close(self):
         if self.ssh_client:
@@ -128,8 +122,8 @@ class Handler(BaseWebsocketHandler):
 
     def kpread_local_logfile(self):
         asyncio.set_event_loop(self.loop)
-        with open(self.logfile.get('path')) as logfile:
-            try:
+        try:
+            with open(self.path) as logfile:
                 logfile.seek(0, 2)
                 keep_lines = 0
                 while self.ws_connection:
@@ -143,35 +137,6 @@ class Handler(BaseWebsocketHandler):
                     if self.ws_connection:
                         self.write_message(json.dumps(message))
                     time.sleep(3)
-            except Exception as e:
-                logging.error('Keepread logfile failed: %s' % str(e))
-                if self.ws_connection:
-                    message = dict(code=500, msg='Keepread logfile failed', detail=str(e))
-                    self.write_message(json.dumps(message))
-            finally:
-                if self.ws_connection:
-                    self.close()
-        logger.info('Keepread logfile end')
-
-    def kpread_remote_logfile(self):
-        asyncio.set_event_loop(self.loop)
-        try:
-            grep = '| grep "%s"' % self.match if self.match else ''
-            cmd = 'tail -f %s %s' % (self.path, grep)
-            self.session.exec_command(cmd)
-            leftover = ''
-            while self.ws_connection and self.transport.is_active():
-                output = self.session.recv(1024).decode()
-                if len(output) == 0:
-                    break
-                else:
-                    output = leftover + output
-                    endindex = output.rfind('\n') + 1
-                    read_content, leftover = output[:endindex], output[endindex:]
-                    self.lock.acquire()
-                    self.read_contents += read_content.splitlines()
-                    self.lock.release()
-                time.sleep(0.5)
         except Exception as e:
             logging.error('Keepread logfile failed: %s' % str(e))
             if self.ws_connection:
@@ -182,29 +147,36 @@ class Handler(BaseWebsocketHandler):
                 self.close()
         logger.info('Keepread logfile end')
 
-    def kpsend_remote_logfile(self):
+    def kpread_remote_logfile(self):
         asyncio.set_event_loop(self.loop)
         try:
+            grep = '| grep "%s"' % self.match if self.match else ''
+            cmd = 'tail -f %s %s' % (self.path, grep)
+            self.session.exec_command(cmd)
+            leftover = ''
             keep_lines = 0
-            while self.ws_connection:
-                contents, lines = [], 0
-                if self.read_contents:
-                    self.lock.acquire()
-                    contents, self.read_contents = self.read_contents, []
-                    self.lock.release()
-                lines = len(contents)
-                keep_lines += lines
-                data = dict(contents=contents, lines=lines, keep_lines=keep_lines)
-                message = dict(code=0, msg='Keepread logfile successful', data=data)
-                if self.ws_connection:
-                    self.write_message(message)
-                time.sleep(3)
+            while self.ws_connection and self.transport.is_active():
+                output = self.session.recv(65535).decode()
+                if len(output) == 0:
+                    break
+                else:
+                    output = leftover + output
+                    endindex = output.rfind('\n') + 1
+                    read_content, leftover = output[:endindex], output[endindex:]
+                    contents = read_content.splitlines()
+                    lines = len(contents)
+                    keep_lines += lines
+                    data = dict(contents=contents, lines=lines, keep_lines=keep_lines)
+                    message = dict(code=0, msg='Keepread logfile successful', data=data)
+                    if self.ws_connection:
+                        self.write_message(message)
+                time.sleep(0.5)
         except Exception as e:
-            logging.error('Keepsend logfile failed: %s' % str(e))
+            logging.error('Keepread logfile failed: %s' % str(e))
             if self.ws_connection:
                 message = dict(code=500, msg='Keepread logfile failed', detail=str(e))
                 self.write_message(json.dumps(message))
         finally:
             if self.ws_connection:
                 self.close()
-        logger.info('Keepsend logfile end')
+        logger.info('Keepread logfile end')

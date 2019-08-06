@@ -21,6 +21,14 @@ function logfile_keepread(){
         form_obj.find("span[name='logfile_error']").text("Required")
         return false
     }
+    if(!host){
+        form_obj.find("span[name='host_error']").text("Required")
+        return false
+    }
+    if(!path){
+        form_obj.find("span[name='path_error']").text("Required")
+        return false
+    }
 
     $("#log_content_row").show()
 

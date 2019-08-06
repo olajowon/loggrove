@@ -194,12 +194,13 @@ function open_monitor_item_modal(logfile_id){
                 new_monitor_item_form(logfile_id)
                 var new_form = $("#monitorItemModal .modal-body .row .col-sm-12").find("form").last()
                 new_form.find("[name='id']").val(response_data["data"][i]["id"])
-                new_form.find("[name='search_pattern']").val(response_data["data"][i]["search_pattern"])
+                new_form.find("[name='name']").val(response_data["data"][i]["name"])
+                new_form.find("[name='match_regex']").val(response_data["data"][i]["match_regex"])
                 new_form.find("[name='logfile_id']").val(response_data["data"][i]["logfile_id"])
                 new_form.find("[name='crontab_cycle']").val(response_data["data"][i]["crontab_cycle"])
-                new_form.find("[name='check_interval']").val(response_data["data"][i]["check_interval"])
-                new_form.find("[name='trigger_format']").val(response_data["data"][i]["trigger_format"])
-                new_form.find("[name='dingding_webhook']").val(response_data["data"][i]["dingding_webhook"])
+                new_form.find("[name='intervals']").val(response_data["data"][i]["intervals"])
+                new_form.find("[name='expression']").val(response_data["data"][i]["expression"])
+                new_form.find("[name='webhook']").val(response_data["data"][i]["webhook"])
                 new_form.find("[name='comment']").val(response_data["data"][i]["comment"])
                 new_form.find("[name='alert']").val(response_data["data"][i]["alert"])
             }
@@ -345,13 +346,18 @@ function new_monitor_item_form(logfile_id){
                             '<input type="hidden" name="logfile_id" value="'+logfile_id+'">' +
                             '<input type="hidden" name="_xsrf" value="'+get_cookie('_xsrf')+'">' +
                             '<div class="form-group">' +
-                                '<div class="col-sm-6">' +
-                                    '<label>'+ _("Search pattern") +' *</label>' +
-                                    '<input class="form-control input-sm" name="search_pattern" placeholder="Regular pattern">' +
+                                '<div class="col-sm-4">' +
+                                    '<label>'+ _("Name") +' *</label>' +
+                                    '<input class="form-control input-sm" name="name" placeholder="Name">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
-                                '<div class="col-sm-6">' +
-                                    '<label>'+ _("Comment") +' *</label>' +
+                                '<div class="col-sm-4">' +
+                                    '<label>'+ _("Match") +' *</label>' +
+                                    '<input class="form-control input-sm" name="match_regex" placeholder="Regular pattern">' +
+                                    '<span class="error_text"></span>' +
+                                '</div>' +
+                                '<div class="col-sm-4">' +
+                                    '<label>'+ _("Comment") +'</label>' +
                                     '<input class="form-control input-sm" name="comment" placeholder="Comment">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
@@ -366,20 +372,20 @@ function new_monitor_item_form(logfile_id){
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                                 '<div class="col-sm-3">' +
-                                    '<label>'+ _("Check interval") +' (m)</label>' +
-                                    '<input class="form-control input-sm" type="number" name="check_interval" placeholder="Interval: number">' +
+                                    '<label>'+ _("Intervals") +' (m)</label>' +
+                                    '<input class="form-control input-sm" type="number" name="intervals" placeholder="Intervals: number">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                                 '<div class="col-sm-6">' +
-                                    '<label>'+ _("Trigger format") +'</label>' +
-                                    '<input class="form-control input-sm" type="text"  name="trigger_format" placeholder="Format: n1<{}<n2">' +
+                                    '<label>'+ _("Expression") +'</label>' +
+                                    '<input class="form-control input-sm" type="text"  name="expression" placeholder="Format: n1<{}<n2">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="form-group">' +
                                 '<div class="col-sm-12">' +
-                                    '<label>'+ _("Dingding webhook") +'</label>' +
-                                    '<input class="form-control input-sm" type="text" name="dingding_webhook" placeholder="Dingding webhook url">' +
+                                    '<label>'+ _("Webhook") +'</label>' +
+                                    '<input class="form-control input-sm" type="text" name="webhook" placeholder="Webhook">' +
                                     '<span class="error_text"></span>' +
                                 '</div>' +
                             '</div>' +

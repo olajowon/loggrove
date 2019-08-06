@@ -8,8 +8,9 @@
   vertical-align: middle;
   border-radius: 4px;
   max-width: 100%;
-  line-height: 22px;
+  line-height: 24px;
   cursor: text;
+  width: 100%;
 }
 .bootstrap-tagsinput input {
   border: none;

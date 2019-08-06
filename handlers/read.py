@@ -61,7 +61,7 @@ def get_valid(func):
             error['posit'] = 'Invalid posit'
 
         if error:
-            self._write({'code': 400, 'msg': 'Bad GET param', 'error': error})
+            self._write(dict(code=400, msg='Bad GET param', error=error))
             return
 
         self.match = match
@@ -85,7 +85,7 @@ def ssh_conn(func):
                 self.ssh_client.connect(self.host, **self.application.settings.get('ssh'))
             except Exception as e:
                 logger.error('Read logfile failed: %s' % str(e))
-                return {'code': 500, 'msg': 'Read logfile failed', 'detail': str(e)}
+                return dict(code=500, msg='Read logfile failed', detail=str(e))
         response = func(self)
         if self.ssh_client:
             self.ssh_client.close()
@@ -110,6 +110,7 @@ class Handler(BaseRequestHandler):
         self.contents = []
         self.total_pages = None
         self.tasks = []
+        self.task_errors = []
 
     @permission()
     @get_valid
@@ -125,7 +126,15 @@ class Handler(BaseRequestHandler):
         else:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
             status = stdout.channel.recv_exit_status()
-            output = str(stdout.read(), encoding='utf-8') if status == 0 else str(stderr.read(), encoding='utf-8')
+            out, err = str(stdout.read(), encoding='utf-8'), str(stderr.read(), encoding='utf-8')
+            if status == 0:
+                if err and not out:
+                    status, output = 1, err
+                else:
+                    output = out
+            else:
+                output = err
+
         return status, output
 
     @tornado.gen.coroutine
@@ -138,10 +147,13 @@ class Handler(BaseRequestHandler):
                 gevent.spawn(self.make_contents),
             ]
             gevent.joinall(self.tasks)
+            if self.task_errors:
+                raise Exception('; '.join(self.task_errors))
             self.make_total_pages()
         except Exception as e:
             logger.error('Read logfile failed: %s' % str(e))
             return dict(code=500, msg='Read failed', detail=str(e))
+
         data = dict(
             contents=self.contents,
             page=self.page if self.total_pages != 0 else 0,
@@ -162,16 +174,18 @@ class Handler(BaseRequestHandler):
             else:
                 read_cmd = 'tail -n +%d %s | head -n 1000' % (((self.page - 1) * 1000) + 1, self.path)
         status, output = self.command(read_cmd)
-        if status > 0 and output:
-            raise Exception('get contents error, %d, %s' % (status, output))
-        self.contents = output.splitlines()
+        if status != 0:
+            self.task_errors.append('get contents error, %d, %s' % (status, output))
+        else:
+            self.contents = output.splitlines()
 
     def make_total_lines(self):
         if self.page == 1:
             status, output = self.command('wc -l %s' % self.path)
             if status != 0:
-                raise Exception('get lines error, %d, %s' % (status, output))
-            self.total_lines = int(output.split()[0].strip())
+                self.task_errors.append('get lines error, %d, %s' % (status, output))
+            else:
+                self.total_lines = int(output.split()[0].strip())
 
     def make_match_lines(self):
         if self.page == 1 and not self.match:
@@ -181,8 +195,9 @@ class Handler(BaseRequestHandler):
         elif self.page == 1:
             status, output = self.command('grep -c "%s" %s' % (self.match, self.path))
             if status != 0 and status != 1:
-                raise Exception('get grep lines error, %d, %s' % (status, output))
-            self.match_lines = int(output.split()[0].strip()) if status == 0 else 0
+                self.task_errors.append('get grep lines error, %d, %s' % (status, output))
+            else:
+                self.match_lines = int(output.split()[0].strip()) if status == 0 else 0
 
     def make_total_pages(self):
         if self.page == 1 and self.clean == 'true':

@@ -11,59 +11,61 @@ logger = logging.getLogger()
 def argements_valid(handler, pk=None):
     error = {}
     logfile_id = handler.get_argument('logfile_id', '')
-    search_pattern = handler.get_argument('search_pattern', '')
+    name = handler.get_argument('name', '')
+    match_regex = handler.get_argument('match_regex', '')
     comment = handler.get_argument('comment', '')
     alert = handler.get_argument('alert', '2')
-    check_interval = handler.get_argument('check_interval', '0')
-    trigger_format = handler.get_argument('trigger_format', '')
-    dingding_webhook = handler.get_argument('dingding_webhook', '')
+    intervals = handler.get_argument('intervals', '0')
+    expression = handler.get_argument('expression', '')
+    webhook = handler.get_argument('webhook', '')
+
     if not logfile_id:
         error['logfile_id'] = 'Required'
 
-    if not search_pattern:
-        error['search_pattern'] = 'Required'
+    if not name:
+        error['name'] = 'Required'
+    else:
+        select_sql = 'SELECT id FROM monitor_item WHERE name="%s" and logfile_id="%s" %s' % \
+                     (name, logfile_id, 'and id!="%d"' % pk if pk else '')
+        count = handler.cursor.execute(select_sql)
+        if count:
+            error['name'] = 'Already existed'
+
+    if not match_regex:
+        error['match_regex'] = 'Required'
     else:
         try:
-            re.search(r'%s' % search_pattern, '')
+            re.search(r'%s' % match_regex, '')
         except:
-            error['search_pattern'] = 'Incorrect regular expression'
-        else:
-            select_sql = 'SELECT id FROM monitor_item WHERE search_pattern="%s" and logfile_id="%s" %s' % \
-                         (search_pattern, logfile_id, 'and id!="%d"' % pk if pk else '')
-            count = handler.cursor.execute(select_sql)
-            if count:
-                error['search_pattern'] = 'Already existed'
-
-    if not comment:
-        error['comment'] = 'Required'
+            error['match_regex'] = 'Incorrect regular expression'
 
     if alert != '1' and alert != '2':
         error['alert'] = 'Invalid'
     elif alert == '1':
-        if not check_interval:
-            error['check_interval'] = 'Required'
-        elif not check_interval.isnumeric():
-            error['check_interval'] = 'Must be integer'
-        elif int(check_interval) < 1:
-            error['check_interval'] = 'Must be greater than 0'
+        if not intervals:
+            error['intervals'] = 'Required'
+        elif not intervals.isnumeric():
+            error['intervals'] = 'Must be integer'
+        elif int(intervals) < 1:
+            error['intervals'] = 'Must be greater than 0'
 
-        if not trigger_format:
-            error['trigger_format'] = 'Required'
-        elif not (
-            re.match(r'^([0-9]+[<=])?{}([<=][1-9][0-9]*)?$', trigger_format) and (trigger_format.strip() != '{}')):
-            error['trigger_format'] = 'Incorrect format'
+        if not expression:
+            error['expression'] = 'Required'
+        elif not (re.match(r'^([0-9]+[<=])?{}([<=][1-9][0-9]*)?$', expression) and (expression.strip() != '{}')):
+            error['expression'] = 'Incorrect format'
 
-        if not dingding_webhook:
-            error['dingding_webhook'] = 'Required'
+        if not webhook:
+            error['webhook'] = 'Required'
 
     data = {
         'logfile_id': logfile_id,
-        'search_pattern': search_pattern,
+        'name': name,
+        'match_regex': match_regex,
         'comment': comment,
         'alert': alert or '2',
-        'check_interval': check_interval or '0',
-        'trigger_format': trigger_format,
-        'dingding_webhook': dingding_webhook
+        'intervals': intervals or '0',
+        'expression': expression,
+        'webhook': webhook
     }
     return error, data
 
@@ -72,7 +74,7 @@ def add_valid(func):
     def _wrapper(self):
         error, self.reqdata = argements_valid(self)
         if error:
-            return {'code': 400, 'msg': 'Bad POST data', 'error': error}
+            return dict(code=400, msg='Bad POST data', error=error)
         return func(self)
 
     return _wrapper
@@ -83,12 +85,12 @@ def query_valid(func):
         error = {}
         if not pk and self.request.arguments:
             argument_keys = self.request.arguments.keys()
-            query_keys = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle', 'check_interval',
-                          'trigger_format', 'dingding_webhook', 'comment', 'create_time', 'order', 'search',
+            query_keys = ['id', 'logfile_id', 'name', 'match_regex', 'alert', 'intervals',
+                          'expression', 'webhook', 'comment', 'create_time', 'order', 'search',
                           'offset', 'limit', 'sort']
             error = {key: 'Bad key' for key in argument_keys if key not in query_keys}
         if error:
-            return {'code': 400, 'msg': 'Bad GET param', 'error': error}
+            return dict(code=400, msg='Bad GET param', error=error)
         return func(self, pk)
 
     return _wrapper
@@ -99,10 +101,10 @@ def update_valid(func):
         select_sql = 'SELECT id FROM monitor_item WHERE id="%d"' % pk
         count = self.cursor.execute(select_sql)
         if not count:
-            return {'code': 404, 'msg': 'Update row not found'}
+            return dict(code=404, msg='Update row not found')
         error, self.reqdata = argements_valid(self, pk)
         if error:
-            return {'code': 400, 'msg': 'Bad PUT param', 'error': error}
+            return dict(code=400, msg='Bad PUT param', error=error)
         return func(self, pk)
 
     return _wrapper
@@ -113,7 +115,7 @@ def del_valid(func):
         select_sql = 'SELECT id FROM monitor_item WHERE id="%d"' % pk
         count = self.cursor.execute(select_sql)
         if not count:
-            return {'code': 404, 'msg': 'Delete row not found'}
+            return dict(code=404, msg='Delete row not found')
         return func(self, pk)
 
     return _wrapper
@@ -142,93 +144,107 @@ class Handler(BaseRequestHandler):
 
     @add_valid
     def _add(self):
-        insert_sql = '''
-            INSERT INTO 
-              monitor_item (
-                logfile_id, 
-                search_pattern, 
-                alert, 
-                check_interval, 
-                trigger_format, 
-                dingding_webhook, 
-                create_time, 
-                comment) 
-            VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")
-        ''' % (self.reqdata['logfile_id'], self.reqdata['search_pattern'], self.reqdata['alert'],
-               self.reqdata['check_interval'], self.reqdata['trigger_format'], self.reqdata['dingding_webhook'],
-               datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), self.reqdata['comment'])
         try:
-            self.cursor.execute(insert_sql)
+            insert_arg = (
+                self.reqdata['logfile_id'], self.reqdata['name'], self.reqdata['match_regex'], self.reqdata['alert'],
+                self.reqdata['intervals'], self.reqdata['expression'], self.reqdata['webhook'],
+                datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), self.reqdata['comment']
+            )
+            with self.transaction():
+                self.cursor.execute(self.insert_sql, insert_arg)
         except Exception as e:
-            self.db.rollback()
             logger.error('Add monitor_item failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Add failed'}
+            return dict(code=500, msg='Add failed')
         else:
             self.cursor.execute('SELECT LAST_INSERT_ID() as id')
-            return {'code': 200, 'msg': 'Add successful', 'data': self.cursor.dictfetchall()}
+            return dict(code=200, msg='Add successful', data=self.cursor.dictfetchall())
 
     @update_valid
     def _update(self, pk):
-        update_sql = '''
-            UPDATE 
-              monitor_item 
-            SET 
-              logfile_id="%s", 
-              search_pattern="%s", 
-              alert="%s", 
-              check_interval="%s", 
-              trigger_format="%s",
-              dingding_webhook="%s", 
-              comment="%s"
-            WHERE id="%d"
-        ''' % (self.reqdata['logfile_id'], self.reqdata['search_pattern'], self.reqdata['alert'],
-               self.reqdata['check_interval'], self.reqdata['trigger_format'], self.reqdata['dingding_webhook'],
-               self.get_argument('comment'), pk)
         try:
-            self.cursor.execute(update_sql)
+            update_arg = (
+                self.reqdata['logfile_id'], self.reqdata['name'], self.reqdata['match_regex'], self.reqdata['alert'],
+                self.reqdata['intervals'], self.reqdata['expression'], self.reqdata['webhook'],
+                self.get_argument('comment'), pk
+            )
+            with self.transaction():
+                self.cursor.execute(self.update_sql, update_arg)
         except Exception as e:
-            self.db.rollback()
             logger.error('Update monitor_item failed: %s' % str(e))
             return {'code': 500, 'msg': 'Update failed'}
         else:
-            return {'code': 200, 'msg': 'Update successful', 'data': {'id': pk}}
+            return dict(code=200, msg='Update successful', data={'id': pk})
 
     @query_valid
     def _query(self, pk):
-        fields = search_fields = ['id', 'logfile_id', 'search_pattern', 'alert', 'crontab_cycle', 'check_interval',
-                                  'trigger_format', 'dingding_webhook', 'comment', 'create_time']
+        fields = search_fields = ['id', 'logfile_id', 'name', 'match_regex', 'alert', 'intervals',
+                                  'expression', 'webhook', 'comment', 'create_time']
         where, order, limit = self.select_sql_params(int(pk), fields, search_fields)
-        select_sql = '''
-            SELECT
-              id, logfile_id, 
-              search_pattern, 
-              alert, 
-              check_interval, 
-              trigger_format, 
-              dingding_webhook, 
-              date_format(create_time, "%%Y-%%m-%%d %%H:%%i:%%s") as create_time, 
-              comment 
-            FROM 
-              monitor_item
-            %s %s %s
-        ''' % (where, order, limit)
-        self.cursor.execute(select_sql)
+        self.cursor.execute(self.select_sql % (where, order, limit))
         results = self.cursor.dictfetchall()
         if limit:
-            total_sql = 'SELECT count(*) as total FROM monitor_item %s' % where
-            self.cursor.execute(total_sql)
+            self.cursor.execute(self.select_total_sql % where)
             total = self.cursor.dictfetchone().get('total')
-            return {'code': 200, 'msg': 'Query Successful', 'data': results, 'total': total}
-        return {'code': 200, 'msg': 'Query successful', 'data': results}
+            return dict(code=200, msg='Query Successful', data=results, total=total)
+        return dict(code=200, msg='Query successful', data=results)
 
     @del_valid
     def _del(self, pk):
-        delete_sql = 'DELETE FROM monitor_item WHERE id="%d"' % pk
         try:
-            self.cursor.execute(delete_sql)
+            with self.transaction():
+                self.cursor.execute(self.delete_sql, pk)
         except Exception as e:
-            self.db.rollback()
             logger.error('Delete monitor_item failed: %s' % str(e))
-            return {'code': 500, 'msg': 'Delete failed'}
+            return dict(code=500, msg='Delete failed')
         else:
-            return {'code': 200, 'msg': 'Delete successful'}
+            return dict(code=200, msg='Delete successful')
+
+    insert_sql = '''
+        INSERT INTO 
+          monitor_item (
+            logfile_id,
+            name, 
+            match_regex, 
+            alert, 
+            intervals, 
+            expression, 
+            webhook, 
+            create_time, 
+            comment) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    '''
+
+    update_sql = '''
+        UPDATE 
+          monitor_item 
+        SET 
+          logfile_id=%s,
+          name=%s, 
+          match_regex=%s, 
+          alert=%s, 
+          intervals=%s, 
+          expression=%s,
+          webhook=%s, 
+          comment=%s
+        WHERE id=%s
+    '''
+
+    select_sql = '''
+        SELECT
+          id, logfile_id,
+          name, 
+          match_regex, 
+          alert, 
+          intervals, 
+          expression, 
+          webhook, 
+          date_format(create_time, "%%Y-%%m-%%d %%H:%%i:%%s") as create_time, 
+          comment 
+        FROM 
+          monitor_item
+        %s %s %s
+    '''
+
+    select_total_sql = 'SELECT count(*) as total FROM monitor_item %s'
+
+    delete_sql = 'DELETE FROM monitor_item WHERE id=%s'

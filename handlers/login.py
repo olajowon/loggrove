@@ -23,7 +23,7 @@ def login_valid(func):
         if not self.password:
             error['password'] = 'Required'
         if error:
-            self._write({'code': 400, 'msg': 'Bad POST data', 'error': error})
+            self._write(dict(code=400, msg='Bad POST data', error=error))
         else:
             self.reqdata = dict(
                 username=self.username,
@@ -81,9 +81,7 @@ class Handler(BaseRequestHandler):
         return response_data
 
     def base_auth_login(self):
-        select_sql = 'SELECT id,username,password,status FROM user WHERE username="%s"' % \
-                     (self.username)
-        self.cursor.execute(select_sql)
+        self.cursor.execute(self.select_user_sql, self.username)
         user = self.cursor.dictfetchone()
 
         if not user:
@@ -97,85 +95,58 @@ class Handler(BaseRequestHandler):
         return response_data
 
     def base_user(self):
-        select_sql = 'SELECT * FROM user WHERE username="%s"' % self.username
-        self.cursor.execute(select_sql)
+        self.cursor.execute(self.select_user_sql, self.username)
         user = self.cursor.dictfetchone()
 
         if not user:
-            insert_sql = '''
-                INSERT INTO 
-                  user (
-                    username, 
-                    password, 
-                    fullname, 
-                    email,
-                    join_time, 
-                    status, 
-                    role) 
-                VALUES ("%s", "%s", "%s", "%s", "%s", "1", "3")
-            ''' % (self.username,
-                   utils.make_password(self.password),
-                   self.username.capitalize(),
-                   self.ldap_user.get('mail')[0].decode('UTF-8')
-                                            if self.ldap_user.get('mail') else '%s@loggrove.com' % self.username,
-                   datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),)
-
             try:
+                insert_user_arg = (
+                    self.username,
+                    utils.make_password(self.password),
+                    self.username.capitalize(),
+                    self.ldap_user.get('mail')[0].decode('UTF-8')
+                    if self.ldap_user.get('mail') else '%s@loggrove.com' % self.username,
+                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+                )
                 with self.transaction():
-                    self.cursor.execute(insert_sql)
+                    self.cursor.execute(self.insert_user_sql, insert_user_arg)
             except Exception as e:
                 logger.error('Add base user failed: %s' % str(e))
                 return False
         else:
-            update_sql = '''
-                UPDATE 
-                  user 
-                SET 
-                  username="%s", 
-                  password="%s",
-                  email="%s"
-                WHERE 
-                  id="%d"
-            ''' % (self.username,
-                   utils.make_password(self.password),
-                   self.ldap_user.get('mail')[0].decode('UTF-8') if self.ldap_user.get('mail') else user['email'],
-                   user['id'])
-
             try:
+                update_user_arg = (
+                    self.username,
+                    utils.make_password(self.password),
+                    self.ldap_user.get('mail')[0].decode('UTF-8') if self.ldap_user.get('mail') else user['email'],
+                    user['id']
+                )
                 with self.transaction():
-                    self.cursor.execute(update_sql)
+                    self.cursor.execute(self.update_user_sql, update_user_arg)
             except Exception as e:
                 logger.error('Update base user failed: %s' % str(e))
                 return False
 
-        select_sql = 'SELECT * FROM user WHERE username="%s"' % self.username
-        self.cursor.execute(select_sql)
+        self.cursor.execute(self.select_user_sql, self.username)
         return self.cursor.dictfetchone()
 
 
     def login(self, user, active=60 * 60 * 24):
-        session_id = str(uuid.uuid4()).replace('-', '')
-        user_id = user.get('id')
-        create_time = time.time()
-        expire_time = time.time() + active
-        session_data = {'username': user.get('username')}
-        insert_sql = '''
-            INSERT INTO 
-              session (
-                session_id, 
-                user_id, 
-                session_data, 
-                create_time,
-                expire_time) 
-            VALUES ("%s", "%s", "%s", "%s", "%s")
-        ''' % (session_id,
-               user_id,
-               pymysql.escape_string(json.dumps(session_data)),
-               time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time)),
-               time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(expire_time)))
         try:
+            session_id = str(uuid.uuid4()).replace('-', '')
+            user_id = user.get('id')
+            create_time = time.time()
+            expire_time = time.time() + active
+            session_data = {'username': user.get('username')}
+            insert_session_arg = (
+                session_id,
+                user_id,
+                pymysql.escape_string(json.dumps(session_data)),
+                time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time)),
+                time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(expire_time))
+            )
             with self.transaction():
-                self.cursor.execute(insert_sql)
+                self.cursor.execute(self.insert_session_sql, insert_session_arg)
                 self.set_secure_cookie('session_id', session_id, expires=expire_time)
                 self.requser = user
         except Exception as e:
@@ -187,11 +158,24 @@ class Handler(BaseRequestHandler):
 
     def logout(self):
         if self.session:
-            delete_sql = 'DELETE FROM session WHERE session_id="%s"' % self.session.get('session_id')
             try:
                 with self.transaction():
-                    self.cursor.execute(delete_sql)
+                    self.cursor.execute(self.delete_session_sql, self.session.get('session_id'))
             except Exception as e:
                 logger.error('Logout failed: %s' % str(e))
         if self.session_id:
             self.clear_cookie('session_id')
+
+    select_user_sql = 'SELECT id,username,password,status FROM user WHERE username=%s'
+
+    insert_user_sql = '''INSERT INTO user (username, password, fullname, email, join_time, status, role) 
+        VALUES (%s, %s, %s, %s, %s, "1", "3")
+    '''
+
+    update_user_sql = 'UPDATE user SET username=%s, password=%s, email=%s WHERE id=%d'
+
+    insert_session_sql = '''INSERT INTO session (session_id, user_id, session_data, create_time, expire_time) 
+        VALUES (%s, %s, %s, %s, %s)
+    '''
+
+    delete_session_sql = 'DELETE FROM session WHERE session_id=%s'

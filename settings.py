@@ -12,10 +12,10 @@ LOGIN_URL = '/login/html/'
 
 
 MYSQL_DB = {
-    'host': 'localhost',      # 请不要使用localhost,127.0.0.1等本地地址，这些地址会导致生成的监控脚本在远程日志主机上无法连接数据库
+    'host': '',
     'port': 3306,
-    'user': 'root',
-    'password': '123456',
+    'user': '',
+    'password': '',
     'db': 'loggrove',    # 请勿改动
     'charset': 'utf8',
     'autocommit': True,
@@ -25,7 +25,7 @@ SSH = {
     'username': 'root',                         # 请使用 root，避免权限不够
     'password': '',                     # 使用公私钥认证时，密码可为空
     'port': 22,
-    'key_filename': '/Users/zhouwang/.ssh/id_rsa',        # 用户私钥文件路径，启用后优先使用公私钥验证
+    'key_filename': '',        # 用户私钥文件路径，启用后优先使用公私钥验证
     'timeout': 5
 }
 

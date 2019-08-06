@@ -25,7 +25,7 @@ def report_valid(func):
                 error['counts'] = 'Must JSON'
 
         if error:
-            return {'code': 400, 'msg': 'Bad POST data', 'error': error}
+            return dict(code=400, msg='Bad POST data', error=error)
 
         self.reqdata = dict(
             host=host,
@@ -43,19 +43,19 @@ class Handler(BaseRequestHandler):
 
     @report_valid
     def _report(self):
-        inserts = self.reqdata['counts']
-        insert_sql = '''
-          INSERT INTO 
-            monitor_count (logfile_id, host, monitor_item_id, count, count_time) 
-          VALUES
-            (%s, %s, %s, %s, %s)
-        '''
-
         try:
+            inserts = self.reqdata['counts']
             with self.transaction():
-                self.cursor.executemany(insert_sql, inserts)
+                self.cursor.executemany(self.insert_sql, inserts)
         except Exception as e:
             logger.error('Report failed[%s]: %s' % (self.reqdata['host'], str(e)))
-            return {'code': 500, 'msg': 'Report failed'}
+            return dict(code=500, msg='Report failed')
         else:
-            return {'code': 200, 'msg': 'Report successful'}
+            return dict(code=200, msg='Report successful')
+
+    insert_sql = '''
+      INSERT INTO 
+        monitor_count (logfile_id, host, monitor_item_id, count, count_time) 
+      VALUES
+        (%s, %s, %s, %s, %s)
+    '''
