@@ -17,7 +17,7 @@ Loggrove 是对本地、远程**日志文件**进行 分页阅读、实时阅读
 ### Web UI 界面
 简洁大方的 Web UI 界面，进行 日志文件、日志图表、日志阅读、日志轮询、日志关键词匹配、用户、审计 等统一管理，提供一系列简单、准确、美观的日志管理、查看、过滤 等服务。
 
-![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/dashboard.png?raw=true)
+![image](https://github.com/olajowon/exhibitions/blob/master/loggrove/dashboard2019.png?raw=true)
 
 [更多图片](#Exhibition)
 

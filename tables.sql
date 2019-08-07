@@ -76,3 +76,11 @@ CREATE TABLE IF NOT EXISTS `monitor_count`(
   `count_time` DATETIME,
   PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE user ADD INDEX username_idx(username);
+ALTER TABLE logfile ADD INDEX name_idx(name);
+ALTER TABLE auditlog ADD INDEX user_id_idx(user_id);
+ALTER TABLE logfile_host ADD INDEX logfile_id_idx(logfile_id);
+ALTER TABLE logfile_host ADD INDEX host_idx(host);
+ALTER TABLE monitor_item ADD INDEX logfile_id_idx(logfile_id);
+ALTER TABLE monitor_count ADD INDEX count_time_idx(count_time);
