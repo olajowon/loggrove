@@ -125,8 +125,8 @@ class Monitor(threading.Thread):
     def run(self):
         try:
             open_position = os.path.getsize(self.filepath)  # 打开时的位置
-            time.sleep(time.time() - self.curr_time)  # 等待日志经过一分钟
-            end_position = os.path.getsize(self.filepath)  # 一分钟后的日志位置
+            time.sleep(60-(time.time()-self.begin_time))    # 等待日志经过一分钟
+            end_position = os.path.getsize(self.filepath)   # 一分钟后的日志位置
             begin_position = self.get_begin_position(open_position, end_position)  # 开始读取的位置
 
             logging.info('Monitor run, %s, %s, %s, [%s-%s]' %
