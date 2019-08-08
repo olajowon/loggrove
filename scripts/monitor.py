@@ -118,6 +118,7 @@ class Monitor(threading.Thread):
         self.filename = logfile['name']
         self.filepath = logfile['path']
         self.monitor_items = logfile['monitor_items']
+        self.begin_time = begin_time
         self.curr_time = (begin_time // 60) * 60
         self.curr_strtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.curr_time))
         self.host = HOST
