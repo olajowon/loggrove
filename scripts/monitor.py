@@ -118,7 +118,6 @@ class Monitor(threading.Thread):
         self.filename = logfile['name']
         self.filepath = logfile['path']
         self.monitor_items = logfile['monitor_items']
-        self.begin_time = begin_time
         self.curr_time = (begin_time // 60) * 60
         self.curr_strtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(self.curr_time))
         self.host = HOST
@@ -126,7 +125,7 @@ class Monitor(threading.Thread):
     def run(self):
         try:
             open_position = os.path.getsize(self.filepath)  # 打开时的位置
-            time.sleep(60-(time.time()-self.begin_time))    # 等待日志经过一分钟
+            time.sleep(60-(time.time()-self.curr_time))     # 等待日志经过一分钟
             end_position = os.path.getsize(self.filepath)   # 一分钟后的日志位置
             begin_position = self.get_begin_position(open_position, end_position)  # 开始读取的位置
 
