@@ -68,7 +68,8 @@ class Handler(BaseRequestHandler):
     def get_contrast_series(self, item, date):
         logfile, host, monitor_item = item.get('logfile'), item.get('host'), item.get('monitor_item')
         try:
-            select_arg = (logfile, monitor_item, host, '%s 00:00' % date, '%s 23:59' % date)
+            select_arg = (time.mktime(time.strptime(date,'%Y-%m-%d')) * 1000,
+                          logfile, monitor_item, host, '%s 00:00' % date, '%s 23:59' % date)
             self.cursor.execute(self.select_contrast_sql, select_arg)
             name = '%s-%s-%s-%s' % (date, logfile, host, monitor_item)
             data = self.cursor.fetchall()
@@ -96,8 +97,8 @@ class Handler(BaseRequestHandler):
             for item in self.items:
                 series.append(self.get_interval_series(item))
         elif self.mode == 'contrast':
-            min_mktime = time.mktime(time.strptime('1970-1-1 00:00', '%Y-%m-%d %H:%M')) * 1000
-            max_mktime = time.mktime(time.strptime('1970-1-1 23:59', '%Y-%m-%d %H:%M')) * 1000
+            min_mktime = 0
+            max_mktime = 86300000
             for date in self.dates:
                 for item in self.items:
                     series.append(self.get_contrast_series(item, date))
@@ -123,7 +124,7 @@ class Handler(BaseRequestHandler):
 
     select_contrast_sql = '''
         SELECT
-          UNIX_TIMESTAMP(date_format(t3.count_time, "1970-1-1 %%H:%%i:%%s")) * 1000,
+          UNIX_TIMESTAMP(t3.count_time) * 1000 - %s,
           t3.count
         FROM
           logfile as t1, monitor_item as t2, monitor_count as t3

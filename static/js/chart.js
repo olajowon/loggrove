@@ -4,7 +4,6 @@
 
 chartobj = null
 interval = null
-Highcharts.setOptions({global: {useUTC: false}})
 
 function open_chart_modal(logfile_id){
     /* 图表modal */
@@ -219,7 +218,6 @@ function show_interval_chart(interval_option){
 
 function show_contrast_chart(contrast_day){
     /* 日期对比查询 */
-
     var date
     if (contrast_day){
         date = today + "," + contrast_day
@@ -261,6 +259,7 @@ function show_contrast_chart(contrast_day){
             var response_data = jQuery.parseJSON(result)
             var data = response_data["data"]
 
+            Highcharts.setOptions({global: {useUTC: true}})
             Highcharts.chart('log_chart', {
                 chart: {
                     type: 'spline',
@@ -291,8 +290,10 @@ function show_contrast_chart(contrast_day){
                     valueSuffix: '',
                     shared: true,
                     crosshairs: true,
-
                     dateTimeLabelFormats: {
+                        year: "",
+                        month: "",
+                        day: "",
                         minute:"%H:%M",
                     },
                 },
@@ -310,7 +311,7 @@ function show_contrast_chart(contrast_day){
                     href: ''
                 },
                 global: {
-                    useUTC: false
+                    useUTC: true
                 }
             });
         },
@@ -342,6 +343,7 @@ function show_contrast_chart(contrast_day){
 
 function write_interval_chart(chartdata){
     /* 时间段画图 */
+    Highcharts.setOptions({global: {useUTC: false}})
     chartobj = Highcharts.chart('log_chart', {
         chart: {
             type: 'spline',
