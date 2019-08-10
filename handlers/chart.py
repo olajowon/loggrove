@@ -97,8 +97,7 @@ class Handler(BaseRequestHandler):
             for item in self.items:
                 series.append(self.get_interval_series(item))
         elif self.mode == 'contrast':
-            min_mktime = 0
-            max_mktime = 86300000
+            min_mktime, max_mktime = 0, 86340000
             for date in self.dates:
                 for item in self.items:
                     series.append(self.get_contrast_series(item, date))
