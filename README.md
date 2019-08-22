@@ -34,6 +34,10 @@ Bootstrap 3.3
 
 Sb-admin 2.0
 
+### Logmonit
+Logmonit 是一个纯监控报警的daemon程序，作为Loggrove监控报警功能的独立项目，不依赖Loggrove运行，它根据定义的TOML配置文件完成对日志的监控。
+
+项目地址：<https://github.com/olajowon/logmonit>
 
 ## Requirements
 **组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx、Crond 等服务；
@@ -67,7 +71,7 @@ Sb-admin 2.0
        'bind_dn': 'uid=uid,cn=cn,cn=cn,dc=dc,dc=dc',    
        'bind_password': 'password',
 	}
-**MYSQL_DB：** MySQL数据库连接配置，请配置一个所有远程日志主机可以正确的连接的地址，避免localhost、127.0.0.1 类似的地址。	
+**MYSQL_DB：** MySQL数据库连接配置。	
 
 **SSH：** SSH连接配置，用于SSH连接远程日志主机，建议使用root，避免权限不够。
 
