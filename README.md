@@ -40,9 +40,9 @@ Logmonit 是一个纯监控报警的daemon程序，作为Loggrove监控报警功
 项目地址：<https://github.com/olajowon/logmonit>
 
 ## Requirements
-**组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx、Crond 等服务；
+**组件：** 安装 Python3.6、Pip3、MySQL5.7、Nginx 等服务；
 
-**命令：** python3、pip3、mysql、crontab、yum 命令可用，否则会导致初始化 Loggrove 失败；
+**命令：** python3、pip3、mysql、yum 命令可用，否则会导致初始化 Loggrove 失败；
 
 ## Installation & Configuration
 ### 下载
