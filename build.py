@@ -82,7 +82,7 @@ def main():
     print('### Loggrove Build ###')
     print('''   
 要求：
-    1: 已安装 Python36、PIP3、MySQL57、Crond，并保证 python3、pip3、mysql、crontab、yum 命令可用；
+    1: 已安装 Python36、PIP3、MySQL57，并保证 python3、pip3、mysql、yum 命令可用；
     2: 已完成 settings.py > MYSQL_DB host、port、user、password, SSH username、password、port 等配置；
 
 步骤：
