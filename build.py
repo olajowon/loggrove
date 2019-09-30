@@ -48,39 +48,10 @@ def mysql_tables():
         exit()
     print('Step4: End.\n')
 
-def render_monitor_py():
-    print('Step5: Render Monitor Script')
-    import jinja2
-    j2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates', 'monitor.py.jinja2')
-    py = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scripts', 'monitor.py')
-    print('-->', py)
-    with open(py, 'w') as f:
-        f.write(jinja2.Template(open(j2).read()).render(mysqldb=MYSQL_DB,
-                                                        render_date=time.strftime('%Y/%m/%d', time.localtime())))
-    print('Step5: End.\n')
-
-def local_monitor_cron():
-    print('Step6: Create Localhost Monitoring Task On Crontab')
-    monitor_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scripts', 'monitor.py')
-    command = 'cat /var/spool/cron/`whoami` | grep %s' % 'loggrove_monitor'
-    print('-->', command)
-    status = os.system(command)
-    if status == 0:
-        print('Existence of Monitoring Task On Crontab, Skip.\n')
-    else:
-        command = 'echo -e "\\n* * * * * `which python3` %s localhost >> ' \
-                  '/tmp/loggrove_monitor.log # loggrove_monitor\\n" >> /var/spool/cron/`whoami`' % (monitor_path)
-        print('-->', command)
-        status = os.system(command)
-        if status != 0:
-            exit()
-
-    print('Step6: End.\n')
-
 def loggrove_admin():
     global NEW_SUPERADMIN
 
-    print('Step7: Create Loggrove Superadmin')
+    print('Step5: Create Loggrove Superadmin')
     status, output = subprocess.getstatusoutput(
         'mysql -h%s -P%d -u%s -p%s loggrove -e \'select "Existence of superadmin" from user where username="admin"\'' %
         (MYSQL_DB['host'], MYSQL_DB['port'], MYSQL_DB['user'], MYSQL_DB['password']))
@@ -104,7 +75,7 @@ def loggrove_admin():
         NEW_SUPERADMIN = True
     else:
         print('Existence of Superadmin, Skip.\n')
-    print('Step7: End.\n')
+    print('Step5: End.\n')
 
 
 def main():
@@ -119,9 +90,7 @@ def main():
     2: 安装Python包 （pip3）
     3: 创建MySQL db，若存在则不进行创建动作
     4: 创建or更新 MySQL tables 结构
-    5: 渲染生成监控脚本，若存在则进行覆盖
-    6: 创建本地监控任务，若存在则不进行创建动作（注：远程主机需要手动添加监控任务，详情查看README）  
-    7: 创建超级管理员，若存在则不进行创建动作       
+    5: 创建超级管理员，若存在则不进行创建动作       
     ''')
 
     while True:
@@ -137,8 +106,6 @@ def main():
     python_packages()
     mysql_db()
     mysql_tables()
-    render_monitor_py()
-    local_monitor_cron()
     loggrove_admin()
     print('End and successful. <<< \n')
     if NEW_SUPERADMIN:
