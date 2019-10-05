@@ -166,7 +166,7 @@ class Handler(BaseRequestHandler):
 
     def make_contents(self):
         if self.match and self.clean == 'true':
-            read_cmd = 'grep "%s" %s | head -n %d | tail -n +%d' % \
+            read_cmd = 'grep -a "%s" %s | head -n %d | tail -n +%d' % \
                        (self.match, self.path, self.page * 1000, (self.page-1) * 1000 + 1)
         else:
             if self.posit == 'head':
