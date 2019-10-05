@@ -39,7 +39,7 @@ def open_valid(func):
             try:
                 re.search(r'%s' % match, '')
             except:
-                error['search_pattern'] = 'Incorrect format'
+                error['match'] = 'Incorrect format'
 
         if not path:
             error['path'] = 'Required'

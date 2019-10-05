@@ -43,7 +43,7 @@ class Handler(BaseRequestHandler):
     def get(self, *args, **kwargs):
         self.select_sql = 'SELECT match_regex FROM monitor_item WHERE logfile_id=%d' % \
                           self.reqdata['logfile']['id']
-        self.select_sql += (' AND search_pattern like "%%%s%%"' % self.reqdata['match']
+        self.select_sql += (' AND match_regex like "%%%s%%"' % self.reqdata['match']
                             if self.reqdata['match'] else '')
 
         self.cursor.execute(self.select_sql)
