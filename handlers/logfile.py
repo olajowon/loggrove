@@ -171,6 +171,7 @@ class Handler(BaseRequestHandler):
                 self.cursor.execute(self.delete_sql, delete_arg)
                 self.cursor.execute(self.delete_host_mp_sql, delete_arg)
                 self.cursor.execute(self.delete_monitor_sql, delete_arg)
+                self.cursor.execute(self.delete_monitor_count_sql, delete_arg)
         except Exception as e:
             logger.error('Delete logfile failed: %s' % str(e))
             return dict(code=500, msg='Delete failed')
@@ -189,6 +190,8 @@ class Handler(BaseRequestHandler):
     delete_host_mp_sql = 'DELETE FROM logfile_host WHERE logfile_id=%s'
 
     delete_monitor_sql = 'DELETE FROM monitor_item WHERE logfile_id=%s'
+
+    delete_monitor_count_sql = 'DELETE FROM monitor_count WHERE logfile_id=%s'
 
     last_insert_id_sql = 'SELECT LAST_INSERT_ID() as id'
 
