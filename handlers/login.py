@@ -172,7 +172,7 @@ class Handler(BaseRequestHandler):
         VALUES (%s, %s, %s, %s, %s, "1", "3")
     '''
 
-    update_user_sql = 'UPDATE user SET username=%s, password=%s, email=%s WHERE id=%d'
+    update_user_sql = 'UPDATE user SET username=%s, password=%s, email=%s WHERE id=%s'
 
     insert_session_sql = '''INSERT INTO session (session_id, user_id, session_data, create_time, expire_time) 
         VALUES (%s, %s, %s, %s, %s)
