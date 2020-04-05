@@ -152,19 +152,19 @@
                 </div>
             </div>
             <div class="row" style="height: calc(100% - 100px); overflow-y: scroll;">
-                {% if requser.get('username') == 'guest' %}
-                <div class="alert alert-success alert-dismissable">
-                    <button type="button" class="close" data-dismiss="alert"
-                            aria-hidden="true">
-                        &times;
-                    </button>
-                    <a href="https://github.com/olajowon/loggrove/" target="_blank">逛完请留步，点我 star 一下，鼓励一下开发者！ <i class="fa fa-star" aria-hidden="true"></i> star！</a><br>
-
-                    <span>这里的 添加、编辑、删除按钮、用户页面、审计页面 仅让 guest 用户能够预览，想要更多的操作及权限，<a href="https://github.com/olajowon/loggrove/" target="_blank">请点我下载 Loggrove</a>。</span><br>
-                    <!--<span>注2：如果仅需要对日志监控报警的功能，另一项目 Logmonit 则是更好的选择，<a href="https://github.com/olajowon/logmonit/" target="_blank">请点我前往 Logmonit</a>。</span>-->
-                </div>
-                {% end %}
                 <div class="col-sm-12">
+                    {% if requser.get('username') == 'guest' %}
+                    <div class="alert alert-success alert-dismissable">
+                        <button type="button" class="close" data-dismiss="alert"
+                                aria-hidden="true">
+                            &times;
+                        </button>
+                        <a href="https://github.com/olajowon/loggrove/" target="_blank">逛完请留步，点我 star 一下，鼓励一下开发者！ <i class="fa fa-star" aria-hidden="true"></i> star！</a><br>
+
+                        <span>这里的 添加、编辑、删除按钮、用户页面、审计页面 仅让 guest 用户能够预览，想要更多的操作及权限，<a href="https://github.com/olajowon/loggrove/" target="_blank">请点我下载 Loggrove</a>。</span><br>
+                        <!--<span>注2：如果仅需要对日志监控报警的功能，另一项目 Logmonit 则是更好的选择，<a href="https://github.com/olajowon/logmonit/" target="_blank">请点我前往 Logmonit</a>。</span>-->
+                    </div>
+                    {% end %}
                     {% block content %}{% end %}
                 </div>
             </div>
