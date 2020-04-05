@@ -52,7 +52,7 @@ def ssh_conn(func):
                 self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 self.ssh_client.connect(host, **self.application.settings.get('ssh'))
             except Exception as e:
-                logger.error('Query path failed: %s' % str(e))
+                logger.error('Query path failed: SSH connect, %s' % str(e))
                 return self._write(dict(code=500, msg='Query failed', detail=str(e)))
         response = func(self)
         if self.ssh_client:
@@ -60,6 +60,7 @@ def ssh_conn(func):
         return response
 
     return _wrapper
+
 
 class Handler(BaseRequestHandler):
     def __init__(self, *args, **kwargs):

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-日志图表
+监控图表
 {% end %}
 {% block head_js %}
 <script>
@@ -254,6 +254,7 @@
                         }
                     },
                     error: function (result) {
+                        alert("GET logfiles error：" + result.responseText)
                     }
                 })
             }

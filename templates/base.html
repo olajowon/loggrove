@@ -2,7 +2,7 @@
 <!--
  Created by zhouwang.
 -->
-<html lang="cn">
+<html lang="cn" style="height: 100%">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -85,8 +85,8 @@
     {% end %}
 </head>
 
-<body>
-    <div id="wrapper">
+<body style="height: 100%">
+    <div id="wrapper" style="height: 100%;">
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; border-bottom:1px solid #ddd ; background-color:#303030">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -140,7 +140,7 @@
         </nav>
 
 
-        <div id="page-wrapper">
+        <div id="page-wrapper" style="height: calc(100% - 55px)">
 
             <div class="row">
                 <div class="col-lg-12">
@@ -157,14 +157,15 @@
                         aria-hidden="true">
                     &times;
                 </button>
-                <a href="https://github.com/olajowon/loggrove/" target="_blank">逛完请留步，点我 star 一下，鼓励一下开发者！ <i class="fa fa-star" aria-hidden="true"></i> star！</a><br>
-
                 <span>这里的 添加、编辑、删除按钮、用户页面、审计页面 仅让 guest 用户能够预览，想要更多的操作及权限，<a href="https://github.com/olajowon/loggrove/" target="_blank">请点我下载 Loggrove</a>。</span><br>
                 <!--<span>注2：如果仅需要对日志监控报警的功能，另一项目 Logmonit 则是更好的选择，<a href="https://github.com/olajowon/logmonit/" target="_blank">请点我前往 Logmonit</a>。</span>-->
             </div>
             {% end %}
-            {% block content %}{% end %}
-
+            <div class="row" style="height: calc(100% - 100px); overflow-y: scroll;">
+                <div class="col-sm-12">
+                    {% block content %}{% end %}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -333,6 +334,9 @@
     <script src="{{ static_url('bootstrap-table/dist/bootstrap-table-zh-CN.js') }}"></script>
 
     <script src="{{ static_url('bootstrap-3-typeahead/bootstrap3-typeahead.js') }}"></script>
+
+    <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
+
 
     <!-- Bootstrap-tag JavaScript -->
     <script src="{{ static_url('bootstrap-tagsinput-latest/dist/bootstrap-tagsinput.js') }}"></script>

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-日志阅读
+分页阅读
 {% end %}
 {% block style %}
 <style>
@@ -233,6 +233,7 @@
                         $("#logfile_form select[name='host']").html('<option value=""> ---- </option>')
                         $("#logfile_form select[name='host']").selectpicker('refresh');
                         $("#logfile_form select[name='host']").selectpicker('render');
+                        alert("GET logfiles error：" + result.responseText)
                     }
                 })
             }
@@ -269,6 +270,7 @@
                         $("#logfile_form select[name='path']").selectpicker('render');
                     },
                     error: function (result) {
+                        alert("GET paths error：" + result.responseText)
                     }
                 })
             }
