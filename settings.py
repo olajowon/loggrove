@@ -12,25 +12,25 @@ LOGIN_URL = '/login/html/'
 
 
 MYSQL_DB = {
-    'host': '',
+    'host': 'host',
     'port': 3306,
-    'user': '',
-    'password': '',
+    'user': 'user',
+    'password': 'password',
     'db': 'loggrove',    # 请勿改动
     'charset': 'utf8',
     'autocommit': True,
 }
 
 SSH = {
-    'username': 'root',                         # 请使用 root，避免权限不够
-    'password': '',                     # 使用公私钥认证时，密码可为空
+    'username': 'root',         # 请使用 root，避免权限不够
+    'password': 'password',     # 使用公私钥认证时，密码可为空
     'port': 22,
-    'key_filename': '',        # 用户私钥文件路径，启用后优先使用公私钥验证
+    # 'key_filename': os.path.expanduser('~/.ssh/id_rsa.pub'),        # 用户私钥文件路径，启用后优先使用公私钥验证
     'timeout': 5
 }
 
 LDAP = {
-    'auth': False,           # True 开启ldap认证，admin 不会通过ldap认证
+    'auth': False,                      # True 开启ldap认证，admin 不会通过ldap认证
     'base_dn': 'cn=cn,dc=dc,dc=dc',     # cn=cn,dc=dc,dc=dc
     'server_uri': 'ldap://...',
     'bind_dn': 'uid=uid,cn=cn,cn=cn,dc=dc,dc=dc', # uid=uid,cn=cn,cn=cn,dc=dc,dc=dc
