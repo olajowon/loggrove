@@ -40,8 +40,6 @@ def get_valid(func):
 
         if not path:
             error['path'] = 'Required'
-        elif logfile_row and not re.search(logfile_row['path'], path):
-            error['path'] = 'Invalid path'
 
         if not host:
             error['host'] = 'Required'
