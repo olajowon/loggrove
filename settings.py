@@ -25,7 +25,7 @@ SSH = {
     'username': 'root',         # 请使用 root，避免权限不够
     'password': 'password',     # 使用公私钥认证时，密码可为空
     'port': 22,
-    # 'key_filename': os.path.expanduser('~/.ssh/id_rsa.pub'),        # 用户私钥文件路径，启用后优先使用公私钥验证
+    # 'key_filename': os.path.expanduser('~/.ssh/id_rsa'),        # 用户私钥文件路径，启用后优先使用公私钥验证
     'timeout': 5
 }
 
