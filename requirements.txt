@@ -1,6 +1,6 @@
 PyMySQL==0.7.11
 tornado==5.0.2
-urllib3==1.22
+urllib3==1.26.5
 requests==2.18.4
 paramiko==2.4.1
 Jinja2==2.9.6
